@@ -31,9 +31,9 @@ class Map:
         elif node.pos[1]==HEIGHT:
             angle = 0
         elif node.pos[0]==WIDTH:
-            angle = 270
-        else:
             angle = 90
+        else:
+            angle = 270
         node.exiting_roads[0].cars.append(Car(node.pos, angle))
 
     def move_cars(self):
@@ -46,34 +46,55 @@ class Map:
 
 WIDTH, HEIGHT = (1000,1000)
 def generate_crossroad(WIDTH, HEIGHT):
+    #nodes
+    node1 = Node((7/18*WIDTH, 0))
+    node2 = Node((11/18*WIDTH, 0))
+    node3 = Node((7/18*WIDTH, HEIGHT/3))
+    node4 = Node((11/18*WIDTH, 1/3*HEIGHT))
+    node5 = Node((7/18*WIDTH, 2/3*HEIGHT))
+    node6 = Node((11/18*WIDTH, 2/3*HEIGHT))
+    node7 = Node((7/18*WIDTH, HEIGHT))
+    node8 = Node((11/18*WIDTH, HEIGHT))
+    node9 = Node((2*WIDTH/3, HEIGHT*7/18))
+    node10 = Node((WIDTH*2/3, HEIGHT*11/18))
+    node11 = Node((WIDTH/3, HEIGHT*7/18))
+    node12 = Node((WIDTH/3, HEIGHT*11/18))
+    node13 = Node((WIDTH, HEIGHT*7/18))
+    node14 = Node((WIDTH, HEIGHT*11/18))
+    node15 = Node((0, HEIGHT*7/18))
+    node16 = Node((0, HEIGHT*11/18))
+    
+    nodes = [node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15, node16]
+    
+
     roads = []
     #Vertical
-    roads.append(Road((7/18*WIDTH, HEIGHT/3),(7/18*WIDTH, 0), "straight"))#top
-    roads.append(Road((11/18*WIDTH, 0),(11/18*WIDTH, HEIGHT/3), "straight"))
-    roads.append(Road((7/18*WIDTH, 2/3*HEIGHT),(7/18*WIDTH, HEIGHT), "straight"))#bottom
-    roads.append(Road((11/18*WIDTH, HEIGHT),(11/18*WIDTH, 2/3*HEIGHT), "straight"))
+    roads.append(Road(node1, node3, "straight"))#top
+    roads.append(Road(node4, node2, "straight"))
+    roads.append(Road(node5, node7, "straight"))#bottom
+    roads.append(Road(node8, node6, "straight"))
     #Horrizontal
-    roads.append(Road((0, HEIGHT*11/18),(WIDTH/3, HEIGHT*11/18), "straight"))#left
-    roads.append(Road((WIDTH/3, HEIGHT*7/18),(0, HEIGHT*7/18), "straight"))
-    roads.append(Road((WIDTH*2/3, HEIGHT*11/18),(WIDTH, HEIGHT*11/18), "straight"))#right
-    roads.append(Road((WIDTH, HEIGHT*7/18),(WIDTH*2/3, HEIGHT*7/18), "straight"))
+    roads.append(Road(node11, node15, "straight"))#left
+    roads.append(Road(node16, node12, "straight"))
+    roads.append(Road(node13, node9, "straight"))#right
+    roads.append(Road(node10, node14, "straight"))
     #Bottom turns
-    roads.append(Road((11/18*WIDTH, 2/3*HEIGHT),(WIDTH*2/3, HEIGHT*11/18), type = "arc", curve = "right"))
-    roads.append(Road((11/18*WIDTH, 2/3*HEIGHT),(WIDTH/3, HEIGHT*7/18), type = "arc", curve = "left"))
-    roads.append(Road((11/18*WIDTH, HEIGHT),(11/18*WIDTH, 1/3*HEIGHT), "straight"))
+    roads.append(Road(node6,node10, type = "arc", curve = "right"))
+    roads.append(Road(node6,node11, type = "arc", curve = "left"))
+    roads.append(Road(node6,node4, "straight"))
     #Left turns
-    roads.append(Road((WIDTH/3, HEIGHT*11/18),(7/18*WIDTH, 2/3*HEIGHT), type = "arc", curve = "right"))
-    roads.append(Road((WIDTH/3, HEIGHT*11/18),(11/18*WIDTH, 1/3*HEIGHT), type = "arc", curve = "left"))
-    roads.append(Road((WIDTH/3, HEIGHT*11/18),(WIDTH*2/3, HEIGHT*11/18), "straight"))
+    roads.append(Road(node12,node5, type = "arc", curve = "right"))
+    roads.append(Road(node12,node4, type = "arc", curve = "left"))
+    roads.append(Road(node12,node10, "straight"))
     #Top turns
-    roads.append(Road((7/18*WIDTH, HEIGHT/3),(WIDTH/3, HEIGHT*7/18), type = "arc", curve = "right"))
-    roads.append(Road((7/18*WIDTH, HEIGHT/3),(WIDTH*2/3, HEIGHT*11/18), type = "arc", curve = "left"))
-    roads.append(Road((7/18*WIDTH, HEIGHT/3),(7/18*WIDTH, 2/3*HEIGHT), "straight"))
+    roads.append(Road(node3,node11, type = "arc", curve = "right"))
+    roads.append(Road(node3,node10, type = "arc", curve = "left"))
+    roads.append(Road(node3,node5, "straight"))
     #Right turns
-    roads.append(Road((WIDTH*2/3, HEIGHT*7/18),(11/18*WIDTH, 1/3*HEIGHT), type = "arc", curve = "right"))
-    roads.append(Road((WIDTH*2/3, HEIGHT*7/18),(7/18*WIDTH, 2/3*HEIGHT), type = "arc", curve = "left"))
-    roads.append(Road((WIDTH*2/3, HEIGHT*7/18),(WIDTH/3, HEIGHT*7/18), "straight"))
-    return Map(roads)
+    roads.append(Road(node9,node4, type = "arc", curve = "right"))
+    roads.append(Road(node9,node5, type = "arc", curve = "left"))
+    roads.append(Road(node9,node11, "straight"))
+    return Map(roads, nodes, [node1, node8, node13, node16])
 
 
 
@@ -107,6 +128,44 @@ def test_map(WIDTH, HEIGHT):
 
     return Map(roads, nodes, [node1, node8])
   
+
+
+ 
+def test(map):    
+    win = pygame.display.set_mode((WIDTH, HEIGHT))
+    clock=pygame.time.Clock()
+    i=0
+    while(True):
+        rect = pygame.Rect(0,0,WIDTH, HEIGHT)
+        pygame.draw.rect(win,"Black", rect)
+        i+=1
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()    
+        map.show_paths(win)
+        map.show_vehicles(win)
+        
+        if i%FPS == 0:
+            map.spawn_car(WIDTH, HEIGHT)
+        map.move_cars()
+        pygame.display.update()
+        clock.tick(FPS)
+test(generate_crossroad(WIDTH, HEIGHT))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # def generate_roundabout(WIDTH, HEIGHT):
 #     roads = []
 #     #Vertical
@@ -143,27 +202,3 @@ def test_map(WIDTH, HEIGHT):
 #     roads.append(Road((8/13*WIDTH, HEIGHT*10/13),(WIDTH*10/13, HEIGHT*8/13), "arc", "left"))
 #     roads.append(Road((WIDTH*10/13, HEIGHT*5/13),(8/13*WIDTH, HEIGHT*3/13), "arc", "left"))
 #     return Map(roads)   
-
-
- 
-def test(map):    
-    win = pygame.display.set_mode((WIDTH, HEIGHT))
-    clock=pygame.time.Clock()
-    i=0
-    while(True):
-        rect = pygame.Rect(0,0,WIDTH, HEIGHT)
-        pygame.draw.rect(win,"Black", rect)
-        i+=1
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()    
-        map.show_paths(win)
-        map.show_vehicles(win)
-        
-        if i%FPS == 0:
-            map.spawn_car(WIDTH, HEIGHT)
-        map.move_cars()
-        pygame.display.update()
-        clock.tick(FPS)
-test(test_map(WIDTH, HEIGHT))

@@ -4,6 +4,7 @@ from Node import Node
 
 ROAD_COLOR = "Red"
 NODE_COLOR = "Yellow"
+eps = 10**(-5)
 
 class Road:
     def __init__(self, start_node, end_node, type, curve = None):
@@ -77,6 +78,9 @@ class Road:
     def calculate_car_next_pos(self, car, dist = None):
         if dist == None:
             dist = car.velocity
+        elif self.type == "straight":
+            if self.direction[0]==0: car.angle =90*(-self.direction[1]+1)
+            else: car.angle =180 + 90*(-self.direction[0])
             
         if self.type != "arc":
             pos = car.rect.center
@@ -93,6 +97,24 @@ class Road:
                 else:
                     del car  
             else:
+                car.rect = car.img.get_rect(center=new_pos)
+        else:
+            angle = dist/2/np.pi/self.radius*360
+            new_angle = car.angle + angle*(int(self.curve=="right")-1/2)*2
+            pos = car.rect.center
+            new_pos = (self.radius*np.cos((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[0],self.radius*np.sin((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[1])
+            if np.abs(new_angle)%90 < np.abs(angle) - eps:
+                next_road = self.get_next_road()
+                self.cars.remove(car)
+                if next_road!=None:
+                    car.rect = car.img.get_rect(center=next_road.start_point) 
+                    next_road.cars.append(car)
+                    next_road.calculate_car_next_pos(car, 3)
+                else:
+                    del car  
+            else:
+                car.angle = new_angle
+                car.visable_angle -= angle*(int(self.curve=="right")-1/2)*2
                 car.rect = car.img.get_rect(center=new_pos)
 
 def test():

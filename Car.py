@@ -6,10 +6,11 @@ class Car:
         self.img = pygame.transform.scale(pygame.image.load(r"C:\Users\Maciek\Documents\Studia\semestr 7\Crossroad_simulation\car_red.png").convert_alpha(),(WIDTH/60,HEIGHT/20))
         self.rect = self.img.get_rect(center=position)
         self.angle = angle
+        self.visable_angle = angle
         self.velocity = 3
         
     def draw(self, win):
-        rotated_img = pygame.transform.rotate(self.img, self.angle)  
+        rotated_img = pygame.transform.rotate(self.img, self.visable_angle)  
         self.rect  = rotated_img.get_rect(center = self.img.get_rect(topleft = self.rect.topleft).center)
         win.blit(rotated_img, self.rect)
 
@@ -29,4 +30,4 @@ def test():  #rotation around the center of vehicle
         car.draw(win)
         pygame.display.update()
         clock.tick(60)
-test()
+#test()
