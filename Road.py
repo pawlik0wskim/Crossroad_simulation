@@ -1,14 +1,18 @@
 import pygame
 import numpy as np
+from Node import Node
 
 ROAD_COLOR = "Red"
 NODE_COLOR = "Yellow"
 
 class Road:
-    def __init__(self, start_point, end_point, type, curve = None):
-        self.start_point = start_point
-        self.end_point = end_point
-        
+    def __init__(self, start_node, end_node, type, curve = None):
+        self.start_node = start_node
+        self.end_node = end_node
+        self.start_point = start_node.pos
+        self.end_point = end_node.pos
+        start_node.exiting_roads.append(self)
+        end_node.entering_roads.append(self)
         if type not in ["arc", "straight"]: #two lines of code that will help with possible missspells during development 
             print("Road can only be an arc or a straight line")
             return None
@@ -24,6 +28,8 @@ class Road:
         self.curve = curve
         self.center = self.calculate_center() if self.type == "arc" else None
         self.radius = np.abs(self.start_point[1] - self.end_point[1]) if self.type == "arc" else None
+        self.direction = (np.sign(self.start_point[0]-self.end_point[0]),np.sign(self.start_point[1]-self.end_point[1]))
+        self.cars = []
         
     #calculates center of an arc road
     def calculate_center(self):
@@ -61,48 +67,75 @@ class Road:
             pygame.draw.line(win, ROAD_COLOR, self.start_point, self.end_point)
         pygame.draw.circle(win, NODE_COLOR, self.start_point,3)
         pygame.draw.circle(win, NODE_COLOR, self.end_point,3)
+
+
+    def get_next_road(self):
+        if len(self.end_node.exiting_roads)==0: return None
+        next_road = self.end_node.exiting_roads[np.random.randint(0,len(self.end_node.exiting_roads))]
+        return next_road           
+
+    def calculate_car_next_pos(self, car, dist = None):
+        if dist == None:
+            dist = car.velocity
             
-            
+        if self.type != "arc":
+            pos = car.rect.center
+            new_pos = (pos[0]-car.velocity*self.direction[0],pos[1]-car.velocity*self.direction[1])
+            dist_from_start = (np.abs((new_pos[0]-self.start_point[0])*self.direction[0]),np.abs((new_pos[1]-self.start_point[1])*self.direction[1]))
+            length = (np.abs(self.start_point[0]-self.end_point[0]),np.abs(self.start_point[1]-self.end_point[1]))
+            if dist_from_start[0] > length[0] or dist_from_start[1] > length[1]:
+                next_road = self.get_next_road()
+                self.cars.remove(car)
+                if next_road!=None:
+                    car.rect = car.img.get_rect(center=next_road.start_point) 
+                    next_road.cars.append(car)
+                    next_road.calculate_car_next_pos(car, dist_from_start[0] - length[0] + dist_from_start[1] - length[1])
+                else:
+                    del car  
+            else:
+                car.rect = car.img.get_rect(center=new_pos)
+
 def test():
     win = pygame.display.set_mode((400, 400))
     clock=pygame.time.Clock()
     while(True):
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
         #right turn test
-        test_road = Road((30,30),(0,0), "arc", "right")
+        test_road = Road(Node((30,30)),Node((0,0)), "arc", "right")
         test_road.draw_path(win)
-        test_road2 = Road((30,30),(60,0), "arc", "right")
+        test_road2 = Road(Node((30,30)),Node((60,0)), "arc", "right")
         test_road2.draw_path(win)
-        test_road3 = Road((30,30),(60,60), "arc", "right")
+        test_road3 = Road(Node((30,30)),Node((60,60)), "arc", "right")
         test_road3.draw_path(win)
-        test_road4 = Road((30,30),(0,60), "arc", "right")
+        test_road4 = Road(Node((30,30)),Node((0,60)), "arc", "right")
         test_road4.draw_path(win)
         #left turn test
-        test_road5 = Road((130,130),(100,100), "arc", "left")
+        test_road5 = Road(Node((130,130)),Node((100,100)), "arc", "left")
         test_road5.draw_path(win)
-        test_road6 = Road((130,130),(160,100), "arc", "left")
+        test_road6 = Road(Node((130,130)),Node((160,100)), "arc", "left")
         test_road6.draw_path(win)
-        test_road7 = Road((130,130),(160,160), "arc", "left")
+        test_road7 = Road(Node((130,130)),Node((160,160)), "arc", "left")
         test_road7.draw_path(win)
-        test_road8 = Road((130,130),(100,160), "arc", "left")
+        test_road8 = Road(Node((130,130)),Node((100,160)), "arc", "left")
         test_road8.draw_path(win)
         #radius test
-        test_road6 = Road((230,230),(200,200), "arc", "left")
+        test_road6 = Road(Node((230,230)),Node((200,200)), "arc", "left")
         test_road6.draw_path(win)
-        test_road7 = Road((230,230),(210,210), "arc", "left")
+        test_road7 = Road(Node((230,230)),Node((210,210)), "arc", "left")
         test_road7.draw_path(win)
-        test_road8 = Road((230,230),(220,220), "arc", "left")
+        test_road8 = Road(Node((230,230)),Node((220,220)), "arc", "left")
         test_road8.draw_path(win)
         #straight road
-        test_road6 = Road((330,230),(300,200), "straight")
+        test_road6 = Road(Node((330,230)),Node((300,200)), "straight")
         test_road6.draw_path(win)
-        test_road7 = Road((330,230),(330,210), "straight")
+        test_road7 = Road(Node((330,230)),Node((330,210)), "straight")
         test_road7.draw_path(win)
-        test_road8 = Road((330,200),(360,200), "straight")
+        test_road8 = Road(Node((330,200)),Node((360,200)), "straight")
         test_road8.draw_path(win)
         pygame.display.update()
         clock.tick(60)
-test()
+#test()
