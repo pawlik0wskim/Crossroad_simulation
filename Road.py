@@ -79,12 +79,21 @@ class Road:
         if dist == None:
             dist = car.velocity
         elif self.type == "straight":
-            if self.direction[0]==0: car.angle =90*(-self.direction[1]+1)
-            else: car.angle =180 + 90*(-self.direction[0])
+            if self.direction[0]==0:
+                car.angle =90*(-self.direction[1]+1)
+            else: 
+                car.angle =180 + 90*(-self.direction[0])
+            car.visable_angle = car.angle
             
         if self.type != "arc":
             pos = car.rect.center
-            new_pos = (pos[0]-car.velocity*self.direction[0],pos[1]-car.velocity*self.direction[1])
+            
+            if self.direction[0]==0: 
+                new_pos = (self.end_point[0],pos[1]-car.velocity*self.direction[1])
+            elif self.direction[1]==0:
+                new_pos = (pos[0]-car.velocity*self.direction[0],self.end_point[1])
+            else:
+                new_pos = (pos[0]-car.velocity*self.direction[0],pos[1]-car.velocity*self.direction[1])
             dist_from_start = (np.abs((new_pos[0]-self.start_point[0])*self.direction[0]),np.abs((new_pos[1]-self.start_point[1])*self.direction[1]))
             length = (np.abs(self.start_point[0]-self.end_point[0]),np.abs(self.start_point[1]-self.end_point[1]))
             if dist_from_start[0] > length[0] or dist_from_start[1] > length[1]:
@@ -109,7 +118,8 @@ class Road:
                 if next_road!=None:
                     car.rect = car.img.get_rect(center=next_road.start_point) 
                     next_road.cars.append(car)
-                    next_road.calculate_car_next_pos(car, 3)
+                    remaining_distance = np.abs(new_angle)%90/180*np.pi*self.radius
+                    next_road.calculate_car_next_pos(car, remaining_distance)
                 else:
                     del car  
             else:

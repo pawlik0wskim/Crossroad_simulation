@@ -34,7 +34,7 @@ class Map:
             angle = 90
         else:
             angle = 270
-        node.exiting_roads[0].cars.append(Car(node.pos, angle))
+        node.exiting_roads[0].cars.append(Car(node.pos, angle, WIDTH, HEIGHT))
 
     def move_cars(self):
         for road in self.roads:
