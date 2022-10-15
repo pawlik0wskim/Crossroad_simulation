@@ -8,9 +8,10 @@ FPS = 60
 
 class Map:
     def __init__(self, roads, nodes, starting_nodes):
-        self.roads=roads
+        self.roads = roads
         self.nodes = nodes
         self.starting_nodes = starting_nodes
+        self.cars = []
 
     # Draws all paths cars travel along 
     def show_paths(self, win):
@@ -26,15 +27,17 @@ class Map:
     #Adds car on random spawning position        
     def spawn_car(self, WIDTH, HEIGHT):
         node = self.starting_nodes[np.random.randint(0, len(self.starting_nodes))]
-        if node.pos[1]==0:
+        if node.pos[1] == 0:
             angle = 180
-        elif node.pos[1]==HEIGHT:
+        elif node.pos[1] == HEIGHT:
             angle = 0
-        elif node.pos[0]==WIDTH:
+        elif node.pos[0] == WIDTH:
             angle = 90
         else:
             angle = 270
-        node.exiting_roads[0].cars.append(Car(node.pos, angle, WIDTH, HEIGHT))
+        car = Car(node.pos, angle, WIDTH, HEIGHT)
+        node.exiting_roads[0].cars.append(car)
+        self.cars.append(car)
 
     def move_cars(self):
         for road in self.roads:
@@ -69,31 +72,31 @@ def generate_crossroad(WIDTH, HEIGHT):
 
     roads = []
     #Vertical
-    roads.append(Road(node1, node3, "straight"))#top
-    roads.append(Road(node4, node2, "straight"))
-    roads.append(Road(node5, node7, "straight"))#bottom
-    roads.append(Road(node8, node6, "straight"))
+    roads.append(Road(node1, node3, "straight", road_direction = "vertical_down"))#top
+    roads.append(Road(node4, node2, "straight", road_direction = "vertical_up"))
+    roads.append(Road(node5, node7, "straight", road_direction = "vertical_down"))#bottom
+    roads.append(Road(node8, node6, "straight", road_direction = "vertical_up"))
     #Horrizontal
-    roads.append(Road(node11, node15, "straight"))#left
-    roads.append(Road(node16, node12, "straight"))
-    roads.append(Road(node13, node9, "straight"))#right
-    roads.append(Road(node10, node14, "straight"))
+    roads.append(Road(node11, node15, "straight", road_direction = "horizontal_left"))#left
+    roads.append(Road(node16, node12, "straight", road_direction="horizontal_right"))
+    roads.append(Road(node13, node9, "straight", road_direction = "horizontal_left"))#right
+    roads.append(Road(node10, node14, "straight", road_direction="horizontal_right"))
     #Bottom turns
     roads.append(Road(node6,node10, type = "arc", curve = "right"))
     roads.append(Road(node6,node11, type = "arc", curve = "left"))
-    roads.append(Road(node6,node4, "straight"))
+    roads.append(Road(node6,node4, "straight", road_direction = "vertical_up"))
     #Left turns
     roads.append(Road(node12,node5, type = "arc", curve = "right"))
-    roads.append(Road(node12,node4, type = "arc", curve = "left"))
-    roads.append(Road(node12,node10, "straight"))
+    roads.append(Road(node12,node4, type = "arc", curve = "left", road_direction="horizontal_turn_left"))
+    roads.append(Road(node12,node10, "straight", road_direction="horizontal_right"))
     #Top turns
     roads.append(Road(node3,node11, type = "arc", curve = "right"))
     roads.append(Road(node3,node10, type = "arc", curve = "left"))
-    roads.append(Road(node3,node5, "straight"))
+    roads.append(Road(node3,node5, "straight", road_direction = "vertical_down"))
     #Right turns
     roads.append(Road(node9,node4, type = "arc", curve = "right"))
     roads.append(Road(node9,node5, type = "arc", curve = "left"))
-    roads.append(Road(node9,node11, "straight"))
+    roads.append(Road(node9,node11, "straight", road_direction = "horizontal_left"))
     return Map(roads, nodes, [node1, node8, node13, node16])
 
 
@@ -147,7 +150,11 @@ def test(map):
         map.show_vehicles(win)
         
         if i%FPS == 0:
+        # if i == 10:
             map.spawn_car(WIDTH, HEIGHT)
+        for k in range(len(map.cars)):
+            # pygame.draw.rect(win, [255, 255, 255], map.cars[k].rect)
+            pygame.draw.rect(win, [255, 0, 0], map.cars[k].vision)
         map.move_cars()
         pygame.display.update()
         clock.tick(FPS)
