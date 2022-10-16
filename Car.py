@@ -13,15 +13,21 @@ class Car:
     def update_vision(self, road_direction):
         x, y = self.rect.center[0], self.rect.center[1]
         if road_direction == "horizontal_right":
-            self.vision = pygame.Rect(x + WIDTH//33, y - HEIGHT//80, WIDTH//8, HEIGHT//40)
-        elif road_direction == "horizontal_turn_left":
-            self.vision = pygame.Rect(x - WIDTH//80, y - HEIGHT//11, WIDTH//10, HEIGHT//10)
+            self.vision = pygame.Rect(x + WIDTH//33, y - HEIGHT//20, WIDTH//5, HEIGHT//10)
         elif road_direction == "vertical_down":
-            self.vision = pygame.Rect(x - WIDTH//80, y + HEIGHT//30, WIDTH//40, HEIGHT//8)
+            self.vision = pygame.Rect(x - WIDTH//20, y + HEIGHT//30, WIDTH//10, HEIGHT//5)
         elif road_direction == "vertical_up":
-            self.vision = pygame.Rect(x - WIDTH//80, y - HEIGHT//7, WIDTH//40, HEIGHT//8)
+            self.vision = pygame.Rect(x - WIDTH//20, y - HEIGHT//5, WIDTH//10, HEIGHT//5)
         elif road_direction == "horizontal_left":
-            self.vision = pygame.Rect(x - WIDTH//7, y - HEIGHT//80, WIDTH//8, HEIGHT//40)
+            self.vision = pygame.Rect(x - WIDTH//5, y - HEIGHT//20, WIDTH//5, HEIGHT//10)
+        elif road_direction == "vertical_down_left":
+            self.vision = pygame.Rect(x + WIDTH//80, y + HEIGHT//30, WIDTH//10, HEIGHT//10)
+        elif road_direction == "vertical_up_left":
+            self.vision = pygame.Rect(x - WIDTH//10, y - HEIGHT//10, WIDTH//10, HEIGHT//10)
+        elif road_direction == "horizontal_left_left":
+            self.vision = pygame.Rect(x - WIDTH//10, y + HEIGHT//30, WIDTH//10, HEIGHT//10)
+        elif road_direction == "horizontal_right_left":
+            self.vision = pygame.Rect(x - WIDTH//80, y - HEIGHT//11, WIDTH//10, HEIGHT//10)
         else:
             self.vision = pygame.Rect(x, y, 10, 10)
         

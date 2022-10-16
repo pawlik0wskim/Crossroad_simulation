@@ -83,19 +83,19 @@ def generate_crossroad(WIDTH, HEIGHT):
     roads.append(Road(node10, node14, "straight", road_direction="horizontal_right"))
     #Bottom turns
     roads.append(Road(node6,node10, type = "arc", curve = "right"))
-    roads.append(Road(node6,node11, type = "arc", curve = "left"))
+    roads.append(Road(node6,node11, type = "arc", curve = "left", road_direction = "vertical_up_left"))
     roads.append(Road(node6,node4, "straight", road_direction = "vertical_up"))
     #Left turns
     roads.append(Road(node12,node5, type = "arc", curve = "right"))
-    roads.append(Road(node12,node4, type = "arc", curve = "left", road_direction="horizontal_turn_left"))
+    roads.append(Road(node12,node4, type = "arc", curve = "left", road_direction="horizontal_right_left"))
     roads.append(Road(node12,node10, "straight", road_direction="horizontal_right"))
     #Top turns
     roads.append(Road(node3,node11, type = "arc", curve = "right"))
-    roads.append(Road(node3,node10, type = "arc", curve = "left"))
+    roads.append(Road(node3,node10, type = "arc", curve = "left", road_direction = "vertical_down_left"))
     roads.append(Road(node3,node5, "straight", road_direction = "vertical_down"))
     #Right turns
     roads.append(Road(node9,node4, type = "arc", curve = "right"))
-    roads.append(Road(node9,node5, type = "arc", curve = "left"))
+    roads.append(Road(node9,node5, type = "arc", curve = "left", road_direction = "horizontal_left_left"))
     roads.append(Road(node9,node11, "straight", road_direction = "horizontal_left"))
     return Map(roads, nodes, [node1, node8, node13, node16])
 
