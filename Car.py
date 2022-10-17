@@ -9,7 +9,9 @@ class Car:
         self.visible_angle = angle
         self.velocity = 3
         self.vision = pygame.Rect(self.rect.center[0], self.rect.center[1], 10, 10)
+        self.dist_to_nearest_car = np.Inf
     
+    # updates placement of vision area depending on road of the car
     def update_vision(self, direction_type):
         x, y = self.rect.center[0], self.rect.center[1]
         if direction_type == "horizontal_right":

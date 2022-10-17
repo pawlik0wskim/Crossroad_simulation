@@ -42,6 +42,22 @@ class Map:
             for car in road.cars:
                 road.calculate_car_next_pos(car)
     
+    def find_dist_to_nearest_car(self, car):
+        min_dist = np.Inf
+        this_car_center = car.rect.center
+        for road in self.roads:
+            collide_idxs = car.vision.collidelistall(road.cars)
+            for idx in collide_idxs:
+                other_car_center = road.cars[idx].rect.center
+                dist = (this_car_center[1] - other_car_center[0])**2 + (this_car_center[1] - other_car_center[1])**2
+                if dist < min_dist:
+                    min_dist = dist
+        return min_dist
+            
+
+
+
+    
 
 
 
@@ -153,12 +169,14 @@ def test(map):
         
         for road in map.roads:
             for car in road.cars:
-                pygame.draw.rect(win, [255, 255, 255], car.rect)
+                # pygame.draw.rect(win, [255, 255, 255], car.rect)
                 if road.direction_type is not None:
                     if "left_left" in road.direction_type or "left_right" in road.direction_type or "right_left" in road.direction_type or "right_right" in road.direction_type:
                         pygame.draw.rect(win, [255, 0, 0], car.vision)
                     elif "up_left" in road.direction_type or "down_right" in road.direction_type or "up_right" in road.direction_type or "down_left" in road.direction_type:
                         pygame.draw.rect(win, [255, 0, 0], car.vision)
+                # pygame.draw.rect(win, [255, 0, 0], car.vision)
+                car.dist_to_nearest_car = map.find_dist_to_nearest_car(car)
 
         map.move_cars()
         pygame.display.update()

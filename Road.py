@@ -88,13 +88,14 @@ class Road:
             
         if self.type != "arc":
             pos = car.rect.center
-            
+            velocity = car.velocity*(1 - np.exp(-car.dist_to_nearest_car/10000))
             if self.direction[0]==0: 
-                new_pos = (self.end_point[0],pos[1]-car.velocity*self.direction[1])
+                new_pos = (self.end_point[0],pos[1]-velocity*self.direction[1])
             elif self.direction[1]==0:
-                new_pos = (pos[0]-car.velocity*self.direction[0],self.end_point[1])
+                new_pos = (pos[0]-velocity*self.direction[0],self.end_point[1])
             else:
-                new_pos = (pos[0]-car.velocity*self.direction[0],pos[1]-car.velocity*self.direction[1])
+                new_pos = (pos[0]-velocity*self.direction[0],pos[1]-velocity*self.direction[1])
+
             dist_from_start = (np.abs((new_pos[0]-self.start_point[0])*self.direction[0]),np.abs((new_pos[1]-self.start_point[1])*self.direction[1]))
             length = (np.abs(self.start_point[0]-self.end_point[0]),np.abs(self.start_point[1]-self.end_point[1]))
             if dist_from_start[0] > length[0] or dist_from_start[1] > length[1]:
@@ -111,6 +112,7 @@ class Road:
                 car.rect = car.img.get_rect(center=new_pos)
                 car.update_vision(self.direction_type)
         else:
+            dist = car.velocity*(1 - np.exp(-car.dist_to_nearest_car/100000))
             angle = dist/2/np.pi/self.radius*360
             new_angle = car.angle + angle*(int(self.curve=="right")-1/2)*2
             pos = car.rect.center
