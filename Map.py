@@ -4,7 +4,7 @@ import numpy as np
 from Car import Car
 from Node import Node
 
-FPS = 60
+FPS = 90
 
 class Map:
     def __init__(self, roads, nodes, starting_nodes):
@@ -94,7 +94,59 @@ def generate_crossroad(WIDTH, HEIGHT):
     roads.append(Road(node9,node4, type = "arc", curve = "right"))
     roads.append(Road(node9,node5, type = "arc", curve = "left"))
     roads.append(Road(node9,node11, "straight"))
-    return Map(roads, nodes, [node1, node8, node13, node16])
+    return Map(roads, nodes, [ node1, node8, node13, node16]) 
+
+
+def generate_crossroad2(WIDTH, HEIGHT):
+    #nodes
+    node1 = Node((11/24*WIDTH, 0))
+    node2 = Node((13/24*WIDTH, 0))
+    node3 = Node((11/24*WIDTH, HEIGHT/3))
+    node4 = Node((13/24*WIDTH, 1/3*HEIGHT))
+    node5 = Node((11/24*WIDTH, 2/3*HEIGHT))
+    node6 = Node((13/24*WIDTH, 2/3*HEIGHT))
+    node7 = Node((11/24*WIDTH, HEIGHT))
+    node8 = Node((13/24*WIDTH, HEIGHT))
+    node9 = Node((2*WIDTH/3, HEIGHT*11/24))
+    node10 = Node((WIDTH*2/3, HEIGHT*13/24))
+    node11 = Node((WIDTH/3, HEIGHT*11/24))
+    node12 = Node((WIDTH/3, HEIGHT*13/24))
+    node13 = Node((WIDTH, HEIGHT*11/24))
+    node14 = Node((WIDTH, HEIGHT*13/24))
+    node15 = Node((0, HEIGHT*11/24))
+    node16 = Node((0, HEIGHT*13/24))
+    
+    nodes = [node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15, node16]
+    
+
+    roads = []
+    #Vertical
+    roads.append(Road(node1, node3, "straight"))#top
+    roads.append(Road(node4, node2, "straight"))
+    roads.append(Road(node5, node7, "straight"))#bottom
+    roads.append(Road(node8, node6, "straight"))
+    #Horrizontal
+    roads.append(Road(node11, node15, "straight"))#left
+    roads.append(Road(node16, node12, "straight"))
+    roads.append(Road(node13, node9, "straight"))#right
+    roads.append(Road(node10, node14, "straight"))
+    #Bottom turns
+    roads.append(Road(node6,node10, type = "arc", curve = "right"))
+    roads.append(Road(node6,node11, type = "arc", curve = "left"))
+    roads.append(Road(node6,node4, "straight"))
+    #Left turns
+    roads.append(Road(node12,node5, type = "arc", curve = "right"))
+    roads.append(Road(node12,node4, type = "arc", curve = "left"))
+    roads.append(Road(node12,node10, "straight"))
+    #Top turns
+    roads.append(Road(node3,node11, type = "arc", curve = "right"))
+    roads.append(Road(node3,node10, type = "arc", curve = "left"))
+    roads.append(Road(node3,node5, "straight"))
+    #Right turns
+    roads.append(Road(node9,node4, type = "arc", curve = "right"))
+    roads.append(Road(node9,node5, type = "arc", curve = "left"))
+    roads.append(Road(node9,node11, "straight"))
+    return Map(roads, nodes, [ node1, node8, node13, node16]) 
 
 
 
@@ -134,24 +186,26 @@ def test_map(WIDTH, HEIGHT):
 def test(map):    
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     clock=pygame.time.Clock()
+    
+    map_img = pygame.transform.scale(pygame.image.load(r"C:\Users\Maciek\Documents\Studia\semestr 7\Crossroad_simulation\map_crossroad.png"),(WIDTH,HEIGHT))
+    map_rect = map_img.get_rect(topleft = (0,0))
     i=0
     while(True):
-        rect = pygame.Rect(0,0,WIDTH, HEIGHT)
-        pygame.draw.rect(win,"Black", rect)
+        win.blit(map_img, map_rect)
         i+=1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()    
-        map.show_paths(win)
+        #map.show_paths(win)
         map.show_vehicles(win)
         
-        if i%FPS == 0:
+        if i%(FPS/2) == 1:
             map.spawn_car(WIDTH, HEIGHT)
         map.move_cars()
         pygame.display.update()
         clock.tick(FPS)
-test(generate_crossroad(WIDTH, HEIGHT))
+test(generate_crossroad2(WIDTH, HEIGHT))
 
 
 

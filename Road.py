@@ -88,9 +88,9 @@ class Road:
         if self.type != "arc":
             pos = car.rect.center
             
-            if self.direction[0]==0: 
+            if np.abs(self.end_point[0]-self.start_point[0])<eps: 
                 new_pos = (self.end_point[0],pos[1]-car.velocity*self.direction[1])
-            elif self.direction[1]==0:
+            elif np.abs(self.end_point[1]-self.start_point[1])<eps:
                 new_pos = (pos[0]-car.velocity*self.direction[0],self.end_point[1])
             else:
                 new_pos = (pos[0]-car.velocity*self.direction[0],pos[1]-car.velocity*self.direction[1])
