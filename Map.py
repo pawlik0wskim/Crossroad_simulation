@@ -11,7 +11,6 @@ class Map:
         self.roads = roads
         self.nodes = nodes
         self.starting_nodes = starting_nodes
-        self.cars = []
 
     # Draws all paths cars travel along 
     def show_paths(self, win):
@@ -37,7 +36,6 @@ class Map:
             angle = 270
         car = Car(node.pos, angle, WIDTH, HEIGHT)
         node.exiting_roads[0].cars.append(car)
-        self.cars.append(car)
 
     def move_cars(self):
         for road in self.roads:
@@ -72,31 +70,31 @@ def generate_crossroad(WIDTH, HEIGHT):
 
     roads = []
     #Vertical
-    roads.append(Road(node1, node3, "straight", road_direction = "vertical_down"))#top
-    roads.append(Road(node4, node2, "straight", road_direction = "vertical_up"))
-    roads.append(Road(node5, node7, "straight", road_direction = "vertical_down"))#bottom
-    roads.append(Road(node8, node6, "straight", road_direction = "vertical_up"))
+    roads.append(Road(node1, node3, "straight", direction_type="vertical_down"))#top
+    roads.append(Road(node4, node2, "straight", direction_type="vertical_up"))
+    roads.append(Road(node5, node7, "straight", direction_type="vertical_down"))#bottom
+    roads.append(Road(node8, node6, "straight", direction_type="vertical_up"))
     #Horrizontal
-    roads.append(Road(node11, node15, "straight", road_direction = "horizontal_left"))#left
-    roads.append(Road(node16, node12, "straight", road_direction="horizontal_right"))
-    roads.append(Road(node13, node9, "straight", road_direction = "horizontal_left"))#right
-    roads.append(Road(node10, node14, "straight", road_direction="horizontal_right"))
+    roads.append(Road(node11, node15, "straight", direction_type="horizontal_left"))#left
+    roads.append(Road(node16, node12, "straight", direction_type="horizontal_right"))
+    roads.append(Road(node13, node9, "straight", direction_type="horizontal_left"))#right
+    roads.append(Road(node10, node14, "straight", direction_type="horizontal_right"))
     #Bottom turns
     roads.append(Road(node6,node10, type = "arc", curve = "right"))
-    roads.append(Road(node6,node11, type = "arc", curve = "left", road_direction = "vertical_up_left"))
-    roads.append(Road(node6,node4, "straight", road_direction = "vertical_up"))
+    roads.append(Road(node6,node11, type = "arc", curve = "left", direction_type = "vertical_up_left"))
+    roads.append(Road(node6,node4, "straight", direction_type = "vertical_up"))
     #Left turns
-    roads.append(Road(node12,node5, type = "arc", curve = "right"))
-    roads.append(Road(node12,node4, type = "arc", curve = "left", road_direction="horizontal_right_left"))
-    roads.append(Road(node12,node10, "straight", road_direction="horizontal_right"))
+    roads.append(Road(node12,node5, type = "arc", curve = "right", direction_type="horizontal_right_right"))
+    roads.append(Road(node12,node4, type = "arc", curve = "left", direction_type="horizontal_right_left"))
+    roads.append(Road(node12,node10, "straight", direction_type="horizontal_right"))
     #Top turns
     roads.append(Road(node3,node11, type = "arc", curve = "right"))
-    roads.append(Road(node3,node10, type = "arc", curve = "left", road_direction = "vertical_down_left"))
-    roads.append(Road(node3,node5, "straight", road_direction = "vertical_down"))
+    roads.append(Road(node3,node10, type = "arc", curve = "left", direction_type = "vertical_down_left"))
+    roads.append(Road(node3,node5, "straight", direction_type = "vertical_down"))
     #Right turns
     roads.append(Road(node9,node4, type = "arc", curve = "right"))
-    roads.append(Road(node9,node5, type = "arc", curve = "left", road_direction = "horizontal_left_left"))
-    roads.append(Road(node9,node11, "straight", road_direction = "horizontal_left"))
+    roads.append(Road(node9,node5, type = "arc", curve = "left", direction_type = "horizontal_left_left"))
+    roads.append(Road(node9,node11, "straight", direction_type = "horizontal_left"))
     return Map(roads, nodes, [node1, node8, node13, node16])
 
 
@@ -152,9 +150,16 @@ def test(map):
         if i%FPS == 0:
         # if i == 10:
             map.spawn_car(WIDTH, HEIGHT)
-        for k in range(len(map.cars)):
-            # pygame.draw.rect(win, [255, 255, 255], map.cars[k].rect)
-            pygame.draw.rect(win, [255, 0, 0], map.cars[k].vision)
+        
+        for road in map.roads:
+            for car in road.cars:
+                pygame.draw.rect(win, [255, 255, 255], car.rect)
+                if road.direction_type is not None:
+                    if "left_left" in road.direction_type or "left_right" in road.direction_type or "right_left" in road.direction_type or "right_right" in road.direction_type:
+                        pygame.draw.rect(win, [255, 0, 0], car.vision)
+                    elif "up_left" in road.direction_type or "down_right" in road.direction_type or "up_right" in road.direction_type or "down_left" in road.direction_type:
+                        pygame.draw.rect(win, [255, 0, 0], car.vision)
+
         map.move_cars()
         pygame.display.update()
         clock.tick(FPS)

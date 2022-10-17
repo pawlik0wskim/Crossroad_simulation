@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-WIDTH, HEIGHT = 800, 800 
+WIDTH, HEIGHT = 1000, 1000 
 class Car:
     def __init__(self, position, angle, WIDTH, HEIGHT):
         self.img = pygame.transform.scale(pygame.image.load(r"car_red.png").convert_alpha(),(WIDTH//70,HEIGHT//25))
@@ -10,24 +10,26 @@ class Car:
         self.velocity = 3
         self.vision = pygame.Rect(self.rect.center[0], self.rect.center[1], 10, 10)
     
-    def update_vision(self, road_direction):
+    def update_vision(self, direction_type):
         x, y = self.rect.center[0], self.rect.center[1]
-        if road_direction == "horizontal_right":
-            self.vision = pygame.Rect(x + WIDTH//33, y - HEIGHT//20, WIDTH//5, HEIGHT//10)
-        elif road_direction == "vertical_down":
-            self.vision = pygame.Rect(x - WIDTH//20, y + HEIGHT//30, WIDTH//10, HEIGHT//5)
-        elif road_direction == "vertical_up":
-            self.vision = pygame.Rect(x - WIDTH//20, y - HEIGHT//5, WIDTH//10, HEIGHT//5)
-        elif road_direction == "horizontal_left":
-            self.vision = pygame.Rect(x - WIDTH//5, y - HEIGHT//20, WIDTH//5, HEIGHT//10)
-        elif road_direction == "vertical_down_left":
-            self.vision = pygame.Rect(x + WIDTH//80, y + HEIGHT//30, WIDTH//10, HEIGHT//10)
-        elif road_direction == "vertical_up_left":
-            self.vision = pygame.Rect(x - WIDTH//10, y - HEIGHT//10, WIDTH//10, HEIGHT//10)
-        elif road_direction == "horizontal_left_left":
-            self.vision = pygame.Rect(x - WIDTH//10, y + HEIGHT//30, WIDTH//10, HEIGHT//10)
-        elif road_direction == "horizontal_right_left":
-            self.vision = pygame.Rect(x - WIDTH//80, y - HEIGHT//11, WIDTH//10, HEIGHT//10)
+        if direction_type == "horizontal_right":
+            self.vision = pygame.Rect(x + WIDTH//25, y - HEIGHT//6, WIDTH//2, HEIGHT//3)
+        elif direction_type == "vertical_down":
+            self.vision = pygame.Rect(x - WIDTH//6, y + HEIGHT//30, WIDTH//3, HEIGHT//2)
+        elif direction_type == "vertical_up":
+            self.vision = pygame.Rect(x - WIDTH//6, y - HEIGHT//2.7, WIDTH//3, HEIGHT//3)
+        elif direction_type == "horizontal_left":
+            self.vision = pygame.Rect(x - WIDTH//3, y - HEIGHT//10, WIDTH//3.3, HEIGHT//3.5)
+        elif direction_type == "vertical_down_left":
+            self.vision = pygame.Rect(x + WIDTH//80, y + HEIGHT//30, WIDTH//8, HEIGHT//10)
+        elif direction_type == "vertical_up_left":
+            self.vision = pygame.Rect(x - WIDTH//8, y - HEIGHT//10, WIDTH//10, HEIGHT//8)
+        elif direction_type == "horizontal_left_left":
+            self.vision = pygame.Rect(x - WIDTH//8, y + HEIGHT//30, WIDTH//8, HEIGHT//10)
+        elif direction_type == "horizontal_right_left":
+            self.vision = pygame.Rect(x - WIDTH//80, y - HEIGHT//8, WIDTH//8, HEIGHT//10)
+        elif direction_type == "horizontal_right_right":
+            self.vision = pygame.Rect(x + WIDTH//100, y - HEIGHT//8, WIDTH//10, HEIGHT//10)
         else:
             self.vision = pygame.Rect(x, y, 10, 10)
         
