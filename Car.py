@@ -12,28 +12,45 @@ class Car:
         self.dist_to_nearest_car = np.Inf
     
     # updates placement of vision area depending on road of the car
-    def update_vision(self, direction_type):
+    def update_vision(self, direction, type, curve):
         x, y = self.rect.center[0], self.rect.center[1]
-        if direction_type == "horizontal_right":
-            self.vision = pygame.Rect(x + WIDTH//25, y - HEIGHT//6, WIDTH//2, HEIGHT//3)
-        elif direction_type == "vertical_down":
-            self.vision = pygame.Rect(x - WIDTH//6, y + HEIGHT//30, WIDTH//3, HEIGHT//2)
-        elif direction_type == "vertical_up":
-            self.vision = pygame.Rect(x - WIDTH//6, y - HEIGHT//2.7, WIDTH//3, HEIGHT//3)
-        elif direction_type == "horizontal_left":
-            self.vision = pygame.Rect(x - WIDTH//3, y - HEIGHT//10, WIDTH//3.3, HEIGHT//3.5)
-        elif direction_type == "vertical_down_left":
-            self.vision = pygame.Rect(x + WIDTH//80, y + HEIGHT//30, WIDTH//8, HEIGHT//10)
-        elif direction_type == "vertical_up_left":
-            self.vision = pygame.Rect(x - WIDTH//8, y - HEIGHT//10, WIDTH//10, HEIGHT//8)
-        elif direction_type == "horizontal_left_left":
-            self.vision = pygame.Rect(x - WIDTH//8, y + HEIGHT//30, WIDTH//8, HEIGHT//10)
-        elif direction_type == "horizontal_right_left":
-            self.vision = pygame.Rect(x - WIDTH//80, y - HEIGHT//8, WIDTH//8, HEIGHT//10)
-        elif direction_type == "horizontal_right_right":
-            self.vision = pygame.Rect(x + WIDTH//100, y - HEIGHT//8, WIDTH//10, HEIGHT//10)
+        # if direction_type == "horizontal_right":
+        #     self.vision = pygame.Rect(x + WIDTH//25, y - HEIGHT//6, WIDTH//2, HEIGHT//3)
+        # elif direction_type == "vertical_down":
+        #     self.vision = pygame.Rect(x - WIDTH//6, y + HEIGHT//30, WIDTH//3, HEIGHT//2)
+        # elif direction_type == "vertical_up":
+        #     self.vision = pygame.Rect(x - WIDTH//6, y - HEIGHT//2.7, WIDTH//3, HEIGHT//3)
+        # elif direction_type == "horizontal_left":
+        #     self.vision = pygame.Rect(x - WIDTH//3, y - HEIGHT//10, WIDTH//3.3, HEIGHT//3.5)
+        # elif direction_type == "vertical_down_left":
+        #     self.vision = pygame.Rect(x + WIDTH//80, y + HEIGHT//30, WIDTH//8, HEIGHT//10)
+        # elif direction_type == "vertical_up_left":
+        #     self.vision = pygame.Rect(x - WIDTH//8, y - HEIGHT//10, WIDTH//10, HEIGHT//8)
+        # elif direction_type == "horizontal_left_left":
+        #     self.vision = pygame.Rect(x - WIDTH//8, y + HEIGHT//30, WIDTH//8, HEIGHT//10)
+        # elif direction_type == "horizontal_right_left":
+        #     self.vision = pygame.Rect(x - WIDTH//80, y - HEIGHT//8, WIDTH//8, HEIGHT//10)
+        # elif direction_type == "horizontal_right_right":
+        #     self.vision = pygame.Rect(x + WIDTH//100, y - HEIGHT//8, WIDTH//10, HEIGHT//10)
+        # else:
+        #     self.vision = pygame.Rect(x, y, 10, 10)
+        if type == "straight":
+            if int(direction[0]) == 1:
+                self.vision = pygame.Rect(x - WIDTH//3, y - HEIGHT//15, WIDTH//3.3, HEIGHT//3.5)
+            elif int(direction[0]) == -1:
+                self.vision = pygame.Rect(x + WIDTH//27, y - HEIGHT//5, WIDTH//4, HEIGHT//3)
+            elif int(direction[1]) == 1:
+                self.vision = pygame.Rect(x - WIDTH//6, y - HEIGHT//2.7, WIDTH//3, HEIGHT//3)
+            else:
+                self.vision = pygame.Rect(x - WIDTH//6, y + HEIGHT//30, WIDTH//3, HEIGHT//2)
         else:
-            self.vision = pygame.Rect(x, y, 10, 10)
+            if curve == "right":
+                if int(direction[0]) == 1:
+                    self.vision = pygame.Rect(x - WIDTH//8, y - HEIGHT//10, WIDTH//10, HEIGHT//8)
+                else:
+                    self.vision = pygame.Rect(x - 10, y - 10, 10, 10)
+            else:
+                self.vision = pygame.Rect(x - 10, y - 10, 10, 10)
         
     def draw(self, win):
         rotated_img = pygame.transform.rotate(self.img, self.visible_angle)  

@@ -86,7 +86,7 @@ def generate_crossroad(WIDTH, HEIGHT):
 
     roads = []
     #Vertical
-    roads.append(Road(node1, node3, "straight", direction_type="vertical_down"))#top
+    roads.append(Road(node1, node3, "straight", direction_type="vertical_down"))#vertical_down
     roads.append(Road(node4, node2, "straight", direction_type="vertical_up"))
     roads.append(Road(node5, node7, "straight", direction_type="vertical_down"))#bottom
     roads.append(Road(node8, node6, "straight", direction_type="vertical_up"))
@@ -169,7 +169,7 @@ def test(map):
         
         for road in map.roads:
             for car in road.cars:
-                # pygame.draw.rect(win, [255, 255, 255], car.rect)
+                pygame.draw.rect(win, [255, 255, 255], car.rect)
                 if road.direction_type is not None:
                     if "left_left" in road.direction_type or "left_right" in road.direction_type or "right_left" in road.direction_type or "right_right" in road.direction_type:
                         pygame.draw.rect(win, [255, 0, 0], car.vision)

@@ -103,16 +103,16 @@ class Road:
                 self.cars.remove(car)
                 if next_road!=None:
                     car.rect = car.img.get_rect(center=next_road.start_point)
-                    car.update_vision(self.direction_type) 
+                    car.update_vision(self.direction, self.type, self.curve) 
                     next_road.cars.append(car)
                     next_road.calculate_car_next_pos(car, dist_from_start[0] - length[0] + dist_from_start[1] - length[1])
                 else:
                     del car  
             else:
                 car.rect = car.img.get_rect(center=new_pos)
-                car.update_vision(self.direction_type)
+                car.update_vision(self.direction, self.type, self.curve)
         else:
-            dist = car.velocity*(1 - np.exp(-car.dist_to_nearest_car/100000))
+            # dist = car.velocity*(1 - np.exp(-car.dist_to_nearest_car/100000))
             angle = dist/2/np.pi/self.radius*360
             new_angle = car.angle + angle*(int(self.curve=="right")-1/2)*2
             pos = car.rect.center
@@ -122,7 +122,7 @@ class Road:
                 self.cars.remove(car)
                 if next_road!=None:
                     car.rect = car.img.get_rect(center=next_road.start_point) 
-                    car.update_vision(self.direction_type)
+                    car.update_vision(self.direction, self.type, self.curve)
                     next_road.cars.append(car)
                     remaining_distance = np.abs(new_angle)%90/180*np.pi*self.radius
                     next_road.calculate_car_next_pos(car, remaining_distance)
@@ -132,7 +132,7 @@ class Road:
                 car.angle = new_angle
                 car.visible_angle -= angle*(int(self.curve=="right")-1/2)*2
                 car.rect = car.img.get_rect(center=new_pos)
-                car.update_vision(self.direction_type)
+                car.update_vision(self.direction, self.type, self.curve)
 
 def test():
     win = pygame.display.set_mode((400, 400))
