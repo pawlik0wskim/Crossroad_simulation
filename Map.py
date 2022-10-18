@@ -4,12 +4,11 @@ import numpy as np
 from Car import Car
 from Node import Node
 
-FPS = 90
+FPS = 30
 
 class Map:
-    def __init__(self, roads, nodes, starting_nodes):
+    def __init__(self, roads, starting_nodes):
         self.roads=roads
-        self.nodes = nodes
         self.starting_nodes = starting_nodes
 
     # Draws all paths cars travel along 
@@ -25,7 +24,18 @@ class Map:
     
     #Adds car on random spawning position        
     def spawn_car(self, WIDTH, HEIGHT):
-        node = self.starting_nodes[np.random.randint(0, len(self.starting_nodes))]
+        rand = np.random.randint(0, len(self.starting_nodes))
+        rand1 = rand+1
+        node = self.starting_nodes[rand]
+        if len(node.exiting_roads[0].cars)>0:
+            previous_car = node.exiting_roads[0].cars[-1].rect # we don't want to spawn one car inside of one another
+            while np.abs(previous_car.center[0]-node.pos[0]+previous_car.center[1]-node.pos[1])<np.max([previous_car.width, previous_car.height]) and rand1!=rand:
+                rand1 = rand1+1 if rand1 < len(self.starting_nodes)-1 else 0
+                node = self.starting_nodes[np.random.randint(0, len(self.starting_nodes))]
+                if len(node.exiting_roads[0].cars)>0:
+                    previous_car = node.exiting_roads[0].cars[-1].rect
+            if rand1==rand:
+                return None
         if node.pos[1]==0:
             angle = 180
         elif node.pos[1]==HEIGHT:
@@ -41,63 +51,25 @@ class Map:
             for car in road.cars:
                 road.calculate_car_next_pos(car)
     
+    #Removes cars that colided ith each other            
+    def check_for_car_collision(self):
+        for road in self.roads:
+            for car in road.cars:
+                for road2 in self.roads:
+                    for car2 in road2.cars:
+                        if car.collide(car2) != None and car in road.cars and car2 in road2.cars and car != car2:
+                            road.cars.remove(car) 
+                            road2.cars.remove(car2)
+                            continue
+        
+    
 
 
 
 WIDTH, HEIGHT = (1000,1000)
+
+
 def generate_crossroad(WIDTH, HEIGHT):
-    #nodes
-    node1 = Node((7/18*WIDTH, 0))
-    node2 = Node((11/18*WIDTH, 0))
-    node3 = Node((7/18*WIDTH, HEIGHT/3))
-    node4 = Node((11/18*WIDTH, 1/3*HEIGHT))
-    node5 = Node((7/18*WIDTH, 2/3*HEIGHT))
-    node6 = Node((11/18*WIDTH, 2/3*HEIGHT))
-    node7 = Node((7/18*WIDTH, HEIGHT))
-    node8 = Node((11/18*WIDTH, HEIGHT))
-    node9 = Node((2*WIDTH/3, HEIGHT*7/18))
-    node10 = Node((WIDTH*2/3, HEIGHT*11/18))
-    node11 = Node((WIDTH/3, HEIGHT*7/18))
-    node12 = Node((WIDTH/3, HEIGHT*11/18))
-    node13 = Node((WIDTH, HEIGHT*7/18))
-    node14 = Node((WIDTH, HEIGHT*11/18))
-    node15 = Node((0, HEIGHT*7/18))
-    node16 = Node((0, HEIGHT*11/18))
-    
-    nodes = [node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15, node16]
-    
-
-    roads = []
-    #Vertical
-    roads.append(Road(node1, node3, "straight"))#top
-    roads.append(Road(node4, node2, "straight"))
-    roads.append(Road(node5, node7, "straight"))#bottom
-    roads.append(Road(node8, node6, "straight"))
-    #Horrizontal
-    roads.append(Road(node11, node15, "straight"))#left
-    roads.append(Road(node16, node12, "straight"))
-    roads.append(Road(node13, node9, "straight"))#right
-    roads.append(Road(node10, node14, "straight"))
-    #Bottom turns
-    roads.append(Road(node6,node10, type = "arc", curve = "right"))
-    roads.append(Road(node6,node11, type = "arc", curve = "left"))
-    roads.append(Road(node6,node4, "straight"))
-    #Left turns
-    roads.append(Road(node12,node5, type = "arc", curve = "right"))
-    roads.append(Road(node12,node4, type = "arc", curve = "left"))
-    roads.append(Road(node12,node10, "straight"))
-    #Top turns
-    roads.append(Road(node3,node11, type = "arc", curve = "right"))
-    roads.append(Road(node3,node10, type = "arc", curve = "left"))
-    roads.append(Road(node3,node5, "straight"))
-    #Right turns
-    roads.append(Road(node9,node4, type = "arc", curve = "right"))
-    roads.append(Road(node9,node5, type = "arc", curve = "left"))
-    roads.append(Road(node9,node11, "straight"))
-    return Map(roads, nodes, [ node1, node8, node13, node16]) 
-
-
-def generate_crossroad2(WIDTH, HEIGHT):
     #nodes
     node1 = Node((11/24*WIDTH, 0))
     node2 = Node((13/24*WIDTH, 0))
@@ -116,7 +88,6 @@ def generate_crossroad2(WIDTH, HEIGHT):
     node15 = Node((0, HEIGHT*11/24))
     node16 = Node((0, HEIGHT*13/24))
     
-    nodes = [node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15, node16]
     
 
     roads = []
@@ -146,7 +117,7 @@ def generate_crossroad2(WIDTH, HEIGHT):
     roads.append(Road(node9,node4, type = "arc", curve = "right"))
     roads.append(Road(node9,node5, type = "arc", curve = "left"))
     roads.append(Road(node9,node11, "straight"))
-    return Map(roads, nodes, [ node1, node8, node13, node16]) 
+    return Map(roads, [ node1, node8, node13, node16]) 
 
 
 
@@ -162,7 +133,6 @@ def test_map(WIDTH, HEIGHT):
     node6 = Node((11/18*WIDTH, 2/3*HEIGHT))
     node7 = Node((7/18*WIDTH, HEIGHT))
     node8 = Node((11/18*WIDTH, HEIGHT))
-    nodes = [node1, node2, node3, node4, node5, node6, node7, node8]
     
     
     roads = []
@@ -178,7 +148,7 @@ def test_map(WIDTH, HEIGHT):
 
     
 
-    return Map(roads, nodes, [node1, node8])
+    return Map(roads, [node1, node8])
   
 
 
@@ -192,6 +162,7 @@ def test(map):
     i=0
     while(True):
         win.blit(map_img, map_rect)
+        map.check_for_car_collision()
         i+=1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -200,12 +171,12 @@ def test(map):
         #map.show_paths(win)
         map.show_vehicles(win)
         
-        if i%(FPS/2) == 1:
+        if i%(2) == 1:
             map.spawn_car(WIDTH, HEIGHT)
         map.move_cars()
         pygame.display.update()
         clock.tick(FPS)
-test(generate_crossroad2(WIDTH, HEIGHT))
+test(generate_crossroad(WIDTH, HEIGHT))
 
 
 
