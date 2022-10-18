@@ -7,12 +7,11 @@ NODE_COLOR = "Yellow"
 eps = 10**(-5)
 
 class Road:
-    def __init__(self, start_node, end_node, type, direction_type=None, curve=None):
+    def __init__(self, start_node, end_node, type, curve=None):
         self.start_node = start_node
         self.end_node = end_node
         self.start_point = start_node.pos
         self.end_point = end_node.pos
-        self.direction_type = direction_type
         start_node.exiting_roads.append(self)
         end_node.entering_roads.append(self)
         if type not in ["arc", "straight"]: #two lines of code that will help with possible missspells during development 
@@ -112,7 +111,7 @@ class Road:
                 car.rect = car.img.get_rect(center=new_pos)
                 car.update_vision(self.direction, self.type, self.curve)
         else:
-            # dist = car.velocity*(1 - np.exp(-car.dist_to_nearest_car/100000))
+            dist = car.velocity*(1 - np.exp(-car.dist_to_nearest_car/100000))
             angle = dist/2/np.pi/self.radius*360
             new_angle = car.angle + angle*(int(self.curve=="right")-1/2)*2
             pos = car.rect.center

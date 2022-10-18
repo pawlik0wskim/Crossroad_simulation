@@ -86,31 +86,31 @@ def generate_crossroad(WIDTH, HEIGHT):
 
     roads = []
     #Vertical
-    roads.append(Road(node1, node3, "straight", direction_type="vertical_down"))#vertical_down
-    roads.append(Road(node4, node2, "straight", direction_type="vertical_up"))
-    roads.append(Road(node5, node7, "straight", direction_type="vertical_down"))#bottom
-    roads.append(Road(node8, node6, "straight", direction_type="vertical_up"))
+    roads.append(Road(node1, node3, "straight"))
+    roads.append(Road(node4, node2, "straight"))
+    roads.append(Road(node5, node7, "straight"))#bottom
+    roads.append(Road(node8, node6, "straight"))
     #Horrizontal
-    roads.append(Road(node11, node15, "straight", direction_type="horizontal_left"))#left
-    roads.append(Road(node16, node12, "straight", direction_type="horizontal_right"))
-    roads.append(Road(node13, node9, "straight", direction_type="horizontal_left"))#right
-    roads.append(Road(node10, node14, "straight", direction_type="horizontal_right"))
+    roads.append(Road(node11, node15, "straight"))#left
+    roads.append(Road(node16, node12, "straight"))
+    roads.append(Road(node13, node9, "straight"))#right
+    roads.append(Road(node10, node14, "straight"))
     #Bottom turns
     roads.append(Road(node6,node10, type = "arc", curve = "right"))
-    roads.append(Road(node6,node11, type = "arc", curve = "left", direction_type = "vertical_up_left"))
-    roads.append(Road(node6,node4, "straight", direction_type = "vertical_up"))
+    roads.append(Road(node6,node11, type = "arc", curve = "left"))
+    roads.append(Road(node6,node4, "straight"))
     #Left turns
-    roads.append(Road(node12,node5, type = "arc", curve = "right", direction_type="horizontal_right_right"))
-    roads.append(Road(node12,node4, type = "arc", curve = "left", direction_type="horizontal_right_left"))
-    roads.append(Road(node12,node10, "straight", direction_type="horizontal_right"))
+    roads.append(Road(node12,node5, type = "arc", curve = "right"))
+    roads.append(Road(node12,node4, type = "arc", curve = "left"))
+    roads.append(Road(node12,node10, "straight"))
     #Top turns
     roads.append(Road(node3,node11, type = "arc", curve = "right"))
-    roads.append(Road(node3,node10, type = "arc", curve = "left", direction_type = "vertical_down_left"))
-    roads.append(Road(node3,node5, "straight", direction_type = "vertical_down"))
+    roads.append(Road(node3,node10, type = "arc", curve = "left"))
+    roads.append(Road(node3,node5, "straight"))
     #Right turns
     roads.append(Road(node9,node4, type = "arc", curve = "right"))
-    roads.append(Road(node9,node5, type = "arc", curve = "left", direction_type = "horizontal_left_left"))
-    roads.append(Road(node9,node11, "straight", direction_type = "horizontal_left"))
+    roads.append(Road(node9,node5, type = "arc", curve = "left"))
+    roads.append(Road(node9,node11, "straight"))
     return Map(roads, nodes, [node1, node8, node13, node16])
 
 
@@ -169,12 +169,7 @@ def test(map):
         
         for road in map.roads:
             for car in road.cars:
-                pygame.draw.rect(win, [255, 255, 255], car.rect)
-                if road.direction_type is not None:
-                    if "left_left" in road.direction_type or "left_right" in road.direction_type or "right_left" in road.direction_type or "right_right" in road.direction_type:
-                        pygame.draw.rect(win, [255, 0, 0], car.vision)
-                    elif "up_left" in road.direction_type or "down_right" in road.direction_type or "up_right" in road.direction_type or "down_left" in road.direction_type:
-                        pygame.draw.rect(win, [255, 0, 0], car.vision)
+                # pygame.draw.rect(win, [255, 255, 255], car.rect)
                 # pygame.draw.rect(win, [255, 0, 0], car.vision)
                 car.dist_to_nearest_car = map.find_dist_to_nearest_car(car)
 
