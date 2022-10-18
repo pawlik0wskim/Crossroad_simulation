@@ -42,6 +42,15 @@ class Map:
             for car in road.cars:
                 road.calculate_car_next_pos(car)
     
+    def find_min_dist_to_other_car(self, car):
+        min_dist = np.Inf
+        for road in self.roads:
+            collided_idxs = car.vision.collidelistall(road.cars)
+            for idx in collided_idxs:
+                dist = (car.rect.center[0] - road.cars[idx].rect.center[0])**2 + (car.rect.center[1] - road.cars[idx].rect.center[1])**2
+                if dist < min_dist and car is not road.cars[idx]:
+                    min_dist = dist
+        return min_dist
 
 
 
@@ -150,6 +159,7 @@ def test(map):
         for road in map.roads:
             for car in road.cars:
                  car.update_vision(road.direction, road.type, road.curve)
+                 car.dist_to_nearest_car = map.find_min_dist_to_other_car(car)
         if i%FPS == 0:
             map.spawn_car(WIDTH, HEIGHT)
         map.move_cars()

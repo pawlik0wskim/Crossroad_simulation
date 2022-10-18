@@ -9,6 +9,7 @@ class Car:
         self.visable_angle = angle
         self.velocity = 3
         self.vision = pygame.Rect(self.rect.center, [10, 10])
+        self.dist_to_nearest_car = np.Inf
     
     def __getx2_rect_from_center(x, y, w, h):
         return pygame.Rect(x - w, y - h, 2*w, 2*h)
