@@ -22,6 +22,7 @@ class Map:
         for road in self.roads:
             for car in road.cars:
                 car.draw(win)
+                pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
     
     #Adds car on random spawning position        
     def spawn_car(self, WIDTH, HEIGHT):
@@ -146,6 +147,9 @@ def test(map):
         map.show_paths(win)
         map.show_vehicles(win)
         
+        for road in map.roads:
+            for car in road.cars:
+                 car.update_vision(road.direction, road.type, road.curve)
         if i%FPS == 0:
             map.spawn_car(WIDTH, HEIGHT)
         map.move_cars()
