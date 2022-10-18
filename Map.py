@@ -168,10 +168,10 @@ def test(map):
             if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()    
-        #map.show_paths(win)
+        map.show_paths(win)
         map.show_vehicles(win)
         
-        if i%(2) == 1:
+        if i%(FPS) == 1:
             map.spawn_car(WIDTH, HEIGHT)
         map.move_cars()
         pygame.display.update()

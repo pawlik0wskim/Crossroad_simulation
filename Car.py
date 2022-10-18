@@ -20,6 +20,9 @@ class Car:
         self.angle = angle
         self.visable_angle = angle
         self.velocity = 4*(1/2000*WIDTH+1/2000*HEIGHT)
+        self.stopping = False
+        self.acceleration = (1/2000*WIDTH+1/2000*HEIGHT)/2
+        self.limit = 5*(1/2000*WIDTH+1/2000*HEIGHT)
         
     def draw(self, win):
         center = self.rect.center
@@ -37,6 +40,8 @@ class Car:
         offset = (int(-other.rect.center[0]+self.rect.center[0]), int(-other.rect.center[1]+self.rect.center[1]))
         poi = mask2.overlap(mask1, offset)
         return poi
+    
+    
 
 def test():  #rotation around the center of vehicle
     i = 0 

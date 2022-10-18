@@ -5,7 +5,6 @@ from Node import Node
 ROAD_COLOR = "Red"
 NODE_COLOR = "Yellow"
 eps = 10**(-5)
-
 class Road:
     def __init__(self, start_node, end_node, type, curve = None):
         self.start_node = start_node
@@ -73,8 +72,15 @@ class Road:
     def get_next_road(self):
         if len(self.end_node.exiting_roads)==0: return None
         next_road = self.end_node.exiting_roads[np.random.randint(0,len(self.end_node.exiting_roads))]
-        return next_road           
-
+        return next_road    
+    #Checks if car should stop       
+    def check_stopping(self):
+        p = np.random.rand()
+        if p<1/3 and len(self.start_node.entering_roads)==0:
+            return True
+        else: 
+            return False
+    
     def calculate_car_next_pos(self, car, dist = None):
         if dist == None:
             dist = car.velocity
@@ -86,6 +92,10 @@ class Road:
             car.visable_angle = car.angle
             
         if self.type != "arc":
+            if car.stopping:
+                car.velocity=car.velocity - car.acceleration/2 if car.velocity>car.acceleration/2 else 0
+            else:
+                car.velocity =car.acceleration + car.velocity if car.velocity + car.acceleration< car.limit  else car.limit
             pos = car.rect.center
             
             if np.abs(self.end_point[0]-self.start_point[0])<eps: 
@@ -96,6 +106,12 @@ class Road:
                 new_pos = (pos[0]-car.velocity*self.direction[0],pos[1]-car.velocity*self.direction[1])
             dist_from_start = (np.abs((new_pos[0]-self.start_point[0])*self.direction[0]),np.abs((new_pos[1]-self.start_point[1])*self.direction[1]))
             length = (np.abs(self.start_point[0]-self.end_point[0]),np.abs(self.start_point[1]-self.end_point[1]))
+            #Checking stopping conditions
+            slowing_road = car.velocity/car.acceleration*2
+            remaining_road = np.abs(dist_from_start[0] - length[0]) + np.abs( dist_from_start[1] - length[1])-np.max([car.rect.height, car.rect.width])/2
+            if remaining_road - 3*car.velocity < slowing_road and remaining_road - 2*car.velocity > slowing_road and 1-car.stopping:
+                car.stopping = self.check_stopping()
+            #Checking if car moved to another road
             if dist_from_start[0] > length[0] or dist_from_start[1] > length[1]:
                 next_road = self.get_next_road()
                 self.cars.remove(car)
