@@ -2,7 +2,7 @@ import pygame
 import numpy as np
 
 
-dir = r"C:\Users\Maciek\Documents\Studia\semestr 7\Crossroad_simulation"
+
 class Car:
     def __init__(self, position, angle, WIDTH, HEIGHT):
         rand = np.random.rand()
