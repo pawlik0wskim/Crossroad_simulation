@@ -4,12 +4,11 @@ import numpy as np
 from Car import Car
 from Node import Node
 
-FPS = 60
+FPS = 30
 
 class Map:
-    def __init__(self, roads, nodes, starting_nodes):
+    def __init__(self, roads, starting_nodes):
         self.roads=roads
-        self.nodes = nodes
         self.starting_nodes = starting_nodes
 
     # Draws all paths cars travel along 
@@ -26,7 +25,18 @@ class Map:
     
     #Adds car on random spawning position        
     def spawn_car(self, WIDTH, HEIGHT):
-        node = self.starting_nodes[np.random.randint(0, len(self.starting_nodes))]
+        rand = np.random.randint(0, len(self.starting_nodes))
+        rand1 = rand+1
+        node = self.starting_nodes[rand]
+        if len(node.exiting_roads[0].cars)>0:
+            previous_car = node.exiting_roads[0].cars[-1].rect # we don't want to spawn one car inside of one another
+            while np.abs(previous_car.center[0]-node.pos[0]+previous_car.center[1]-node.pos[1])<np.max([previous_car.width, previous_car.height]) and rand1!=rand:
+                rand1 = rand1+1 if rand1 < len(self.starting_nodes)-1 else 0
+                node = self.starting_nodes[np.random.randint(0, len(self.starting_nodes))]
+                if len(node.exiting_roads[0].cars)>0:
+                    previous_car = node.exiting_roads[0].cars[-1].rect
+            if rand1==rand:
+                return None
         if node.pos[1]==0:
             angle = 180
         elif node.pos[1]==HEIGHT:
@@ -35,13 +45,27 @@ class Map:
             angle = 90
         else:
             angle = 270
-        node.exiting_roads[0].cars.append(Car(node.pos, angle, WIDTH, HEIGHT))
+        car = Car(node.pos, angle, WIDTH, HEIGHT)
+        node.exiting_roads[0].cars.append(car)
 
     def move_cars(self):
         for road in self.roads:
             for car in road.cars:
                 road.calculate_car_next_pos(car)
     
+
+    #Removes cars that colided ith each other            
+    def check_for_car_collision(self):
+        for road in self.roads:
+            for car in road.cars:
+                for road2 in self.roads:
+                    for car2 in road2.cars:
+                        if car.collide(car2) != None and car in road.cars and car2 in road2.cars and car != car2:
+                            road.cars.remove(car) 
+                            road2.cars.remove(car2)
+                            continue
+                        
+
     def find_min_dist_to_other_car(self, car):
         min_dist = np.Inf
         for road in self.roads:
@@ -54,27 +78,29 @@ class Map:
 
 
 
+
 WIDTH, HEIGHT = (1000,1000)
+
+
 def generate_crossroad(WIDTH, HEIGHT):
     #nodes
-    node1 = Node((7/18*WIDTH, 0))
-    node2 = Node((11/18*WIDTH, 0))
-    node3 = Node((7/18*WIDTH, HEIGHT/3))
-    node4 = Node((11/18*WIDTH, 1/3*HEIGHT))
-    node5 = Node((7/18*WIDTH, 2/3*HEIGHT))
-    node6 = Node((11/18*WIDTH, 2/3*HEIGHT))
-    node7 = Node((7/18*WIDTH, HEIGHT))
-    node8 = Node((11/18*WIDTH, HEIGHT))
-    node9 = Node((2*WIDTH/3, HEIGHT*7/18))
-    node10 = Node((WIDTH*2/3, HEIGHT*11/18))
-    node11 = Node((WIDTH/3, HEIGHT*7/18))
-    node12 = Node((WIDTH/3, HEIGHT*11/18))
-    node13 = Node((WIDTH, HEIGHT*7/18))
-    node14 = Node((WIDTH, HEIGHT*11/18))
-    node15 = Node((0, HEIGHT*7/18))
-    node16 = Node((0, HEIGHT*11/18))
+    node1 = Node((11/24*WIDTH, 0))
+    node2 = Node((13/24*WIDTH, 0))
+    node3 = Node((11/24*WIDTH, HEIGHT/3))
+    node4 = Node((13/24*WIDTH, 1/3*HEIGHT))
+    node5 = Node((11/24*WIDTH, 2/3*HEIGHT))
+    node6 = Node((13/24*WIDTH, 2/3*HEIGHT))
+    node7 = Node((11/24*WIDTH, HEIGHT))
+    node8 = Node((13/24*WIDTH, HEIGHT))
+    node9 = Node((2*WIDTH/3, HEIGHT*11/24))
+    node10 = Node((WIDTH*2/3, HEIGHT*13/24))
+    node11 = Node((WIDTH/3, HEIGHT*11/24))
+    node12 = Node((WIDTH/3, HEIGHT*13/24))
+    node13 = Node((WIDTH, HEIGHT*11/24))
+    node14 = Node((WIDTH, HEIGHT*13/24))
+    node15 = Node((0, HEIGHT*11/24))
+    node16 = Node((0, HEIGHT*13/24))
     
-    nodes = [node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15, node16]
     
 
     roads = []
@@ -104,7 +130,7 @@ def generate_crossroad(WIDTH, HEIGHT):
     roads.append(Road(node9,node4, type = "arc", curve = "right"))
     roads.append(Road(node9,node5, type = "arc", curve = "left"))
     roads.append(Road(node9,node11, "straight"))
-    return Map(roads, nodes, [node1, node8, node13, node16])
+    return Map(roads, [ node1, node8, node13, node16]) 
 
 
 
@@ -120,7 +146,6 @@ def test_map(WIDTH, HEIGHT):
     node6 = Node((11/18*WIDTH, 2/3*HEIGHT))
     node7 = Node((7/18*WIDTH, HEIGHT))
     node8 = Node((11/18*WIDTH, HEIGHT))
-    nodes = [node1, node2, node3, node4, node5, node6, node7, node8]
     
     
     roads = []
@@ -136,7 +161,7 @@ def test_map(WIDTH, HEIGHT):
 
     
 
-    return Map(roads, nodes, [node1, node8])
+    return Map(roads, [node1, node8])
   
 
 
@@ -144,10 +169,13 @@ def test_map(WIDTH, HEIGHT):
 def test(map):    
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     clock=pygame.time.Clock()
+    
+    map_img = pygame.transform.scale(pygame.image.load(r"C:\Users\Maciek\Documents\Studia\semestr 7\Crossroad_simulation\map_crossroad.png"),(WIDTH,HEIGHT))
+    map_rect = map_img.get_rect(topleft = (0,0))
     i=0
     while(True):
-        rect = pygame.Rect(0,0,WIDTH, HEIGHT)
-        pygame.draw.rect(win,"Black", rect)
+        win.blit(map_img, map_rect)
+        map.check_for_car_collision()
         i+=1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
