@@ -21,6 +21,7 @@ class Map:
         for road in self.roads:
             for car in road.cars:
                 car.draw(win)
+                pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
     
     #Adds car on random spawning position        
     def spawn_car(self, WIDTH, HEIGHT):
@@ -52,6 +53,7 @@ class Map:
             for car in road.cars:
                 road.calculate_car_next_pos(car)
     
+
     #Removes cars that colided ith each other            
     def check_for_car_collision(self):
         for road in self.roads:
@@ -62,8 +64,18 @@ class Map:
                             road.cars.remove(car) 
                             road2.cars.remove(car2)
                             continue
-        
-    
+                        
+
+    def find_min_dist_to_other_car(self, car):
+        min_dist = np.Inf
+        for road in self.roads:
+            collided_idxs = car.vision.collidelistall(road.cars)
+            for idx in collided_idxs:
+                dist = (car.rect.center[0] - road.cars[idx].rect.center[0])**2 + (car.rect.center[1] - road.cars[idx].rect.center[1])**2
+                if dist < min_dist and car is not road.cars[idx]:
+                    min_dist = dist
+        return min_dist
+
 
 
 
@@ -172,7 +184,11 @@ def test(map):
         map.show_paths(win)
         map.show_vehicles(win)
         
-        if i%(FPS) == 1:
+        for road in map.roads:
+            for car in road.cars:
+                 car.update_vision(road.direction, road.type, road.curve)
+                 car.dist_to_nearest_car = map.find_min_dist_to_other_car(car)
+        if i%FPS == 0:
             map.spawn_car(WIDTH, HEIGHT)
         map.move_cars()
         pygame.display.update()
