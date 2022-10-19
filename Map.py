@@ -172,7 +172,7 @@ def test(map):
         map.show_paths(win)
         map.show_vehicles(win)
         
-        if i%(FPS) == 1:
+        if i%FPS == 0:
             map.spawn_car(WIDTH, HEIGHT)
         map.move_cars()
         pygame.display.update()
