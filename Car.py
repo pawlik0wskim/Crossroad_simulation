@@ -24,15 +24,17 @@ class Car:
         self.stopping = False
         self.acceleration = (1/2000*WIDTH+1/2000*HEIGHT)/2
         self.limit = 5*(1/2000*WIDTH+1/2000*HEIGHT)
-        self.dist_to_nearest_car = np.Inf
+        self.nearest_car = None
         self.vision = pygame.Rect(self.rect.center, [10, 10])
         
     def __getx2_rect_from_center(x, y, w, h):
         return pygame.Rect(x - w, y - h, 2*w, 2*h)
+
     def rotate(self): # rotates car image and rect based on current visible angle
         rotated_img = pygame.transform.rotate(self.img, self.visable_angle)  
         self.rect  = rotated_img.get_rect(center = self.img.get_rect(topleft = self.rect.topleft).center)
         return rotated_img
+        
     def update_vision(self, direction, type, curve): # updates vision based on type and direction of the road
         # _ = self.rotate()
         if type == "straight":
