@@ -3,7 +3,7 @@ import numpy as np
 
 
 
-
+dir = r"Crossroad_simulation"
 class Car:
     def __init__(self, position, angle, WIDTH, HEIGHT):
         rand = np.random.rand()
@@ -16,7 +16,7 @@ class Car:
         else:
             image = pygame.image.load(dir + "\car_yellow.png")
         
-        self.img = pygame.transform.scale(image.convert_alpha(),(WIDTH/30,HEIGHT/11)) 
+        self.img = pygame.transform.scale(image.convert_alpha(),(WIDTH//30,HEIGHT//11)) 
         self.rect = self.img.get_rect(center=position)
         self.angle = angle
         self.visable_angle = angle
