@@ -6,6 +6,7 @@ import numpy as np
 dir = r"Crossroad_simulation"
 class Car:
     def __init__(self, position, angle, WIDTH, HEIGHT):
+        global unit
         rand = np.random.rand()
         if rand < 1/4:
             image = pygame.image.load(dir +"\car_black.png")
@@ -15,26 +16,32 @@ class Car:
             image = pygame.image.load(dir +"\car_green.png")
         else:
             image = pygame.image.load(dir + "\car_yellow.png")
-        
+        unit = (1/2000*WIDTH+1/2000*HEIGHT)
         self.img = pygame.transform.scale(image.convert_alpha(),(WIDTH//30,HEIGHT//11)) 
         self.rect = self.img.get_rect(center=position)
         self.angle = angle
         self.visable_angle = angle
-        self.velocity = 4*(1/2000*WIDTH+1/2000*HEIGHT)
+        
         self.stopping = False
-        self.acceleration = (1/2000*WIDTH+1/2000*HEIGHT)/2
-        self.limit = 5*(1/2000*WIDTH+1/2000*HEIGHT)
-        self.nearest_car = None
+        self.maximum_acceleration = unit/2 
+        self.limit = 4*unit
+        self.velocity = self.limit
+        self.dist_to_nearest_car = np.Inf
         self.vision = pygame.Rect(self.rect.center, [10, 10])
+        self.acceleration = unit/4
+        self.acceleration_exponent = 4
+        self.reaction_time = 1
+        self.minimum_dist = np.max([self.rect.h,self.rect.w])*3/2
+        self.deceleration = self.acceleration*4
         
     def __getx2_rect_from_center(x, y, w, h):
         return pygame.Rect(x - w, y - h, 2*w, 2*h)
-
+    
     def rotate(self): # rotates car image and rect based on current visible angle
         rotated_img = pygame.transform.rotate(self.img, self.visable_angle)  
         self.rect  = rotated_img.get_rect(center = self.img.get_rect(topleft = self.rect.topleft).center)
         return rotated_img
-        
+    
     def update_vision(self, direction, type, curve): # updates vision based on type and direction of the road
         # _ = self.rotate()
         if type == "straight":
@@ -55,8 +62,23 @@ class Car:
                     center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2
                     center_new_y = self.rect.center[1] - direction[1]*self.rect.height/2
                 self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width, self.rect.height)
-
+                
+    ### Calculates current car acceleration based on its distance to nearest car
+    def update_acceleration(self, nearest_car=None, nearest_node=None, first = False):
         
+        new_acceleration = 1 - (self.velocity/self.limit)**self.acceleration_exponent
+        if nearest_car is not None:
+            desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
+            real_dist = np.sqrt((self.rect.center[0] - nearest_car.rect.center[0])**2 + (self.rect.center[1] - nearest_car.rect.center[1])**2)
+            new_acceleration -= (desired_dist/real_dist)**2
+        
+        if self.stopping and first: 
+            desired_dist = np.max([self.rect.h, self.rect.w])/2+7*unit+self.velocity*self.reaction_time + self.velocity*(self.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
+            real_dist = np.sqrt((self.rect.center[0]- nearest_node.pos[0])**2 + (self.rect.center[1] - nearest_node.pos[1])**2)
+            new_acceleration -= (desired_dist/real_dist)**2
+        self.acceleration = new_acceleration*self.maximum_acceleration
+        
+            
     def draw(self, win):
         center = self.rect.center
         rotated_img = self.rotate()
@@ -93,4 +115,5 @@ def test():  #rotation around the center of vehicle
         car.draw(win)
         pygame.display.update()
         clock.tick(60)
+        car.update_acceleration(car)
 #test()
