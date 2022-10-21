@@ -51,7 +51,7 @@ class Map:
     def move_cars(self):
         for road in self.roads:
             for car in road.cars:
-                road.calculate_car_next_pos(car)
+                road.calculate_car_next_pos(car, self.get_nearest_car(car))
     
 
     #Removes cars that colided ith each other            
@@ -65,7 +65,7 @@ class Map:
                             road2.cars.remove(car2)
                             continue
                         
-
+    #Calculates how close is the nearest car visable by the driver
     def find_min_dist_to_other_car(self, car):
         min_dist = np.Inf
         for road in self.roads:
@@ -75,6 +75,18 @@ class Map:
                 if dist < min_dist and car is not road.cars[idx]:
                     min_dist = dist
         return min_dist
+    #Method returns nearest car visable by the driver
+    def get_nearest_car(self, car):
+        min_dist = np.Inf
+        c = None
+        for road in self.roads:
+            collided_idxs = car.vision.collidelistall(road.cars)
+            for idx in collided_idxs:
+                dist = (car.rect.center[0] - road.cars[idx].rect.center[0])**2 + (car.rect.center[1] - road.cars[idx].rect.center[1])**2
+                if dist < min_dist and car is not road.cars[idx]:
+                    min_dist = dist
+                    c = road.cars[idx]
+        return c
 
 
 
@@ -181,7 +193,7 @@ def test(map):
             if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()    
-        map.show_paths(win)
+        #map.show_paths(win)
         map.show_vehicles(win)
         
         for road in map.roads:
