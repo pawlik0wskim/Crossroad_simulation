@@ -84,18 +84,6 @@ class Map:
 WIDTH, HEIGHT = (1000,1000)
 
 
-def generate_linear_road(WIDTH, HEIGHT):
-    node1 = Node((0, HEIGHT/2))
-    node2 = Node((WIDTH, HEIGHT/2))
-
-
-    roads = []
-    roads.append(Road(node1, node2, "straight"))
-
-    return Map(roads, [node1]) 
-
-
-
 def generate_crossroad(WIDTH, HEIGHT):
     #nodes
     node1 = Node((11/24*WIDTH, 0))
@@ -207,7 +195,7 @@ def test(map):
         map.move_cars()
         pygame.display.update()
         clock.tick(FPS)
-test(generate_linear_road(WIDTH, HEIGHT))
+test(generate_crossroad(WIDTH, HEIGHT))
 
 
 
