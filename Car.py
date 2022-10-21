@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+from utilities import l2
 
 
 
@@ -21,7 +22,9 @@ class Car:
         self.rect = self.img.get_rect(center=position)
         self.angle = angle
         self.visable_angle = angle
-        
+        self.dist_driven = np.Inf # part of distance driven on current road since its start
+        self.nearest_car = None
+
         self.stopping = False
         self.maximum_acceleration = unit/2 
         self.limit = 4*unit
@@ -54,27 +57,28 @@ class Car:
                 center_new_y = self.rect.center[1] - direction[1]*self.rect.height*3/2
                 self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width, self.rect.height)
             else:
-                center_new_x, center_new_y = 0, 0
                 if direction[0] == -1 and direction[1] == 1:
-                    center_new_x = self.rect.center[0] + self.rect.width/2
-                    center_new_y = self.rect.center[1] - self.rect.height*3/2
+                    center_new_x = self.rect.center[0]# + self.rect.width/2
+                    center_new_y = self.rect.center[1]# - self.rect.height/2
+                    self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width*2/3, self.rect.height/2)
                 else:
-                    center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2
-                    center_new_y = self.rect.center[1] - direction[1]*self.rect.height/2
-                self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width, self.rect.height)
+                    center_new_x = self.rect.center[0]# - direction[0]*self.rect.width*3/2
+                    center_new_y = self.rect.center[1]# - direction[1]*self.rect.height/2
+                # self.vision = pygame.Rect()
+                    self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width/2, self.rect.height*2/3)
                 
     ### Calculates current car acceleration based on its distance to nearest car
-    def update_acceleration(self, nearest_car=None, nearest_node=None, first = False):
+    def update_acceleration(self, nearest_node=None, first = False):
         
         new_acceleration = 1 - (self.velocity/self.limit)**self.acceleration_exponent
-        if nearest_car is not None:
-            desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
-            real_dist = np.sqrt((self.rect.center[0] - nearest_car.rect.center[0])**2 + (self.rect.center[1] - nearest_car.rect.center[1])**2)
+        if self.nearest_car is not None:
+            desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
+            real_dist = np.sqrt(l2(self.rect.center, self.nearest_car.rect.center))
             new_acceleration -= (desired_dist/real_dist)**2
         
         if self.stopping and first: 
             desired_dist = np.max([self.rect.h, self.rect.w])/2+7*unit+self.velocity*self.reaction_time + self.velocity*(self.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
-            real_dist = np.sqrt((self.rect.center[0]- nearest_node.pos[0])**2 + (self.rect.center[1] - nearest_node.pos[1])**2)
+            real_dist = np.sqrt(l2(self.rect.center, nearest_node.pos))
             new_acceleration -= (desired_dist/real_dist)**2
         self.acceleration = new_acceleration*self.maximum_acceleration
         
@@ -88,7 +92,7 @@ class Car:
         win.blit(rotated_img, self.rect)
         
     
-    #Checks for colision with other car    
+    #Checks for collision with other car    
     def collide(self, other):
         mask1 = pygame.mask.from_surface(pygame.transform.rotate(self.img, self.visable_angle))
         mask2 = pygame.mask.from_surface(pygame.transform.rotate(other.img, other.visable_angle))

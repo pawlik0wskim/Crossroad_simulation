@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 from Node import Node
+from utilities import l2
 a_min =0
 v_min =0
 ROAD_COLOR = "Red"
@@ -77,13 +78,13 @@ class Road:
     #Checks if car should stop       
     def check_stopping(self):
         p = np.random.rand()
-        if p<1/3 and len(self.start_node.entering_roads)==0:
+        if p<0 and len(self.start_node.entering_roads)==0:
             return True
         else: 
             return False
     #Moves car to next position
-    def calculate_car_next_pos(self, car, nearest_car, dist = None):
-        car.update_acceleration(nearest_car, nearest_node = self.end_node, first = self.cars[0]==car)
+    def calculate_car_next_pos(self, car, dist = None):
+        car.update_acceleration(nearest_node = self.end_node, first = self.cars[0]==car)
         car.velocity = car.acceleration + car.velocity if car.velocity + car.acceleration< car.limit else car.limit
         if car.velocity<0:
             car.velocity = 0
@@ -115,6 +116,10 @@ class Road:
             remaining_road = np.abs(dist_from_start[0] - length[0]) + np.abs( dist_from_start[1] - length[1])-np.max([car.rect.height, car.rect.width])/2
             if remaining_road - car.velocity < slowing_road and remaining_road > slowing_road and 1-car.stopping:
                 car.stopping = self.check_stopping()
+
+            # update driven distance of the car
+            car.dist_driven = l2(new_pos, self.end_point)/l2(self.start_point, self.end_point)
+
             #Checking if car moved to another road
             if dist_from_start[0] > length[0] or dist_from_start[1] > length[1]:
                 next_road = self.get_next_road()
@@ -122,7 +127,7 @@ class Road:
                 if next_road!=None:
                     car.rect = car.img.get_rect(center=next_road.start_point) 
                     next_road.cars.append(car)
-                    next_road.calculate_car_next_pos(car, nearest_car, dist_from_start[0] - length[0] + dist_from_start[1] - length[1])
+                    next_road.calculate_car_next_pos(car, dist_from_start[0] - length[0] + dist_from_start[1] - length[1])
                 else:
                     del car  
             else:
@@ -133,6 +138,10 @@ class Road:
             new_angle = car.angle + angle*(int(self.curve=="right")-1/2)*2
             pos = car.rect.center
             new_pos = (self.radius*np.cos((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[0],self.radius*np.sin((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[1])
+            
+            # update driven distance of the car
+            car.dist_driven = new_angle/180
+            
             if np.abs(new_angle)%90 < np.abs(angle) - eps:
                 next_road = self.get_next_road()
                 self.cars.remove(car)
@@ -140,7 +149,7 @@ class Road:
                     car.rect = car.img.get_rect(center=next_road.start_point) 
                     next_road.cars.append(car)
                     remaining_distance = np.abs(new_angle)%90/180*np.pi*self.radius
-                    next_road.calculate_car_next_pos(car, nearest_car, remaining_distance)
+                    next_road.calculate_car_next_pos(car, remaining_distance)
                 else:
                     del car  
             else:

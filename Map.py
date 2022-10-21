@@ -51,7 +51,8 @@ class Map:
     def move_cars(self):
         for road in self.roads:
             for car in road.cars:
-                road.calculate_car_next_pos(car, self.get_nearest_car(car))
+                # road.calculate_car_next_pos(car, self.get_nearest_car(car))
+                road.calculate_car_next_pos(car)
     
 
     #Removes cars that colided ith each other            
@@ -65,18 +66,7 @@ class Map:
                             road2.cars.remove(car2)
                             continue
                         
-    #Calculates how close is the nearest car visable by the driver
-    def find_min_dist_to_other_car(self, car):
-        min_dist = np.Inf
-        c = None
-        for road in self.roads:
-            collided_idxs = car.vision.collidelistall(road.cars)
-            for idx in collided_idxs:
-                dist = (car.rect.center[0] - road.cars[idx].rect.center[0])**2 + (car.rect.center[1] - road.cars[idx].rect.center[1])**2
-                if dist < min_dist and car is not road.cars[idx]:
-                    min_dist = dist
-        return min_dist
-    #Method returns nearest car visable by the driver
+    #Method returns nearest car visible for the driver
     def get_nearest_car(self, car):
         min_dist = np.Inf
         c = None
@@ -194,13 +184,19 @@ def test(map):
             if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()    
-        #map.show_paths(win)
+        map.show_paths(win)
         map.show_vehicles(win)
         
         for road in map.roads:
             for car in road.cars:
                  car.update_vision(road.direction, road.type, road.curve)
                  car.nearest_car = map.get_nearest_car(car)
+                 if car.nearest_car is not None:
+                    if car.nearest_car.nearest_car is car:
+                        if car.dist_driven < car.nearest_car.dist_driven:
+                            car.nearest_car = None
+                        else:
+                            car.nearest_car.nearest_car = None
         if i%FPS == 0:
             map.spawn_car(WIDTH, HEIGHT)
         map.move_cars()
