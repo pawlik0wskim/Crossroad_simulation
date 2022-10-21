@@ -22,13 +22,30 @@ class Car:
         self.visable_angle = angle
         self.velocity = 4*(1/2000*WIDTH+1/2000*HEIGHT)
         self.stopping = False
-        self.acceleration = (1/2000*WIDTH+1/2000*HEIGHT)/2
-        self.limit = 5*(1/2000*WIDTH+1/2000*HEIGHT)
+        self.acceleration = 0
+        self.limit = 5*(1/1000*WIDTH+1/1000*HEIGHT) * np.random.randint(1, 3)
         self.nearest_car = None
+        self.maximum_acceleration = (1/3000*WIDTH+1/3000*HEIGHT)/2 * np.random.randint(1, 3)
+        self.deceleration = 0.01
+        self.reaction_time = 5
+        self.minimum_dist = 2*self.rect.w
+        self.acceleration_exponent = 4
         self.vision = pygame.Rect(self.rect.center, [10, 10])
         
     def __getx2_rect_from_center(x, y, w, h):
         return pygame.Rect(x - w, y - h, 2*w, 2*h)
+
+    def update_acceleration(self):
+        if self.stopping:
+            new_acceleration = -self.deceleration*self.velocity/self.limit
+        else:
+            new_acceleration = 1 - (self.velocity/self.limit)**self.acceleration_exponent
+            if self.nearest_car is not None:
+                desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))
+                real_dist = np.sqrt((self.rect.x - self.nearest_car.rect.x)**2 + (self.rect.y - self.nearest_car.rect.y)**2)
+                new_acceleration -= (desired_dist/real_dist)**2
+        self.acceleration = new_acceleration*self.maximum_acceleration
+
 
     def rotate(self): # rotates car image and rect based on current visible angle
         rotated_img = pygame.transform.rotate(self.img, self.visable_angle)  
