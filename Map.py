@@ -7,9 +7,10 @@ from Node import Node
 FPS = 30
 
 class Map:
-    def __init__(self, roads, starting_nodes):
+    def __init__(self, roads, starting_nodes, light_cycle_time = 10*FPS):
         self.roads=roads
         self.starting_nodes = starting_nodes
+        self.light_cycle_time = light_cycle_time
 
     # Draws all paths cars travel along 
     def show_paths(self, win):
@@ -78,6 +79,13 @@ class Map:
                     min_dist = dist
                     c = road.cars[idx]
         return c
+    
+    def update_traffic_lights(self, i):
+        for road in self.roads:
+            if road.light:
+                for cycle in road.light_cycle:
+                    if i%self.light_cycle_time==cycle*self.light_cycle_time:
+                        road.light_color = road.light_color + 1 if road.light_color<3 else 0
 
 
 
@@ -108,14 +116,14 @@ def generate_crossroad(WIDTH, HEIGHT):
 
     roads = []
     #Vertical
-    roads.append(Road(node1, node3, "straight"))#top
+    roads.append(Road(node1, node3, "straight", light = True))#top
     roads.append(Road(node4, node2, "straight"))
     roads.append(Road(node5, node7, "straight"))#bottom
-    roads.append(Road(node8, node6, "straight"))
+    roads.append(Road(node8, node6, "straight", light = True))
     #Horrizontal
     roads.append(Road(node11, node15, "straight"))#left
-    roads.append(Road(node16, node12, "straight"))
-    roads.append(Road(node13, node9, "straight"))#right
+    roads.append(Road(node16, node12, "straight", light = True))
+    roads.append(Road(node13, node9, "straight", light = True))#right
     roads.append(Road(node10, node14, "straight"))
     #Bottom turns
     roads.append(Road(node6,node10, type = "arc", curve = "right"))
@@ -188,6 +196,7 @@ def test(map):
         map.show_vehicles(win)
         
         for road in map.roads:
+            road.draw_traffic_light(win)
             for car in road.cars:
                  car.update_vision(road.direction, road.type, road.curve)
                  car.nearest_car = map.get_nearest_car(car)
@@ -199,6 +208,7 @@ def test(map):
                             car.nearest_car.nearest_car = None
         if i%FPS == 0:
             map.spawn_car(WIDTH, HEIGHT)
+        map.update_traffic_lights(i)
         map.move_cars()
         pygame.display.update()
         clock.tick(FPS)
