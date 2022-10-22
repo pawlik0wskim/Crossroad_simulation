@@ -193,7 +193,7 @@ def test(map):
                  car.nearest_car = map.get_nearest_car(car)
                  if car.nearest_car is not None:
                     if car.nearest_car.nearest_car is car:
-                        if car.dist_driven < car.nearest_car.dist_driven:
+                        if car.dist_driven > car.nearest_car.dist_driven:
                             car.nearest_car = None
                         else:
                             car.nearest_car.nearest_car = None
