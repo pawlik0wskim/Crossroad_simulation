@@ -1,25 +1,30 @@
 import pygame
 import numpy as np
-from utilities import l2
+from utilities import l2, visualize
+import cv2
 
 
-
-dir = r"Crossroad_simulation"
+dir = r""
 class Car:
     def __init__(self, position, angle, WIDTH, HEIGHT):
         global unit
+        w, h = WIDTH//30, HEIGHT//11
         rand = np.random.rand()
-        if rand < 1/4:
-            image = pygame.image.load(dir +"\car_black.png")
-        elif rand < 2/4:
-            image = pygame.image.load(dir +"\car_red.png")
-        elif rand < 3/4:
-            image = pygame.image.load(dir +"\car_green.png")
+        if visualize:
+            if rand < 1/4:
+                image = pygame.image.load(dir +"car_black.png")
+            elif rand < 2/4:
+                image = pygame.image.load(dir +"car_red.png")
+            elif rand < 3/4:
+                image = pygame.image.load(dir +"car_green.png")
+            else:
+                image = pygame.image.load(dir + "car_yellow.png")
+            self.img = pygame.transform.scale(image.convert_alpha(),(w, h))
         else:
-            image = pygame.image.load(dir + "\car_yellow.png")
-        unit = (1/2000*WIDTH+1/2000*HEIGHT)
-        self.img = pygame.transform.scale(image.convert_alpha(),(WIDTH//30,HEIGHT//11)) 
-        self.rect = self.img.get_rect(center=position)
+            self.img = None
+
+        unit = (1/2000*WIDTH+1/2000*HEIGHT) 
+        self.rect = Car.__getx2_rect_from_center(position[0], position[1], w/2, h/2)
         self.angle = angle
         self.visable_angle = angle
         self.dist_driven = np.Inf # part of distance driven on current road since its start
@@ -46,7 +51,6 @@ class Car:
         return rotated_img
     
     def update_vision(self, direction, type, curve): # updates vision based on type and direction of the road
-        # _ = self.rotate()
         if type == "straight":
             center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2 - direction[1]*self.rect.width/2
             center_new_y = self.rect.center[1] + direction[0]*self.rect.height/2 - direction[1]*self.rect.height*3/2

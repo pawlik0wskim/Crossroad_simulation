@@ -2,6 +2,9 @@ import pygame
 import numpy
 
 
+visualize = True
+
+
 def rotate_image(win, image, top_left, angle):
     rotated_img = pygame.transform.rotate(image, angle)
     rotated_rect = rotated_img.get_rect(center = image.get_rect(topleft = top_left).center)

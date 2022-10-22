@@ -7,7 +7,7 @@ ROAD_COLOR = "Red"
 NODE_COLOR = "Yellow"
 eps = 10**(-5)
 light_color_dict = {3:"yellow",2:"red", 1:"yellow", 0:"green"}
-dir = r"C:\Users\Maciek\Documents\Studia\semestr 7\Crossroad_simulation"
+dir = r""
 class Road:
     def __init__(self, start_node, end_node, type, curve = None, light = False, light_cycle = [0.3, 0.4, 0.8, 0.9]):
         self.start_node = start_node
