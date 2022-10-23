@@ -3,13 +3,15 @@ from Road import Road
 import numpy as np
 from Car import Car
 from Node import Node
+from utilities import visualize
 
 FPS = 30
 
 class Map:
-    def __init__(self, roads, starting_nodes):
+    def __init__(self, roads, starting_nodes, light_cycle_time = 10*FPS):
         self.roads=roads
         self.starting_nodes = starting_nodes
+        self.light_cycle_time = light_cycle_time
 
     # Draws all paths cars travel along 
     def show_paths(self, win):
@@ -21,7 +23,7 @@ class Map:
         for road in self.roads:
             for car in road.cars:
                 car.draw(win)
-                pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
+                # pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
     
     #Adds car on random spawning position        
     def spawn_car(self, WIDTH, HEIGHT):
@@ -65,7 +67,7 @@ class Map:
                             road2.cars.remove(car2)
                             continue
                         
-
+    #Method returns nearest car visible for the driver
     def get_nearest_car(self, car):
         min_dist = np.Inf
         c = None
@@ -77,23 +79,18 @@ class Map:
                     min_dist = dist
                     c = road.cars[idx]
         return c
+    
+    def update_traffic_lights(self, i):
+        for road in self.roads:
+            if road.light:
+                for cycle in road.light_cycle:
+                    if i%self.light_cycle_time==cycle*self.light_cycle_time:
+                        road.light_color = road.light_color + 1 if road.light_color<3 else 0
 
 
 
 
 WIDTH, HEIGHT = (1000,1000)
-
-
-def generate_linear_road(WIDTH, HEIGHT):
-    node1 = Node((0, HEIGHT/2))
-    node2 = Node((WIDTH, HEIGHT/2))
-
-
-    roads = []
-    roads.append(Road(node1, node2, "straight"))
-
-    return Map(roads, [node1]) 
-
 
 
 def generate_crossroad(WIDTH, HEIGHT):
@@ -119,14 +116,14 @@ def generate_crossroad(WIDTH, HEIGHT):
 
     roads = []
     #Vertical
-    roads.append(Road(node1, node3, "straight"))#top
+    roads.append(Road(node1, node3, "straight", light = True))#top
     roads.append(Road(node4, node2, "straight"))
     roads.append(Road(node5, node7, "straight"))#bottom
-    roads.append(Road(node8, node6, "straight"))
+    roads.append(Road(node8, node6, "straight", light = True))
     #Horrizontal
     roads.append(Road(node11, node15, "straight"))#left
-    roads.append(Road(node16, node12, "straight"))
-    roads.append(Road(node13, node9, "straight"))#right
+    roads.append(Road(node16, node12, "straight", light = True))
+    roads.append(Road(node13, node9, "straight", light = True))#right
     roads.append(Road(node10, node14, "straight"))
     #Bottom turns
     roads.append(Road(node6,node10, type = "arc", curve = "right"))
@@ -180,34 +177,48 @@ def test_map(WIDTH, HEIGHT):
 
 
  
-def test(map):    
-    win = pygame.display.set_mode((WIDTH, HEIGHT))
-    clock=pygame.time.Clock()
+def test(map): 
+    if visualize:   
+        win = pygame.display.set_mode((WIDTH, HEIGHT))
+        clock=pygame.time.Clock()
+        map_img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT))
     
-    map_img = pygame.transform.scale(pygame.image.load(r"Crossroad_simulation\map_crossroad.png"),(WIDTH,HEIGHT))
-    map_rect = map_img.get_rect(topleft = (0,0))
+    # map_rect = map_img.get_rect(topleft = (0,0))
+    map_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
     i=0
     while(True):
-        win.blit(map_img, map_rect)
+        if visualize:
+            win.blit(map_img, map_rect)
         map.check_for_car_collision()
         i+=1
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()    
-        map.show_paths(win)
-        map.show_vehicles(win)
+        if visualize:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                        pygame.quit()
+                        exit()    
+            map.show_paths(win)
+            map.show_vehicles(win)
         
         for road in map.roads:
+            if visualize:
+                road.draw_traffic_light(win)
             for car in road.cars:
                  car.update_vision(road.direction, road.type, road.curve)
                  car.nearest_car = map.get_nearest_car(car)
+                 if car.nearest_car is not None:
+                    if car.nearest_car.nearest_car is car:
+                        if car.dist_driven > car.nearest_car.dist_driven:
+                            car.nearest_car = None
+                        else:
+                            car.nearest_car.nearest_car = None
         if i%FPS == 0:
             map.spawn_car(WIDTH, HEIGHT)
+        map.update_traffic_lights(i)
         map.move_cars()
-        pygame.display.update()
-        clock.tick(FPS)
-test(generate_linear_road(WIDTH, HEIGHT))
+        if visualize:
+            pygame.display.update()
+            clock.tick(FPS)
+test(generate_crossroad(WIDTH, HEIGHT))
 
 
 
