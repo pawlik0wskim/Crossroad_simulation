@@ -56,7 +56,7 @@ class Map:
                 road.calculate_car_next_pos(car)
     
 
-    #Removes cars that colided ith each other            
+    #Removes cars that collided with each other            
     def check_for_car_collision(self):
         for road in self.roads:
             for car in road.cars:
@@ -65,6 +65,7 @@ class Map:
                         if car.collide(car2) != None and car in road.cars and car2 in road2.cars and car != car2:
                             road.cars.remove(car) 
                             road2.cars.remove(car2)
+                            print("collision")
                             continue
                         
     #Method returns nearest car visible for the driver
@@ -178,11 +179,11 @@ def test_map(WIDTH, HEIGHT):
 
  
 def test(map): 
-    if visualize:   
-        win = pygame.display.set_mode((WIDTH, HEIGHT))
+    if visualize:
+        win = pygame.display.set_mode((WIDTH, HEIGHT))   
         clock=pygame.time.Clock()
         map_img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT))
-    
+
     # map_rect = map_img.get_rect(topleft = (0,0))
     map_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
     i=0

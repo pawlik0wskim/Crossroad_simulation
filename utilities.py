@@ -2,7 +2,7 @@ import pygame
 import numpy
 
 
-visualize = True
+visualize = False
 
 
 def rotate_image(win, image, top_left, angle):
