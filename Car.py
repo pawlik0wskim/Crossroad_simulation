@@ -98,7 +98,7 @@ class Car:
                 else:
                     center_new_x = self.rect.center[0]# - direction[0]*self.rect.width*3/2
                     center_new_y = self.rect.center[1]# - direction[1]*self.rect.height/2
-                    self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width/2, self.rect.height*2/3)
+                    self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width/2, self.rect.height/3)
                 
     ### Calculates current car acceleration based on its distance to nearest car
     def update_acceleration(self, nearest_node=None, first = False):
@@ -129,7 +129,7 @@ class Car:
     def collide(self, other):
         mask1 = pygame.mask.from_surface(Car.get_img_as_surface(self.rotate_image()))
         mask2 = pygame.mask.from_surface(Car.get_img_as_surface(other.rotate_image()))
-        offset = (int(-other.rect.center[0]+self.rect.center[0]), int(-other.rect.center[1]+self.rect.center[1]))
+        offset = (int(self.rect.x - other.rect.x), int(self.rect.y - other.rect.y))
         poi = mask2.overlap(mask1, offset)
         return poi
     

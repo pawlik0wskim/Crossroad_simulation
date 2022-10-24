@@ -158,7 +158,7 @@ class Road:
             new_pos = (self.radius*np.cos((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[0],self.radius*np.sin((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[1])
             
             # update driven distance of the car
-            car.dist_driven = 1 - new_angle/180
+            car.dist_driven = (90 - (int(self.curve=="left")*new_angle)%90)/90*(-16/30*int(self.curve=="left") + 1)**2
             
             if np.abs(new_angle)%90 < np.abs(angle) - eps:
                 next_road = self.get_next_road()
