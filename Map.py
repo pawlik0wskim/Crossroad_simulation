@@ -24,6 +24,7 @@ class Map:
             for car in road.cars:
                 car.draw(win)
                 pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
+                # pygame.draw.rect(win, [255, 255, 255], car.rect)
     
     #Adds car on random spawning position        
     def spawn_car(self, WIDTH, HEIGHT):

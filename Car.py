@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+from pyparsing import alphanums
 from utilities import l2, visualize
 import cv2
 
@@ -87,18 +88,18 @@ class Car:
             self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width, self.rect.height)
         else:
             if curve == "left":
-                center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2
-                center_new_y = self.rect.center[1] - direction[1]*self.rect.height*3/2
-                self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width, self.rect.height)
+                alpha, beta = 1.5, 1.5
+                new_x = alpha*self.rect.w if direction[0] > 0 else -self.rect.w
+                new_y = beta*self.rect.h if direction[1] > 0 else -self.rect.h
+                new_x = self.rect.x - new_x
+                new_y = self.rect.y - new_y
+                self.vision = pygame.Rect(new_x, new_y, alpha*self.rect.w, beta*self.rect.h)
             else:
-                if direction[0] == -1 and direction[1] == 1:
-                    center_new_x = self.rect.center[0]# + self.rect.width/2
-                    center_new_y = self.rect.center[1]# - self.rect.height/2
-                    self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width*2/3, self.rect.height/2)
-                else:
-                    center_new_x = self.rect.center[0]# - direction[0]*self.rect.width*3/2
-                    center_new_y = self.rect.center[1]# - direction[1]*self.rect.height/2
-                    self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width/2, self.rect.height/3)
+                alpha, beta = -1/7, -1/7
+                self.vision = pygame.Rect(self.rect.x - int(direction[0] > 0)*alpha*self.rect.w,
+                                          self.rect.y - int(direction[1] > 0)*beta*self.rect.h,
+                                          self.rect.w*(1 + alpha),
+                                          self.rect.h*(1 + beta))
                 
     ### Calculates current car acceleration based on its distance to nearest car
     def update_acceleration(self, nearest_node=None, first = False):
