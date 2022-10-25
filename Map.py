@@ -3,7 +3,7 @@ from Road import Road
 import numpy as np
 from Car import Car
 from Node import Node
-from utilities import visualize
+from utilities import visualize, get_cos
 
 FPS = 30
 
@@ -26,7 +26,7 @@ class Map:
                 pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
                 # pygame.draw.rect(win, [255, 255, 255], car.rect)
     
-    #Adds car on random spawning position        
+    # Adds car on random spawning position        
     def spawn_car(self, WIDTH, HEIGHT):
         rand = np.random.randint(0, len(self.starting_nodes))
         rand1 = rand+1
@@ -70,9 +70,10 @@ class Map:
                             continue
                         
     #Method returns nearest car visible for the driver
-    def get_nearest_car(self, car):
-        min_dist = np.Inf
-        c = None
+    def get_nearest_car(self, car, road_type):
+        min_dist = np.Inf # distance to nearest car(if it exists)
+        c = None # nearest car(if it exists)
+        r = None # road type of nearest car(if it exists)
         for road in self.roads:
             collided_idxs = car.vision.collidelistall(road.cars)
             for idx in collided_idxs:
@@ -80,6 +81,11 @@ class Map:
                 if dist < min_dist and car is not road.cars[idx]:
                     min_dist = dist
                     c = road.cars[idx]
+                    r = road.type
+        
+        if r == "curve" and road_type == "curve" and get_cos(car.direction, c.direction) < 0:
+            c = None
+
         return c
     
     def update_traffic_lights(self, i):
@@ -206,7 +212,7 @@ def test(map):
                 road.draw_traffic_light(win)
             for car in road.cars:
                  car.update_vision(road.direction, road.type, road.curve)
-                 car.nearest_car = map.get_nearest_car(car)
+                 car.nearest_car = map.get_nearest_car(car, road.type)
                  if car.nearest_car is not None:
                     if car.nearest_car.nearest_car is car:
                         if car.dist_driven > car.nearest_car.dist_driven:

@@ -1,5 +1,5 @@
 import pygame
-import numpy
+import numpy as np
 
 
 visualize = True
@@ -17,3 +17,6 @@ def scale(image, factor):
 
 def l2(a, b):
     return (a[0] - b[0])**2 + (a[1] - b[1])**2
+
+def get_cos(x, y):
+    return (x[0]*y[0] + x[1]*y[1])/np.sqrt(l2(x)*l2(y))

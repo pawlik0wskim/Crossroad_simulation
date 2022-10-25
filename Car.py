@@ -23,7 +23,7 @@ class Car:
         self.img = cv2.resize(image, (w, h), interpolation=cv2.INTER_LINEAR)
 
         unit = (1/2000*WIDTH+1/2000*HEIGHT) 
-        self.rect = Car.__getx2_rect_from_center(position[0], position[1], w/2, h/2)
+        self.rect = pygame.Rect(position[0] - w/2, position[1] - h/2, w, h)
         self.angle = angle
         self.visable_angle = angle
         self.dist_driven = np.Inf # part of distance driven on current road since its start
@@ -40,9 +40,6 @@ class Car:
         self.reaction_time = 1
         self.minimum_dist = np.max([self.rect.h,self.rect.w])*3/2
         self.deceleration = self.acceleration*4
-        
-    def __getx2_rect_from_center(x, y, w, h):
-        return pygame.Rect(x - w, y - h, 2*w, 2*h)
 
     # returns rotated image according to visible angle
     def rotate_image(self):
@@ -64,13 +61,8 @@ class Car:
 
         # return result of rotation of bigger image
         return cv2.warpAffine(self.img, rotation_matrix, (new_w, new_h))
-            
-    # def rotate(self): # rotates car image and rect based on current visible angle
-    #     rotated_img = pygame.transform.rotate(self.img, self.visable_angle)  
-    #     self.rect  = rotated_img.get_rect(center = self.img.get_rect(topleft = self.rect.topleft).center)
-    #     return rotated_img
 
-    # returns rect with dimensions like self.img has and with center in given center
+    # returns rect with dimensions like self.img has and with center in the given center
     def get_img_rect(self, center):
         img = self.rotate_image()
         w, h = img.shape[1], img.shape[0]
@@ -85,7 +77,10 @@ class Car:
         if type == "straight":
             center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2 - direction[1]*self.rect.width/2
             center_new_y = self.rect.center[1] + direction[0]*self.rect.height/2 - direction[1]*self.rect.height*3/2
-            self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width, self.rect.height)
+            self.vision = pygame.Rect(center_new_x - self.rect.w,
+                                      center_new_y - self.rect.h, 
+                                      2*self.rect.w, 
+                                      2*self.rect.h)
         else:
             if curve == "left":
                 alpha, beta = 1.5, 1.5
@@ -95,11 +90,14 @@ class Car:
                 new_y = self.rect.y - new_y
                 self.vision = pygame.Rect(new_x, new_y, alpha*self.rect.w, beta*self.rect.h)
             else:
-                alpha, beta = -1/7, -1/7
-                self.vision = pygame.Rect(self.rect.x - int(direction[0] > 0)*alpha*self.rect.w,
-                                          self.rect.y - int(direction[1] > 0)*beta*self.rect.h,
-                                          self.rect.w*(1 + alpha),
-                                          self.rect.h*(1 + beta))
+                alpha, beta = 0.6, 0.6
+                center_new_x, center_new_y = self.rect.centerx, self.rect.centery
+                center_new_x += alpha*self.rect.w if direction[0] < 0 else 0
+                center_new_y += beta*self.rect.h if direction[1] < 0 else 0
+                self.vision = pygame.Rect(center_new_x - alpha*self.rect.w,
+                                          center_new_y - beta*self.rect.h, 
+                                          alpha*self.rect.w, 
+                                          beta*self.rect.h)
                 
     ### Calculates current car acceleration based on its distance to nearest car
     def update_acceleration(self, nearest_node=None, first = False):
