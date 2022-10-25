@@ -70,10 +70,11 @@ class Map:
                             continue
                         
     #Method returns nearest car visible for the driver
-    def get_nearest_car(self, car, road_type):
+    def get_nearest_car(self, car, road_type, road_direction):
         min_dist = np.Inf # distance to nearest car(if it exists)
         c = None # nearest car(if it exists)
         r = None # road type of nearest car(if it exists)
+        r_direction = None # road direction of nearest car(if it exists)
         for road in self.roads:
             collided_idxs = car.vision.collidelistall(road.cars)
             for idx in collided_idxs:
@@ -82,8 +83,9 @@ class Map:
                     min_dist = dist
                     c = road.cars[idx]
                     r = road.type
+                    r_direction = road.direction
         
-        if r == "curve" and road_type == "curve" and get_cos(car.direction, c.direction) < 0:
+        if r == "curve" and road_type == "curve" and get_cos(road_direction, r_direction) < 0:
             c = None
 
         return c
@@ -212,7 +214,7 @@ def test(map):
                 road.draw_traffic_light(win)
             for car in road.cars:
                  car.update_vision(road.direction, road.type, road.curve)
-                 car.nearest_car = map.get_nearest_car(car, road.type)
+                 car.nearest_car = map.get_nearest_car(car, road.type, road.direction)
                  if car.nearest_car is not None:
                     if car.nearest_car.nearest_car is car:
                         if car.dist_driven > car.nearest_car.dist_driven:
