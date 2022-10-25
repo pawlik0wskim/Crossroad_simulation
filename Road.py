@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 from Node import Node
-from utilities import l2
+from utilities import l2_dist
 from os.path import join
 ROAD_COLOR = "Red"
 NODE_COLOR = "Yellow"
@@ -136,7 +136,7 @@ class Road:
                 car.stopping = self.check_stopping()
 
             # update driven distance of the car
-            car.dist_driven = l2(new_pos, self.end_point)/l2(self.start_point, self.end_point)
+            car.dist_driven = l2_dist(new_pos, self.end_point)/l2_dist(self.start_point, self.end_point)
 
             #Checking if car moved to another road
             if dist_from_start[0] > length[0] or dist_from_start[1] > length[1]:

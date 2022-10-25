@@ -3,7 +3,7 @@ from Road import Road
 import numpy as np
 from Car import Car
 from Node import Node
-from utilities import visualize, get_cos
+from utilities import visualize, cross_product, l2_dist
 
 FPS = 30
 
@@ -24,7 +24,7 @@ class Map:
             for car in road.cars:
                 car.draw(win)
                 pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
-                # pygame.draw.rect(win, [255, 255, 255], car.rect)
+                # pygame.draw.rect(win, [255, 0, 0], car.rect)
     
     # Adds car on random spawning position        
     def spawn_car(self, WIDTH, HEIGHT):
@@ -78,14 +78,14 @@ class Map:
         for road in self.roads:
             collided_idxs = car.vision.collidelistall(road.cars)
             for idx in collided_idxs:
-                dist = (car.rect.center[0] - road.cars[idx].rect.center[0])**2 + (car.rect.center[1] - road.cars[idx].rect.center[1])**2
+                dist = l2_dist(car.rect.center, road.cars[idx].rect.center)
                 if dist < min_dist and car is not road.cars[idx]:
                     min_dist = dist
                     c = road.cars[idx]
                     r = road.type
                     r_direction = road.direction
         
-        if r == "curve" and road_type == "curve" and get_cos(road_direction, r_direction) < 0:
+        if r == "arc" and road_type == "arc" and cross_product(road_direction, r_direction) < 0:
             c = None
 
         return c
@@ -96,6 +96,17 @@ class Map:
                 for cycle in road.light_cycle:
                     if i%self.light_cycle_time==cycle*self.light_cycle_time:
                         road.light_color = road.light_color + 1 if road.light_color<3 else 0
+    
+    # updates car vision and finds new nearest car
+    def process_car(self, car, road):
+        car.update_vision(road.direction, road.type, road.curve)
+        car.nearest_car = self.get_nearest_car(car, road.type, road.direction)
+        if car.nearest_car is not None:
+            if car.nearest_car.nearest_car is car:
+                if car.dist_driven > car.nearest_car.dist_driven:
+                    car.nearest_car = None
+                else:
+                    car.nearest_car.nearest_car = None
 
 
 
@@ -213,14 +224,8 @@ def test(map):
             if visualize:
                 road.draw_traffic_light(win)
             for car in road.cars:
-                 car.update_vision(road.direction, road.type, road.curve)
-                 car.nearest_car = map.get_nearest_car(car, road.type, road.direction)
-                 if car.nearest_car is not None:
-                    if car.nearest_car.nearest_car is car:
-                        if car.dist_driven > car.nearest_car.dist_driven:
-                            car.nearest_car = None
-                        else:
-                            car.nearest_car.nearest_car = None
+                 map.process_car(car, road)
+
         if i%FPS == 0:
             map.spawn_car(WIDTH, HEIGHT)
         map.update_traffic_lights(i)

@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 from pyparsing import alphanums
-from utilities import l2, visualize
+from utilities import l2_dist, visualize
 import cv2
 
 
@@ -105,12 +105,12 @@ class Car:
         new_acceleration = 1 - (self.velocity/self.limit)**self.acceleration_exponent
         if self.nearest_car is not None:
             desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
-            real_dist = np.sqrt(l2(self.rect.center, self.nearest_car.rect.center))
+            real_dist = np.sqrt(l2_dist(self.rect.center, self.nearest_car.rect.center))
             new_acceleration -= (desired_dist/real_dist)**2
         
         if self.stopping and first: 
             desired_dist = np.max([self.rect.h, self.rect.w])/2+7*unit+self.velocity*self.reaction_time + self.velocity*(self.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
-            real_dist = np.sqrt(l2(self.rect.center, nearest_node.pos))
+            real_dist = np.sqrt(l2_dist(self.rect.center, nearest_node.pos))
             new_acceleration -= (desired_dist/real_dist)**2
         self.acceleration = new_acceleration*self.maximum_acceleration
         
