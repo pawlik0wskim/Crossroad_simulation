@@ -1,12 +1,14 @@
 import pygame
 import numpy as np
 from Node import Node
+from utilities import l2
 from os.path import join
+from utilities import dir
 ROAD_COLOR = "Red"
 NODE_COLOR = "Yellow"
 eps = 10**(-5)
 light_color_dict = {3:"yellow",2:"red", 1:"yellow", 0:"green"}
-dir = r"C:\Users\Maciek\Documents\Studia\semestr 7\Crossroad_simulation"
+
 class Road:
     def __init__(self, start_node, end_node, type, curve = None, light = False, light_cycle = [0.3, 0.4, 0.8, 0.9]):
         self.start_node = start_node
@@ -94,13 +96,13 @@ class Road:
     #Checks if car should stop       
     def check_stopping(self):
         if self.light:
-            ans = True if self.light_color in [1,2] else False
+            ans = True if self.light_color in [1,2,3] else False
             return ans
         return False
         
     #Moves car to next position
-    def calculate_car_next_pos(self, car, nearest_car, dist = None):
-        car.update_acceleration(nearest_car, nearest_node = self.end_node, first = self.cars[0]==car)
+    def calculate_car_next_pos(self, car, dist = None):
+        car.update_acceleration(nearest_node = self.end_node, first = self.cars[0]==car)
         car.velocity = car.acceleration + car.velocity if car.velocity + car.acceleration< car.limit else car.limit
         if car.velocity<0:
             car.velocity = 0
@@ -133,38 +135,50 @@ class Road:
             
             if remaining_road - car.velocity < slowing_road and remaining_road > slowing_road and 1-car.stopping or car.stopping:
                 car.stopping = self.check_stopping()
+
+            # update driven distance of the car
+            car.dist_driven = l2(new_pos, self.end_point)/l2(self.start_point, self.end_point)
+
             #Checking if car moved to another road
             if dist_from_start[0] > length[0] or dist_from_start[1] > length[1]:
                 next_road = self.get_next_road()
                 self.cars.remove(car)
                 if next_road!=None:
-                    car.rect = car.img.get_rect(center=next_road.start_point) 
+                    car.rect = car.get_img_rect(center=next_road.start_point) 
                     next_road.cars.append(car)
-                    next_road.calculate_car_next_pos(car, nearest_car, dist_from_start[0] - length[0] + dist_from_start[1] - length[1])
+                    next_road.calculate_car_next_pos(car, dist_from_start[0] - length[0] + dist_from_start[1] - length[1])
                 else:
-                    del car  
+                    del car
+                    return 1
             else:
-                car.rect = car.img.get_rect(center=new_pos)
+                car.rect = car.get_img_rect(center=new_pos)
         else:
             
             angle = dist/2/np.pi/self.radius*360
             new_angle = car.angle + angle*(int(self.curve=="right")-1/2)*2
             pos = car.rect.center
             new_pos = (self.radius*np.cos((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[0],self.radius*np.sin((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[1])
+            
+            # update driven distance of the car
+            car.dist_driven = (90-((1-int(self.curve=="right"))*new_angle)%90)/90*(-12/30*int(self.curve=="left")+1)
+            
+            #print(f'angle: {new_angle}, dist: {car.dist_driven}')
             if np.abs(new_angle)%90 < np.abs(angle) - eps:
                 next_road = self.get_next_road()
                 self.cars.remove(car)
                 if next_road!=None:
-                    car.rect = car.img.get_rect(center=next_road.start_point) 
+                    car.rect = car.get_img_rect(center=next_road.start_point) 
                     next_road.cars.append(car)
                     remaining_distance = np.abs(new_angle)%90/180*np.pi*self.radius
-                    next_road.calculate_car_next_pos(car, nearest_car, remaining_distance)
+                    next_road.calculate_car_next_pos(car, remaining_distance)
                 else:
                     del car  
+                    return 1
             else:
                 car.angle = new_angle
                 car.visable_angle -= angle*(int(self.curve=="right")-1/2)*2
-                car.rect = car.img.get_rect(center=new_pos)
+                car.rect = car.get_img_rect(center=new_pos)
+        return 0
 
 def test():
     win = pygame.display.set_mode((400, 400))

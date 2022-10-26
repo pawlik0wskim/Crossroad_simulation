@@ -2,6 +2,12 @@ import pygame
 import numpy
 
 
+visualize = True
+dir = r""
+FPS = 60
+WIDTH, HEIGHT = (1000,1000)
+
+
 def rotate_image(win, image, top_left, angle):
     rotated_img = pygame.transform.rotate(image, angle)
     rotated_rect = rotated_img.get_rect(center = image.get_rect(topleft = top_left).center)
@@ -11,3 +17,6 @@ def rotate_image(win, image, top_left, angle):
 def scale(image, factor):
     size = round(image.get_width() * factor), round(image.get_hight()*factor)
     return pygame.transform.scale(image, size)
+
+def l2(a, b):
+    return (a[0] - b[0])**2 + (a[1] - b[1])**2
