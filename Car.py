@@ -1,6 +1,5 @@
 import pygame
 import numpy as np
-from pyparsing import alphanums
 from utilities import l2_dist, visualize
 import cv2
 
@@ -83,14 +82,17 @@ class Car:
                                       2*self.rect.h)
         else:
             if curve == "left":
-                alpha, beta = 1.5, 1.5
+                alpha, beta = 2, 2
                 new_x = alpha*self.rect.w if direction[0] > 0 else -self.rect.w
                 new_y = beta*self.rect.h if direction[1] > 0 else -self.rect.h
                 new_x = self.rect.x - new_x
                 new_y = self.rect.y - new_y
                 self.vision = pygame.Rect(new_x, new_y, alpha*self.rect.w, beta*self.rect.h)
             else:
-                alpha, beta = 0.6, 0.6
+                if direction[0]*direction[1] > 0:
+                    alpha, beta = 0.6, 1.5
+                else:
+                    alpha, beta = 1.5, 0.6
                 center_new_x, center_new_y = self.rect.centerx, self.rect.centery
                 center_new_x += alpha*self.rect.w if direction[0] < 0 else 0
                 center_new_y += beta*self.rect.h if direction[1] < 0 else 0

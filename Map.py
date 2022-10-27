@@ -54,9 +54,10 @@ class Map:
         node.exiting_roads[0].cars.append(car)
 
     def move_cars(self):
+        global Flow
         for road in self.roads:
             for car in road.cars:
-                road.calculate_car_next_pos(car)
+                Flow+=road.calculate_car_next_pos(car)
     
 
     #Removes cars that collided with each other            
@@ -70,7 +71,6 @@ class Map:
                             road.cars.remove(car) 
                             road2.cars.remove(car2)
                             Collisions+=1
-                            print("collision")
                             continue
                         
     #Method returns nearest car visible for the driver
@@ -207,18 +207,18 @@ def test(map):
     if visualize:
         win = pygame.display.set_mode((WIDTH, HEIGHT))   
         clock=pygame.time.Clock()
-        map_img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT))
+        map_img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT)).convert()
     start_time = time.time()
     # map_rect = map_img.get_rect(topleft = (0,0))
     map_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
     i=0
     prev_flow = 0
     while(True):
-        if visualize:
-            win.blit(map_img, map_rect)
+        loop_start = time.time()
         map.check_for_car_collision()
         i+=1
         if visualize:
+            win.blit(map_img, map_rect)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                         pygame.quit()
@@ -239,8 +239,8 @@ def test(map):
         if visualize:
             pygame.display.update()
             clock.tick(FPS)
-        loop_time = (- loop_start + time.time())
         if i%600*FPS == 0:
+            loop_time = (- loop_start + time.time())
             print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(time.time() - start_time)}, FPS: {1/loop_time}")
             # if prev_flow==Flow:
             #     break

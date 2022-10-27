@@ -177,11 +177,13 @@ class Road:
                     remaining_distance = np.abs(new_angle)%90/180*np.pi*self.radius
                     next_road.calculate_car_next_pos(car, remaining_distance)
                 else:
-                    del car  
+                    del car
+                    return 1  
             else:
                 car.angle = new_angle
                 car.visable_angle -= angle*(int(self.curve=="right")-1/2)*2
                 car.rect = car.get_img_rect(center=new_pos)
+        return 0
 
 def test():
     win = pygame.display.set_mode((400, 400))
