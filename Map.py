@@ -204,7 +204,6 @@ def test(map):
         clock=pygame.time.Clock()
         map_img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT))
 
-    # map_rect = map_img.get_rect(topleft = (0,0))
     map_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
     i=0
     while(True):
