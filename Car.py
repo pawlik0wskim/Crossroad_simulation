@@ -1,11 +1,11 @@
 import pygame
 import numpy as np
-from utilities import l2, visualize
+from pyparsing import alphanums
+from utilities import l2_dist, visualize
 import cv2
-from utilities import dir
 
 
-
+dir = r""
 class Car:
     def __init__(self, position, angle, WIDTH, HEIGHT):
         global unit
@@ -23,7 +23,7 @@ class Car:
         self.img = cv2.resize(image, (w, h), interpolation=cv2.INTER_LINEAR)
 
         unit = (1/2000*WIDTH+1/2000*HEIGHT) 
-        self.rect = Car.__getx2_rect_from_center(position[0], position[1], w/2, h/2)
+        self.rect = pygame.Rect(position[0] - w/2, position[1] - h/2, w, h)
         self.angle = angle
         self.visable_angle = angle
         self.dist_driven = np.Inf # part of distance driven on current road since its start
@@ -38,11 +38,8 @@ class Car:
         self.acceleration = unit/4
         self.acceleration_exponent = 4
         self.reaction_time = 1
-        self.minimum_dist = np.max([self.rect.h,self.rect.w])*3/2
+        self.minimum_dist = np.max([self.rect.h,self.rect.w])*5/3
         self.deceleration = self.acceleration*4
-        
-    def __getx2_rect_from_center(x, y, w, h):
-        return pygame.Rect(x - w, y - h, 2*w, 2*h)
 
     # returns rotated image according to visible angle
     def rotate_image(self):
@@ -64,13 +61,8 @@ class Car:
 
         # return result of rotation of bigger image
         return cv2.warpAffine(self.img, rotation_matrix, (new_w, new_h))
-            
-    # def rotate(self): # rotates car image and rect based on current visible angle
-    #     rotated_img = pygame.transform.rotate(self.img, self.visable_angle)  
-    #     self.rect  = rotated_img.get_rect(center = self.img.get_rect(topleft = self.rect.topleft).center)
-    #     return rotated_img
 
-    # returns rect with dimensions like self.img has and with center in given center
+    # returns rect with dimensions like self.img has and with center in the given center
     def get_img_rect(self, center):
         img = self.rotate_image()
         w, h = img.shape[1], img.shape[0]
@@ -85,21 +77,27 @@ class Car:
         if type == "straight":
             center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2 - direction[1]*self.rect.width/2
             center_new_y = self.rect.center[1] + direction[0]*self.rect.height/2 - direction[1]*self.rect.height*3/2
-            self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width, self.rect.height)
+            self.vision = pygame.Rect(center_new_x - self.rect.w,
+                                      center_new_y - self.rect.h, 
+                                      2*self.rect.w, 
+                                      2*self.rect.h)
         else:
             if curve == "left":
-                center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2
-                center_new_y = self.rect.center[1] - direction[1]*self.rect.height*3/2
-                self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width, self.rect.height)
+                alpha, beta = 1.5, 1.5
+                new_x = alpha*self.rect.w if direction[0] > 0 else -self.rect.w
+                new_y = beta*self.rect.h if direction[1] > 0 else -self.rect.h
+                new_x = self.rect.x - new_x
+                new_y = self.rect.y - new_y
+                self.vision = pygame.Rect(new_x, new_y, alpha*self.rect.w, beta*self.rect.h)
             else:
-                if direction[0] == -1 and direction[1] == 1:
-                    center_new_x = self.rect.center[0]# + self.rect.width/2
-                    center_new_y = self.rect.center[1]# - self.rect.height/2
-                    self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width*2/3, self.rect.height/2)
-                else:
-                    center_new_x = self.rect.center[0]# - direction[0]*self.rect.width*3/2
-                    center_new_y = self.rect.center[1]# - direction[1]*self.rect.height/2
-                    self.vision = Car.__getx2_rect_from_center(center_new_x, center_new_y, self.rect.width/2, self.rect.height*2/3)
+                alpha, beta = 0.6, 0.6
+                center_new_x, center_new_y = self.rect.centerx, self.rect.centery
+                center_new_x += alpha*self.rect.w if direction[0] < 0 else 0
+                center_new_y += beta*self.rect.h if direction[1] < 0 else 0
+                self.vision = pygame.Rect(center_new_x - alpha*self.rect.w,
+                                          center_new_y - beta*self.rect.h, 
+                                          alpha*self.rect.w, 
+                                          beta*self.rect.h)
                 
     ### Calculates current car acceleration based on its distance to nearest car
     def update_acceleration(self, nearest_node=None, first = False):
@@ -107,12 +105,12 @@ class Car:
         new_acceleration = 1 - (self.velocity/self.limit)**self.acceleration_exponent
         if self.nearest_car is not None:
             desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
-            real_dist = np.sqrt(l2(self.rect.center, self.nearest_car.rect.center))
+            real_dist = np.sqrt(l2_dist(self.rect.center, self.nearest_car.rect.center))
             new_acceleration -= (desired_dist/real_dist)**2
         
         if self.stopping and first: 
             desired_dist = np.max([self.rect.h, self.rect.w])/2+7*unit+self.velocity*self.reaction_time + self.velocity*(self.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
-            real_dist = np.sqrt(l2(self.rect.center, nearest_node.pos))
+            real_dist = np.sqrt(l2_dist(self.rect.center, nearest_node.pos))
             new_acceleration -= (desired_dist/real_dist)**2
         self.acceleration = new_acceleration*self.maximum_acceleration
         
@@ -123,14 +121,14 @@ class Car:
         self.rect = self.get_img_rect(center)
         surface = pygame.image.frombuffer(rotated_img.tobytes(), rotated_img.shape[1::-1], "RGBA")
         win.blit(surface, self.rect)
-        # pygame.draw.rect(win, [255, 255, 255], self.rect)
+        # pygame.draw.rect(win, [255, 255, 255], self.rect) 
         
     
     #Checks for collision with other car    
     def collide(self, other):
         mask1 = pygame.mask.from_surface(Car.get_img_as_surface(self.rotate_image()))
         mask2 = pygame.mask.from_surface(Car.get_img_as_surface(other.rotate_image()))
-        offset = (int(-other.rect.topleft[0]+self.rect.topleft[0]), int(-other.rect.topleft[1]+self.rect.topleft[1]))
+        offset = (int(-other.rect.topleft[0]+self.rect.topleft[0]), int(-other.rect.topleft[1]+self.rect.topleft[1]))#(int(self.rect.x - other.rect.x), int(self.rect.y - other.rect.y))
         poi = mask2.overlap(mask1, offset)
         return poi
     
