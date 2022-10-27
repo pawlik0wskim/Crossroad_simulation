@@ -5,7 +5,7 @@ from utilities import l2_dist, visualize
 import cv2
 
 
-dir = r""
+
 class Car:
     def __init__(self, position, angle, WIDTH, HEIGHT):
         global unit
