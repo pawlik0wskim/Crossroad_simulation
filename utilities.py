@@ -1,18 +1,8 @@
 import pygame
 import numpy as np
 
-
-
+# is True the simultion will be visualized
 visualize = True
-dir = r""
-FPS = 60
-WIDTH, HEIGHT = (1000,1000)
-
-
-visualize = True
-dir = r""
-FPS = 60
-WIDTH, HEIGHT = (1000,1000)
 
 
 def rotate_image(win, image, top_left, angle):
