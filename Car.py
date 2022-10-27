@@ -38,7 +38,7 @@ class Car:
         self.acceleration = unit/4
         self.acceleration_exponent = 4
         self.reaction_time = 1
-        self.minimum_dist = np.max([self.rect.h,self.rect.w])*3/2
+        self.minimum_dist = np.max([self.rect.h,self.rect.w])*5/3
         self.deceleration = self.acceleration*4
 
     # returns rotated image according to visible angle
@@ -121,14 +121,14 @@ class Car:
         self.rect = self.get_img_rect(center)
         surface = pygame.image.frombuffer(rotated_img.tobytes(), rotated_img.shape[1::-1], "RGBA")
         win.blit(surface, self.rect)
-        # pygame.draw.rect(win, [255, 255, 255], self.rect)
+        # pygame.draw.rect(win, [255, 255, 255], self.rect) 
         
     
     #Checks for collision with other car    
     def collide(self, other):
         mask1 = pygame.mask.from_surface(Car.get_img_as_surface(self.rotate_image()))
         mask2 = pygame.mask.from_surface(Car.get_img_as_surface(other.rotate_image()))
-        offset = (int(self.rect.x - other.rect.x), int(self.rect.y - other.rect.y))
+        offset = (int(-other.rect.topleft[0]+self.rect.topleft[0]), int(-other.rect.topleft[1]+self.rect.topleft[1]))#(int(self.rect.x - other.rect.x), int(self.rect.y - other.rect.y))
         poi = mask2.overlap(mask1, offset)
         return poi
     

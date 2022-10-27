@@ -3,9 +3,11 @@ from Road import Road
 import numpy as np
 from Car import Car
 from Node import Node
-from utilities import visualize, cross_product, l2_dist
+import time
+from utilities import visualize, cross_product, l2_dist, WIDTH, HEIGHT, FPS
 
-FPS = 30
+Collisions = 0
+Flow = 0
 
 class Map:
     def __init__(self, roads, starting_nodes, light_cycle_time = 10*FPS):
@@ -32,7 +34,7 @@ class Map:
         rand1 = rand+1
         node = self.starting_nodes[rand]
         if len(node.exiting_roads[0].cars)>0:
-            previous_car = node.exiting_roads[0].cars[-1].rect # we don't want to spawn one car inside of one another
+            previous_car = node.exiting_roads[0].cars[-1].rect # we don't want cars to spawn inside one another
             while np.abs(previous_car.center[0]-node.pos[0]+previous_car.center[1]-node.pos[1])<np.max([previous_car.width, previous_car.height]) and rand1!=rand:
                 rand1 = rand1+1 if rand1 < len(self.starting_nodes)-1 else 0
                 node = self.starting_nodes[np.random.randint(0, len(self.starting_nodes))]
@@ -59,6 +61,7 @@ class Map:
 
     #Removes cars that collided with each other            
     def check_for_car_collision(self):
+        global Collisions
         for road in self.roads:
             for car in road.cars:
                 for road2 in self.roads:
@@ -66,6 +69,7 @@ class Map:
                         if car.collide(car2) != None and car in road.cars and car2 in road2.cars and car != car2:
                             road.cars.remove(car) 
                             road2.cars.remove(car2)
+                            Collisions+=1
                             print("collision")
                             continue
                         
@@ -80,13 +84,13 @@ class Map:
             for idx in collided_idxs:
                 dist = l2_dist(car.rect.center, road.cars[idx].rect.center)
                 if dist < min_dist and car is not road.cars[idx]:
-                    min_dist = dist
-                    c = road.cars[idx]
+                    
                     r = road.type
                     r_direction = road.direction
-        
-        if r == "arc" and road_type == "arc" and cross_product(road_direction, r_direction) < 0:
-            c = None
+                    if not (r == "arc" and road_type == "arc" and cross_product(road_direction, r_direction) < 0):
+                        c = road.cars[idx]
+                        min_dist = dist
+
 
         return c
     
@@ -107,6 +111,7 @@ class Map:
                     car.nearest_car = None
                 else:
                     car.nearest_car.nearest_car = None
+
 
 
 
@@ -203,10 +208,11 @@ def test(map):
         win = pygame.display.set_mode((WIDTH, HEIGHT))   
         clock=pygame.time.Clock()
         map_img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT))
-
+    start_time = time.time()
     # map_rect = map_img.get_rect(topleft = (0,0))
     map_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
     i=0
+    prev_flow = 0
     while(True):
         if visualize:
             win.blit(map_img, map_rect)
@@ -233,6 +239,12 @@ def test(map):
         if visualize:
             pygame.display.update()
             clock.tick(FPS)
+        loop_time = (- loop_start + time.time())
+        if i%600*FPS == 0:
+            print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(time.time() - start_time)}, FPS: {1/loop_time}")
+            # if prev_flow==Flow:
+            #     break
+            # prev_flow = Flow
 test(generate_crossroad(WIDTH, HEIGHT))
 
 
