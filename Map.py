@@ -93,16 +93,14 @@ class Map:
         
         if c is not None:
             if c.nearest_car is car:
-                if road_type == "arc" and r == "straight" and cross_product(road_direction, r_direction) < 0:
-                    c.nearest_car = None
-                elif road_type == "straight" and r == "arc" and cross_product(road_direction, r_direction) < 0:
+                # if road_type == "arc" and r == "straight" and cross_product(road_direction, r_direction) < 0:
+                #     c.nearest_car = None
+                # elif road_type == "straight" and r == "arc" and cross_product(road_direction, r_direction) < 0:
+                #     c = None
+                if car.dist_driven > c.dist_driven:
                     c = None
-                elif car.dist_driven > c.dist_driven:
-                    if not (road_type == "arc" and r == "straight"):
-                        c = None
                 else:
-                    if not (r == "arc" and road_type == "straight"):
-                        c.nearest_car = None
+                    c.nearest_car = None
         car.nearest_car = c
     
     def update_traffic_lights(self, i):

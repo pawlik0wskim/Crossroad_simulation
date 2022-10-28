@@ -82,7 +82,7 @@ class Car:
                                       2*self.rect.h)
         else:
             if curve == "left":
-                alpha, beta = 1, 1
+                alpha, beta = 1.2, 1.2
                 new_x = alpha*self.rect.w if direction[0] > 0 else -self.rect.w
                 new_y = beta*self.rect.h if direction[1] > 0 else -self.rect.h
                 new_x = self.rect.x - new_x
