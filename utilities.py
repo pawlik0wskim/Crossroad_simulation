@@ -2,13 +2,13 @@ import pygame
 import numpy as np
 
 # is True the simultion will be visualized
-visualize = True
+visualize = False
 left_prob, right_prob = 0.2, 0.3
 WIDTH, HEIGHT = (1000,1000)
 ROAD_COLOR = "Red"
 NODE_COLOR = "Yellow"
 dir = r""
-FPS = 30
+FPS = 200
 
 def rotate_image(win, image, top_left, angle):
     rotated_img = pygame.transform.rotate(image, angle)

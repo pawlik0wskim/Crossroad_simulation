@@ -82,7 +82,7 @@ class Car:
                                       2*self.rect.h)
         else:
             if curve == "left":
-                alpha, beta = 2, 2
+                alpha, beta = 1, 1
                 new_x = alpha*self.rect.w if direction[0] > 0 else -self.rect.w
                 new_y = beta*self.rect.h if direction[1] > 0 else -self.rect.h
                 new_x = self.rect.x - new_x
@@ -90,9 +90,9 @@ class Car:
                 self.vision = pygame.Rect(new_x, new_y, alpha*self.rect.w, beta*self.rect.h)
             else:
                 if direction[0]*direction[1] > 0:
-                    alpha, beta = 0.6, 1.5
+                    alpha, beta = 0.7, 1.5
                 else:
-                    alpha, beta = 1.5, 0.6
+                    alpha, beta = 1.5, 0.7
                 center_new_x, center_new_y = self.rect.centerx, self.rect.centery
                 center_new_x += alpha*self.rect.w if direction[0] < 0 else 0
                 center_new_y += beta*self.rect.h if direction[1] < 0 else 0
@@ -106,7 +106,10 @@ class Car:
         
         new_acceleration = 1 - (self.velocity/self.limit)**self.acceleration_exponent
         if self.nearest_car is not None:
-            desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
+            # sign = np.sign(np.cos(self.visable_angle - self.nearest_car.visable_angle))
+            sign = np.sign(np.cos(self.visable_angle - self.nearest_car.visable_angle))
+            # sign = 1
+            desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - sign*self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
             real_dist = np.sqrt(l2_dist(self.rect.center, self.nearest_car.rect.center))
             new_acceleration -= (desired_dist/real_dist)**2
         

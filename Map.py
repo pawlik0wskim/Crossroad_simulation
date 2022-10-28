@@ -73,8 +73,8 @@ class Map:
                             Collisions+=1
                             continue
                         
-    #Method returns nearest car visible for the driver
-    def get_nearest_car(self, car, road_type, road_direction):
+    #Method manages what does car and nearest car to it see as hindrance
+    def process_car_neighborhood(self, car, road_type, road_direction):
         min_dist = np.Inf # distance to nearest car(if it exists)
         c = None # nearest car(if it exists)
         r = None # road type of nearest car(if it exists)
@@ -90,9 +90,20 @@ class Map:
                     if not (r == "arc" and road_type == "arc" and cross_product(road_direction, r_direction) < 0):
                         c = road.cars[idx]
                         min_dist = dist
-
-
-        return c
+        
+        if c is not None:
+            if c.nearest_car is car:
+                if road_type == "arc" and r == "straight" and cross_product(road_direction, r_direction) < 0:
+                    c.nearest_car = None
+                elif road_type == "straight" and r == "arc" and cross_product(road_direction, r_direction) < 0:
+                    c = None
+                elif car.dist_driven > c.dist_driven:
+                    if not (road_type == "arc" and r == "straight"):
+                        c = None
+                else:
+                    if not (r == "arc" and road_type == "straight"):
+                        c.nearest_car = None
+        car.nearest_car = c
     
     def update_traffic_lights(self, i):
         for road in self.roads:
@@ -104,15 +115,7 @@ class Map:
     # updates car vision and finds new nearest car
     def process_car(self, car, road):
         car.update_vision(road.direction, road.type, road.curve)
-        car.nearest_car = self.get_nearest_car(car, road.type, road.direction)
-        if car.nearest_car is not None:
-            if car.nearest_car.nearest_car is car:
-                if car.dist_driven > car.nearest_car.dist_driven:
-                    car.nearest_car = None
-                else:
-                    car.nearest_car.nearest_car = None
-
-
+        self.process_car_neighborhood(car, road.type, road.direction)
 
 
 
@@ -168,6 +171,27 @@ def generate_crossroad(WIDTH, HEIGHT):
     roads.append(Road(node9,node5, type = "arc", curve = "left"))
     roads.append(Road(node9,node11, "straight"))
     return Map(roads, [ node1, node8, node13, node16]) 
+
+
+
+def generate_one_straight_one_left_turn(WIDTH, HEIGHT):
+    node1 = Node((11/24*WIDTH, 0))
+    node2 = Node((13/24*WIDTH, 0))
+    node3 = Node((11/24*WIDTH, HEIGHT/3))
+    node4 = Node((13/24*WIDTH, 1/3*HEIGHT))
+    node6 = Node((13/24*WIDTH, 2/3*HEIGHT))
+    node8 = Node((13/24*WIDTH, HEIGHT))
+    node10 = Node((WIDTH*2/3, HEIGHT*13/24))
+    node14 = Node((WIDTH, HEIGHT*13/24))    
+
+    roads = []
+    roads.append(Road(node1, node3, "straight", light = True))#top
+    roads.append(Road(node4, node2, "straight"))
+    roads.append(Road(node8, node6, "straight", light = True))
+    roads.append(Road(node10, node14, "straight"))
+    roads.append(Road(node6,node4, "straight"))
+    roads.append(Road(node3,node10, type = "arc", curve = "left"))
+    return Map(roads, [node1, node8]) 
 
 
 
@@ -241,14 +265,19 @@ def test(map):
             clock.tick(FPS)
         if i%600*FPS == 0:
             loop_time = (- loop_start + time.time())
-            print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(time.time() - start_time)}, FPS: {1/loop_time}")
+            print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(time.time() - start_time)}")
+            # print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(time.time() - start_time)}, FPS: {1/(loop_time)}")
             # if prev_flow==Flow:
             #     break
             # prev_flow = Flow
-test(generate_crossroad(WIDTH, HEIGHT))
+
+def main():
+    test(generate_crossroad(WIDTH, HEIGHT))
+    # test(generate_one_straight_one_left_turn(WIDTH, HEIGHT))
 
 
-
+if __name__ == "__main__":
+    main()
 
 
 
