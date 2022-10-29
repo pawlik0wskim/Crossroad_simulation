@@ -93,11 +93,11 @@ class Map:
         
         if c is not None:
             if c.nearest_car is car:
-                # if road_type == "arc" and r == "straight" and cross_product(road_direction, r_direction) < 0:
-                #     c.nearest_car = None
-                # elif road_type == "straight" and r == "arc" and cross_product(road_direction, r_direction) < 0:
-                #     c = None
-                if car.dist_driven > c.dist_driven:
+                if road_type == "arc" and r == "straight" and car.dist_driven < 1/4 and cross_product(road_direction, r_direction) < 0:
+                    c.nearest_car = None
+                elif road_type == "straight" and r == "arc" and c.dist_driven < 1/4 and cross_product(road_direction, r_direction) < 0:
+                    c = None
+                elif car.dist_driven > c.dist_driven:
                     c = None
                 else:
                     c.nearest_car = None
