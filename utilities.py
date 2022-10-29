@@ -9,6 +9,7 @@ ROAD_COLOR = "Red"
 NODE_COLOR = "Yellow"
 dir = r""
 FPS = 30
+max_time = 300 # simulation will be run up to this time in seconds
 
 def rotate_image(win, image, top_left, angle):
     rotated_img = pygame.transform.rotate(image, angle)

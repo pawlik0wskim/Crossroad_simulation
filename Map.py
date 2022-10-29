@@ -1,10 +1,14 @@
+from unittest import result
+from py import process
 import pygame
+from regex import P
 from Road import Road
 import numpy as np
 from Car import Car
 from Node import Node
 import time
-from utilities import visualize, cross_product, l2_dist, WIDTH, HEIGHT, FPS
+from utilities import *
+from multiprocessing import Process, Lock, Value
 
 Collisions = 0
 Flow = 0
@@ -93,11 +97,17 @@ class Map:
         
         if c is not None:
             if c.nearest_car is car:
-                if road_type == "arc" and r == "straight" and car.dist_driven < 1/4 and cross_product(road_direction, r_direction) < 0:
-                    c.nearest_car = None
-                elif road_type == "straight" and r == "arc" and c.dist_driven < 1/4 and cross_product(road_direction, r_direction) < 0:
-                    c = None
-                elif car.dist_driven > c.dist_driven:
+                # if road_type == "arc" and r == "straight" and cross_product(road_direction, r_direction) < 0:
+                #     if car.dist_driven < 1/3:
+                #         c.nearest_car = None
+                #     else:
+                #         c = None
+                # elif road_type == "straight" and r == "arc" and cross_product(road_direction, r_direction) < 0:
+                #     if c.dist_driven < 1/3:
+                #         c = None
+                #     else:
+                #         c.nearest_car = None
+                if car.dist_driven > c.dist_driven:
                     c = None
                 else:
                     c.nearest_car = None
@@ -225,13 +235,12 @@ def test_map(WIDTH, HEIGHT):
 
 
  
-def test(map): 
+def simulate(map): 
     if visualize:
         win = pygame.display.set_mode((WIDTH, HEIGHT))   
         clock=pygame.time.Clock()
         map_img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT)).convert()
     start_time = time.time()
-    # map_rect = map_img.get_rect(topleft = (0,0))
     map_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
     i=0
     prev_flow = 0
@@ -262,16 +271,66 @@ def test(map):
             pygame.display.update()
             clock.tick(FPS)
         if i%600*FPS == 0:
-            loop_time = (- loop_start + time.time())
-            print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(time.time() - start_time)}")
-            # print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(time.time() - start_time)}, FPS: {1/(loop_time)}")
-            # if prev_flow==Flow:
-            #     break
-            # prev_flow = Flow
+            current_time = time.time()
+            loop_time = current_time - loop_start
+            elapsed_time = current_time - start_time
+            print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}")
+            if prev_flow == Flow or elapsed_time >= max_time:
+                break
+            prev_flow = Flow
+
+def simulate_in_thread(map, result):
+    start_time = time.time()
+    i=0
+    prev_flow = 0
+    while(True):
+        loop_start = time.time()
+        map.check_for_car_collision()
+        i+=1
+        
+        for road in map.roads:
+            for car in road.cars:
+                 map.process_car(car, road)
+
+        if i%FPS == 0:
+            map.spawn_car(WIDTH, HEIGHT)
+        map.update_traffic_lights(i)
+        map.move_cars()
+        if i%600*FPS == 0:
+            current_time = time.time()
+            loop_time = current_time - loop_start
+            elapsed_time = current_time - start_time
+            if prev_flow == Flow or elapsed_time >= max_time:
+                result.value =  cost_function(Flow, Collisions)
+                break
+            prev_flow = Flow
+
+def cost_function(flow, collisions):
+    return collisions*np.log(collisions + 1) - flow
 
 def main():
-    test(generate_crossroad(WIDTH, HEIGHT))
-    # test(generate_one_straight_one_left_turn(WIDTH, HEIGHT))
+    # map = generate_crossroad(WIDTH, HEIGHT)
+    # n_jobs = 5
+    # processes = []
+    # results = []
+    # start = time.time()
+
+    # for i in range(n_jobs):
+    #     val = Value('f', 0.0)
+    #     results.append(val)
+
+    #     p = Process(target=simulate_in_thread, args=(map, val))
+    #     p.start()
+    #     processes.append(p)
+
+    # for p in processes:
+    #     p.join()
+    
+    # print(time.time() - start)
+
+    # for res in results:
+    #     print(res.value)
+    simulate(generate_crossroad(WIDTH, HEIGHT))
 
 
 if __name__ == "__main__":
