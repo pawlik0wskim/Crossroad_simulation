@@ -74,12 +74,13 @@ class Car:
     # updates vision based on type and direction of the road
     def update_vision(self, direction, type, curve):
         if type == "straight":
-            center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2 - direction[1]*self.rect.width/2
-            center_new_y = self.rect.center[1] + direction[0]*self.rect.height/2 - direction[1]*self.rect.height*3/2
-            self.vision = pygame.Rect(center_new_x - self.rect.w,
-                                      center_new_y - self.rect.h, 
-                                      2*self.rect.w, 
-                                      2*self.rect.h)
+            center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2
+            center_new_y = self.rect.center[1] - direction[1]*self.rect.height*3/2
+            w, h = self.rect.w*(1 + abs(direction[0])), self.rect.h*(1 + abs(direction[1]))
+            self.vision = pygame.Rect(center_new_x - w/2,
+                                      center_new_y - h/2, 
+                                      w, 
+                                      h)
         else:
             if curve == "left":
                 alpha, beta = 1.5, 1.5
