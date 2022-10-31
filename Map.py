@@ -1,19 +1,25 @@
+from unittest import result
 import pygame
 from Road import Road
 import numpy as np
 from Car import Car
 from Node import Node
 import time
-from utilities import visualize, cross_product, l2_dist, WIDTH, HEIGHT, FPS
+from utilities import *
+from multiprocessing import Process, Lock, Value
 
 Collisions = 0
 Flow = 0
 
 class Map:
-    def __init__(self, roads, starting_nodes, light_cycle_time = 10*FPS):
+    def __init__(self, roads, starting_nodes):
         self.roads=roads
         self.starting_nodes = starting_nodes
-        self.light_cycle_time = light_cycle_time
+        self.roads_with_lights = []
+        for road in roads:
+            if road.light:
+                self.roads_with_lights.append(road)
+        
 
     # Draws all paths cars travel along 
     def show_paths(self, win):
@@ -21,12 +27,13 @@ class Map:
             road.draw_path(win)
 
     # Draws all cars
-    def show_vehicles(self, win):
+    def show_vehicles(self, win, debug):
         for road in self.roads:
             for car in road.cars:
                 car.draw(win)
-                pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
-                # pygame.draw.rect(win, [255, 0, 0], car.rect)
+                if debug:
+                    pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
+                    pygame.draw.rect(win, [255, 0, 0], car.rect)
     
     # Adds car on random spawning position        
     def spawn_car(self, WIDTH, HEIGHT):
@@ -71,11 +78,10 @@ class Map:
                             road.cars.remove(car) 
                             road2.cars.remove(car2)
                             Collisions+=1
-                            print("collision")
                             continue
                         
-    #Method returns nearest car visible for the driver
-    def get_nearest_car(self, car, road_type, road_direction):
+    #Method manages what does car and nearest car to it see as hindrance
+    def process_car_neighborhood(self, car, road_type, road_direction):
         min_dist = np.Inf # distance to nearest car(if it exists)
         c = None # nearest car(if it exists)
         r = None # road type of nearest car(if it exists)
@@ -91,30 +97,26 @@ class Map:
                     if not (r == "arc" and road_type == "arc" and cross_product(road_direction, r_direction) < 0):
                         c = road.cars[idx]
                         min_dist = dist
-
-
-        return c
+        
+        if c is not None:
+            if c.nearest_car is car:
+                if car.dist_driven > c.dist_driven:
+                    c = None
+                else:
+                    c.nearest_car = None
+        car.nearest_car = c
     
     def update_traffic_lights(self, i):
         for road in self.roads:
             if road.light:
                 for cycle in road.light_cycle:
-                    if i%self.light_cycle_time==cycle*self.light_cycle_time:
+                    if i%light_cycle_time==cycle*light_cycle_time:
                         road.light_color = road.light_color + 1 if road.light_color<3 else 0
     
     # updates car vision and finds new nearest car
     def process_car(self, car, road):
         car.update_vision(road.direction, road.type, road.curve)
-        car.nearest_car = self.get_nearest_car(car, road.type, road.direction)
-        if car.nearest_car is not None:
-            if car.nearest_car.nearest_car is car:
-                if car.dist_driven > car.nearest_car.dist_driven:
-                    car.nearest_car = None
-                else:
-                    car.nearest_car.nearest_car = None
-
-
-
+        self.process_car_neighborhood(car, road.type, road.direction)
 
 
 
@@ -142,14 +144,14 @@ def generate_crossroad(WIDTH, HEIGHT):
 
     roads = []
     #Vertical
-    roads.append(Road(node1, node3, "straight", light = True))#top
+    roads.append(Road(node1, node3, "straight", light = True, light_cycle = light_cycle))#top
     roads.append(Road(node4, node2, "straight"))
     roads.append(Road(node5, node7, "straight"))#bottom
-    roads.append(Road(node8, node6, "straight", light = True))
+    roads.append(Road(node8, node6, "straight", light = True, light_cycle = light_cycle))
     #Horrizontal
     roads.append(Road(node11, node15, "straight"))#left
-    roads.append(Road(node16, node12, "straight", light = True))
-    roads.append(Road(node13, node9, "straight", light = True))#right
+    roads.append(Road(node16, node12, "straight", light = True, light_cycle = light_cycle))
+    roads.append(Road(node13, node9, "straight", light = True, light_cycle = light_cycle))#right
     roads.append(Road(node10, node14, "straight"))
     #Bottom turns
     roads.append(Road(node6,node10, type = "arc", curve = "right"))
@@ -168,6 +170,27 @@ def generate_crossroad(WIDTH, HEIGHT):
     roads.append(Road(node9,node5, type = "arc", curve = "left"))
     roads.append(Road(node9,node11, "straight"))
     return Map(roads, [ node1, node8, node13, node16]) 
+
+
+
+def generate_one_straight_one_left_turn(WIDTH, HEIGHT):
+    node1 = Node((11/24*WIDTH, 0))
+    node2 = Node((13/24*WIDTH, 0))
+    node3 = Node((11/24*WIDTH, HEIGHT/3))
+    node4 = Node((13/24*WIDTH, 1/3*HEIGHT))
+    node6 = Node((13/24*WIDTH, 2/3*HEIGHT))
+    node8 = Node((13/24*WIDTH, HEIGHT))
+    node10 = Node((WIDTH*2/3, HEIGHT*13/24))
+    node14 = Node((WIDTH, HEIGHT*13/24))    
+
+    roads = []
+    roads.append(Road(node1, node3, "straight", light = True))#top
+    roads.append(Road(node4, node2, "straight"))
+    roads.append(Road(node8, node6, "straight", light = True))
+    roads.append(Road(node10, node14, "straight"))
+    roads.append(Road(node6,node4, "straight"))
+    roads.append(Road(node3,node10, type = "arc", curve = "left"))
+    return Map(roads, [node1, node8]) 
 
 
 
@@ -203,53 +226,126 @@ def test_map(WIDTH, HEIGHT):
 
 
  
-def test(map): 
+def simulate(map): 
     if visualize:
         win = pygame.display.set_mode((WIDTH, HEIGHT))   
         clock=pygame.time.Clock()
-        map_img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT))
+        map_img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT)).convert()
     start_time = time.time()
-    # map_rect = map_img.get_rect(topleft = (0,0))
     map_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
     i=0
-    prev_flow = 0
+    prev_flow = -1
     while(True):
-        loop_start = time.time()
-        if visualize:
-            win.blit(map_img, map_rect)
+
         map.check_for_car_collision()
+
         i+=1
         if visualize:
+            win.blit(map_img, map_rect)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                         pygame.quit()
                         exit()    
-            map.show_paths(win)
-            map.show_vehicles(win)
+            if debug:
+                map.show_paths(win)
+            map.show_vehicles(win, debug)
         
         for road in map.roads:
             if visualize:
                 road.draw_traffic_light(win)
+
             for car in road.cars:
                  map.process_car(car, road)
 
         if i%FPS == 0:
             map.spawn_car(WIDTH, HEIGHT)
+        
         map.update_traffic_lights(i)
         map.move_cars()
+        
         if visualize:
             pygame.display.update()
             clock.tick(FPS)
-        loop_time = (- loop_start + time.time())
+
+        elapsed_time = time.time() - start_time
+        
         if i%600*FPS == 0:
-            print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(time.time() - start_time)}, FPS: {1/loop_time}")
-            # if prev_flow==Flow:
-            #     break
-            # prev_flow = Flow
-test(generate_crossroad(WIDTH, HEIGHT))
+            print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}")
+            if Flow == prev_flow:
+                break
+            prev_flow = Flow
+        #Endsd simulation if enough time has passed or if the crossroad got stuck
+        if elapsed_time >= max_time:
+            break
+
+# def simulate_in_thread(map, result):
+#     start_time = time.process_time()
+#     i=0
+#     # prev_flow = 0
+
+#     while(True):
+    
+#         map.check_for_car_collision()
+#         i+=1
+        
+#         for road in map.roads:
+#             for car in road.cars:
+#                  map.process_car(car, road)
+
+#         if i%FPS == 0:
+#             map.spawn_car(WIDTH, HEIGHT)
+
+#         map.update_traffic_lights(i)
+#         map.move_cars()
+
+#         elapsed_time = time.process_time() - start_time
+#         if i == 1500:
+#             result.value =  cost_function(Flow, Collisions)
+#             break
+        # prev_flow = Flow
+
+def cost_function(flow, collisions):
+    return collisions*np.log(collisions + 1) - flow
+
+# conducts n simulations on map and returns array of results of each simulation
+# def conduct_simulations(map, n):
+#     processes = []
+#     results = []
+
+#     for i in range(n):
+#         val = Value('f', 0.0)
+#         results.append(val)
+
+#         p = Process(target=simulate_in_thread, args=(map, val))
+#         p.start()
+#         processes.append(p)
+    
+#     # wait for all simulations to finish
+#     for p in processes:
+#         p.join()
+    
+#     return results
+
+# def test_concurrent_simulations(map, n_jobs):
+#     start = time.time()
+#     results = conduct_simulations(map, n_jobs)
+#     print(f'Conduction of {n_jobs} simulation(s) took {time.time() - start} seconds')
+#     for res in results:
+#         print(res.value)
+
+def main():
+    # map = generate_crossroad(WIDTH, HEIGHT)
+    # test_concurrent_simulations(map, 5)
+
+    # test_concurrent_simulations(map, 1)
 
 
+    simulate(generate_crossroad(WIDTH, HEIGHT))
+    # simulate(generate_one_straight_one_left_turn(WIDTH, HEIGHT))
 
+
+if __name__ == "__main__":
+    main()
 
 
 

@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 from Node import Node
-from utilities import l2_dist
+from utilities import l2_dist, speed_limit
 from os.path import join
 from utilities import left_prob, right_prob, ROAD_COLOR, NODE_COLOR, dir
 
@@ -86,7 +86,7 @@ class Road:
         pygame.draw.circle(win, NODE_COLOR, self.start_point,3)
         pygame.draw.circle(win, NODE_COLOR, self.end_point,3)
 
-
+    #determines where car will turn when reaching intersection with accorrdance to predetermined probabilities of turning
     def get_next_road(self):
         if len(self.end_node.exiting_roads)==0: return None
         prob = np.random.rand()
@@ -103,14 +103,14 @@ class Road:
     #Checks if car should stop       
     def check_stopping(self):
         if self.light:
-            ans = True if self.light_color in [1,2,3] else False
+            ans = True if self.light_color in [1,2] else False
             return ans
         return False
         
     #Moves car to next position
     def calculate_car_next_pos(self, car, dist = None):
         car.update_acceleration(nearest_node = self.end_node, first = self.cars[0]==car)
-        car.velocity = car.acceleration + car.velocity if car.velocity + car.acceleration< car.limit else car.limit
+        car.velocity = car.acceleration + car.velocity if car.velocity + car.acceleration< speed_limit else speed_limit
         if car.velocity<0:
             car.velocity = 0
             
@@ -177,14 +177,15 @@ class Road:
                     remaining_distance = np.abs(new_angle)%90/180*np.pi*self.radius
                     next_road.calculate_car_next_pos(car, remaining_distance)
                 else:
-                    del car  
-                    return 1
+                    del car
+                    return 1  
             else:
                 car.angle = new_angle
                 car.visable_angle -= angle*(int(self.curve=="right")-1/2)*2
                 car.rect = car.get_img_rect(center=new_pos)
         return 0
 
+#Draws set of roads checking if all angles, traffic lights and roaad lengths are drawn properly
 def test():
     win = pygame.display.set_mode((400, 400))
     clock=pygame.time.Clock()

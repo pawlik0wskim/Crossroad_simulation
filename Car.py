@@ -1,7 +1,6 @@
 import pygame
 import numpy as np
-from pyparsing import alphanums
-from utilities import l2_dist, visualize
+from utilities import l2_dist, visualize, unit, speed_limit
 import cv2
 
 
@@ -22,7 +21,7 @@ class Car:
 
         self.img = cv2.resize(image, (w, h), interpolation=cv2.INTER_LINEAR)
 
-        unit = (1/2000*WIDTH+1/2000*HEIGHT) 
+        
         self.rect = pygame.Rect(position[0] - w/2, position[1] - h/2, w, h)
         self.angle = angle
         self.visable_angle = angle
@@ -31,8 +30,8 @@ class Car:
 
         self.stopping = False
         self.maximum_acceleration = unit/2 
-        self.limit = 4*unit
-        self.velocity = self.limit
+        
+        self.velocity = speed_limit
         self.dist_to_nearest_car = np.Inf
         self.vision = pygame.Rect(self.rect.center, [10, 10])
         self.acceleration = unit/4
@@ -75,22 +74,27 @@ class Car:
     # updates vision based on type and direction of the road
     def update_vision(self, direction, type, curve):
         if type == "straight":
-            center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2 - direction[1]*self.rect.width/2
-            center_new_y = self.rect.center[1] + direction[0]*self.rect.height/2 - direction[1]*self.rect.height*3/2
-            self.vision = pygame.Rect(center_new_x - self.rect.w,
-                                      center_new_y - self.rect.h, 
-                                      2*self.rect.w, 
-                                      2*self.rect.h)
+            center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2
+            center_new_y = self.rect.center[1] - direction[1]*self.rect.height*3/2
+            w, h = self.rect.w*(1 + abs(direction[0])), self.rect.h*(1 + abs(direction[1]))
+            self.vision = pygame.Rect(center_new_x - w/2,
+                                      center_new_y - h/2, 
+                                      w, 
+                                      h)
         else:
             if curve == "left":
                 alpha, beta = 1.5, 1.5
-                new_x = alpha*self.rect.w if direction[0] > 0 else -self.rect.w
-                new_y = beta*self.rect.h if direction[1] > 0 else -self.rect.h
+                dim = max(self.rect.w, self.rect.h)
+                new_x = alpha*dim if direction[0] > 0 else -self.rect.w
+                new_y = beta*dim if direction[1] > 0 else -self.rect.h
                 new_x = self.rect.x - new_x
                 new_y = self.rect.y - new_y
-                self.vision = pygame.Rect(new_x, new_y, alpha*self.rect.w, beta*self.rect.h)
+                self.vision = pygame.Rect(new_x, new_y, alpha*dim, beta*dim)
             else:
-                alpha, beta = 0.6, 0.6
+                if direction[0]*direction[1] > 0:
+                    alpha, beta = 0.7, 1.5
+                else:
+                    alpha, beta = 1.5, 0.7
                 center_new_x, center_new_y = self.rect.centerx, self.rect.centery
                 center_new_x += alpha*self.rect.w if direction[0] < 0 else 0
                 center_new_y += beta*self.rect.h if direction[1] < 0 else 0
@@ -102,9 +106,11 @@ class Car:
     ### Calculates current car acceleration based on its distance to nearest car
     def update_acceleration(self, nearest_node=None, first = False):
         
-        new_acceleration = 1 - (self.velocity/self.limit)**self.acceleration_exponent
+        new_acceleration = 1 - (self.velocity/speed_limit)**self.acceleration_exponent
         if self.nearest_car is not None:
-            desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
+            sign = np.sign(np.cos(self.visable_angle - self.nearest_car.visable_angle))
+            # sign = 1
+            desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - sign*self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
             real_dist = np.sqrt(l2_dist(self.rect.center, self.nearest_car.rect.center))
             new_acceleration -= (desired_dist/real_dist)**2
         
