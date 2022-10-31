@@ -59,7 +59,7 @@ class Map:
             angle = 270
         car = Car(node.pos, angle, WIDTH, HEIGHT)
         node.exiting_roads[0].cars.append(car)
-
+    #Moves each car forward
     def move_cars(self):
         global Flow
         for road in self.roads:
@@ -105,7 +105,7 @@ class Map:
                 else:
                     c.nearest_car = None
         car.nearest_car = c
-    
+    # Changes the traffic lights according to light cycles of all roads 
     def update_traffic_lights(self, i):
         for road in self.roads:
             if road.light:
@@ -257,7 +257,7 @@ def simulate(map):
             for car in road.cars:
                  map.process_car(car, road)
 
-        if i%FPS == 0:
+        if i%30 == 0:
             map.spawn_car(WIDTH, HEIGHT)
         
         map.update_traffic_lights(i)
