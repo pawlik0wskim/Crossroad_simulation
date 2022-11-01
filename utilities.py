@@ -4,7 +4,7 @@ import numpy as np
 # is True the simultion will be visualized
 visualize = True
 #if True the car paths and visions will be  visualised(only if visualisation is turned on)
-debug = False
+debug = True
 # left_prob, right_prob = 1, 0
 left_prob, right_prob = 0.2, 0.3
 WIDTH, HEIGHT = (1000,1000)

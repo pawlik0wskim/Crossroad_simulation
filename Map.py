@@ -21,19 +21,18 @@ class Map:
                 self.roads_with_lights.append(road)
         
 
-    # Draws all paths cars travel along 
-    def show_paths(self, win):
-        for road in self.roads:
-            road.draw_path(win)
+    
 
     # Draws all cars
     def show_vehicles(self, win, debug):
         for road in self.roads:
+            if debug:
+                road.draw_path(win)
             for car in road.cars:
-                car.draw(win)
                 if debug:
                     pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
                     pygame.draw.rect(win, [255, 0, 0], car.rect)
+                car.draw(win)
     
     # Adds car on random spawning position        
     def spawn_car(self, WIDTH, HEIGHT):
@@ -246,8 +245,7 @@ def simulate(map):
                 if event.type == pygame.QUIT:
                         pygame.quit()
                         exit()    
-            if debug:
-                map.show_paths(win)
+                
             map.show_vehicles(win, debug)
         
         for road in map.roads:
