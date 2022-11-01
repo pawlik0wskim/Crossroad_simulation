@@ -2,7 +2,7 @@ import pygame
 import numpy as np
 
 # is True the simultion will be visualized
-visualize = False
+visualize = True
 # left_prob, right_prob = 1, 0
 left_prob, right_prob = 0.2, 0.3
 WIDTH, HEIGHT = (1000,1000)
