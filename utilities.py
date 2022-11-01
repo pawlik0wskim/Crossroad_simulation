@@ -17,6 +17,7 @@ light_cycle_time = 10*FPS
 max_time = 300 # simulation will be run up to this time in seconds
 unit = (1/2000*WIDTH+1/2000*HEIGHT) #unit used to calculate velocity so that window size doesn't matter
 speed_limit = 5*unit
+acceleration_exponent = 4
 
 
 def rotate_image(win, image, top_left, angle):

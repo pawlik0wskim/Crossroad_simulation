@@ -35,7 +35,7 @@ class Map:
                 car.draw(win)
     
     # Adds car on random spawning position        
-    def spawn_car(self, WIDTH, HEIGHT):
+    def spawn_car(self):
         rand = np.random.randint(0, len(self.starting_nodes))
         rand1 = rand+1
         node = self.starting_nodes[rand]
@@ -64,6 +64,7 @@ class Map:
         for road in self.roads:
             for car in road.cars:
                 Flow+=road.calculate_car_next_pos(car)
+                car.mask = pygame.mask.from_surface(Car.get_img_as_surface(car.rotate_image()))
     
 
     #Removes cars that collided with each other            
@@ -80,7 +81,8 @@ class Map:
                             continue
                         
     #Method manages what does car and nearest car to it see as hindrance
-    def process_car_neighborhood(self, car, road_type, road_direction):
+    def process_car_neighborhood(self, car, road):
+        road_type, road_direction = road.type, road.direction
         min_dist = np.Inf # distance to nearest car(if it exists)
         c = None # nearest car(if it exists)
         r = None # road type of nearest car(if it exists)
@@ -106,16 +108,13 @@ class Map:
         car.nearest_car = c
     # Changes the traffic lights according to light cycles of all roads 
     def update_traffic_lights(self, i):
-        for road in self.roads:
-            if road.light:
-                for cycle in road.light_cycle:
-                    if i%light_cycle_time==cycle*light_cycle_time:
-                        road.light_color = road.light_color + 1 if road.light_color<3 else 0
+        for road in self.roads_with_lights:
+            for cycle in road.light_cycle:
+                if i%light_cycle_time==cycle*light_cycle_time:
+                    road.light_color = road.light_color + 1 if road.light_color<3 else 0
     
-    # updates car vision and finds new nearest car
-    def process_car(self, car, road):
-        car.update_vision(road.direction, road.type, road.curve)
-        self.process_car_neighborhood(car, road.type, road.direction)
+   
+        
 
 
 
@@ -236,7 +235,6 @@ def simulate(map):
     prev_flow = -1
     while(True):
 
-        map.check_for_car_collision()
 
         i+=1
         if visualize:
@@ -253,14 +251,15 @@ def simulate(map):
                 road.draw_traffic_light(win)
 
             for car in road.cars:
-                 map.process_car(car, road)
+                car.update_vision(road.direction, road.type, road.curve)
+                map.process_car_neighborhood(car, road)
 
         if i%30 == 0:
-            map.spawn_car(WIDTH, HEIGHT)
+            map.spawn_car()
         
         map.update_traffic_lights(i)
         map.move_cars()
-        
+        map.check_for_car_collision()
         if visualize:
             pygame.display.update()
             clock.tick(FPS)
@@ -268,7 +267,7 @@ def simulate(map):
         elapsed_time = time.time() - start_time
         
         if i%600*FPS == 0:
-            print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}")
+            print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions)}")
             if Flow == prev_flow:
                 break
             prev_flow = Flow

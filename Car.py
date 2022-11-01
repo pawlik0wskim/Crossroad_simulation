@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from utilities import l2_dist, visualize, unit, speed_limit
+from utilities import l2_dist, visualize, unit, speed_limit, acceleration_exponent
 import cv2
 
 
@@ -20,6 +20,7 @@ class Car:
             image = cv2.imread(dir + 'car_yellow.png', cv2.IMREAD_UNCHANGED)
 
         self.img = cv2.resize(image, (w, h), interpolation=cv2.INTER_LINEAR)
+        self.mask = None
 
         
         self.rect = pygame.Rect(position[0] - w/2, position[1] - h/2, w, h)
@@ -32,13 +33,12 @@ class Car:
         self.maximum_acceleration = unit/2 
         
         self.velocity = speed_limit
-        self.dist_to_nearest_car = np.Inf
         self.vision = pygame.Rect(self.rect.center, [10, 10])
         self.acceleration = unit/4
-        self.acceleration_exponent = 4
+        
         self.reaction_time = 1
         self.minimum_dist = np.max([self.rect.h,self.rect.w])*5/3
-        self.deceleration = self.acceleration*4
+        self.maximum_deceleration = self.acceleration*4
 
     # returns rotated image according to visible angle
     def rotate_image(self):
@@ -106,36 +106,32 @@ class Car:
     ### Calculates current car acceleration based on its distance to nearest car
     def update_acceleration(self, nearest_node=None, first = False):
         
-        new_acceleration = 1 - (self.velocity/speed_limit)**self.acceleration_exponent
+        new_acceleration = 1 - (self.velocity/speed_limit)**acceleration_exponent
         if self.nearest_car is not None:
             sign = np.sign(np.cos(self.visable_angle - self.nearest_car.visable_angle))
-            # sign = 1
-            desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - sign*self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
+            desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - sign*self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.maximum_deceleration))   
             real_dist = np.sqrt(l2_dist(self.rect.center, self.nearest_car.rect.center))
             new_acceleration -= (desired_dist/real_dist)**2
         
         if self.stopping and first: 
-            desired_dist = np.max([self.rect.h, self.rect.w])/2+7*unit+self.velocity*self.reaction_time + self.velocity*(self.velocity)/(2*np.sqrt(self.maximum_acceleration*self.deceleration))   
+            desired_dist = np.max([self.rect.h, self.rect.w])/2+7*unit+self.velocity*self.reaction_time + self.velocity*(self.velocity)/(2*np.sqrt(self.maximum_acceleration*self.maximum_deceleration))   
             real_dist = np.sqrt(l2_dist(self.rect.center, nearest_node.pos))
             new_acceleration -= (desired_dist/real_dist)**2
         self.acceleration = new_acceleration*self.maximum_acceleration
         
-            
+     #Draws vehicle on provided surface       
     def draw(self, win):
         center = self.rect.center
         rotated_img = self.rotate_image()
         self.rect = self.get_img_rect(center)
         surface = pygame.image.frombuffer(rotated_img.tobytes(), rotated_img.shape[1::-1], "RGBA")
         win.blit(surface, self.rect)
-        # pygame.draw.rect(win, [255, 255, 255], self.rect) 
         
     
     #Checks for collision with other car    
     def collide(self, other):
-        mask1 = pygame.mask.from_surface(Car.get_img_as_surface(self.rotate_image()))
-        mask2 = pygame.mask.from_surface(Car.get_img_as_surface(other.rotate_image()))
         offset = (int(-other.rect.topleft[0]+self.rect.topleft[0]), int(-other.rect.topleft[1]+self.rect.topleft[1]))#(int(self.rect.x - other.rect.x), int(self.rect.y - other.rect.y))
-        poi = mask2.overlap(mask1, offset)
+        poi = other.mask.overlap(self.mask, offset)
         return poi
     
     
