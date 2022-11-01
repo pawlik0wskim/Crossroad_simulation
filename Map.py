@@ -235,7 +235,7 @@ def simulate(map):
     prev_flow = -1
     while(True):
 
-
+        iter_start_time = time.time()
         i+=1
         if visualize:
             win.blit(map_img, map_rect)
@@ -254,7 +254,7 @@ def simulate(map):
                 car.update_vision(road.direction, road.type, road.curve)
                 map.process_car_neighborhood(car, road)
 
-        if i%30 == 0:
+        if i%frames_per_car == 0:
             map.spawn_car()
         
         map.update_traffic_lights(i)
@@ -267,7 +267,7 @@ def simulate(map):
         elapsed_time = time.time() - start_time
         
         if i%600*FPS == 0:
-            print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions)}")
+            print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions)}, FPS: {-1/(iter_start_time-time.time())}")
             if Flow == prev_flow:
                 break
             prev_flow = Flow

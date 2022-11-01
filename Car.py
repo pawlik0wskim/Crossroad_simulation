@@ -20,7 +20,7 @@ class Car:
             image = cv2.imread(dir + 'car_yellow.png', cv2.IMREAD_UNCHANGED)
 
         self.img = cv2.resize(image, (w, h), interpolation=cv2.INTER_LINEAR)
-        self.mask = None
+        
 
         
         self.rect = pygame.Rect(position[0] - w/2, position[1] - h/2, w, h)
@@ -39,6 +39,8 @@ class Car:
         self.reaction_time = 1
         self.minimum_dist = np.max([self.rect.h,self.rect.w])*5/3
         self.maximum_deceleration = self.acceleration*4
+        
+        self.mask = pygame.mask.from_surface(Car.get_img_as_surface(self.rotate_image()))
 
     # returns rotated image according to visible angle
     def rotate_image(self):

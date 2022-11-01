@@ -2,7 +2,7 @@ import pygame
 import numpy as np
 
 # is True the simultion will be visualized
-visualize = True
+visualize = False
 #if True the car paths and visions will be  visualised(only if visualisation is turned on)
 debug = True
 # left_prob, right_prob = 1, 0
@@ -18,6 +18,7 @@ max_time = 300 # simulation will be run up to this time in seconds
 unit = (1/2000*WIDTH+1/2000*HEIGHT) #unit used to calculate velocity so that window size doesn't matter
 speed_limit = 5*unit
 acceleration_exponent = 4
+frames_per_car =30
 
 
 def rotate_image(win, image, top_left, angle):
