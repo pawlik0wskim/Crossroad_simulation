@@ -1,94 +1,90 @@
-from tkinter import *
+import tkinter as tk
 
-def alter_widgtes(*args):
-    if mode.get() == "visualisation":
-        hide_optimisation_data()
-        show_simulation_data()
-    else:
-        hide_simulation_data()
-        show_optimisation_data()
+# Graphical User Interface class
 
-def show_simulation_data():
-    y = 0.25
-    for i in range(len(traffic_light_data)):
-        traffic_light_labels[i].place(relx=0.1, rely=y)
-        x = 0.3
-        for e in traffic_light_data[i]:
-            e.place(relx=x, rely=y)
-            x += 0.1
-        y += 0.1
-    
-    speed_limit.place(relx=0.3, rely=0.65)
-    speed_limit_label.place(relx=0.1, rely=0.65)
-    debug_checkbutton.place(relx=0.3, rely=0.8)
-    visualise_btn.place(relx=0.45, rely=0.9)
+class GUI(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-def hide_simulation_data():
-    for i in range(len(traffic_light_data)):
-        traffic_light_labels[i].place_forget()
-        for e in traffic_light_data[i]:
-            e.place_forget()
+        w, h = 1000, 500
+        self.geometry(str(w) + 'x' + str(h))
 
-    speed_limit.place_forget()
-    speed_limit_label.place_forget()
-    debug_checkbutton.place_forget()
-    visualise_btn.place_forget()
+        # tracing variables  
+        self.mode = tk.StringVar()
+        self.mode.set("visualisation")
+        # call alter_widgets method any time the value of mode variable was changed
+        self.mode.trace("w", self.alter_widgtes)
+        self.debug = tk.BooleanVar()
 
-def show_optimisation_data():
-    optimise_btn.place(relx=0.45, rely=0.9)
+        # main widgets
+        options = [
+            "genetic algorithm",
+            "simulated annealing",
+            "visualisation"
+        ]
+        self.drop = tk.OptionMenu(self, self.mode, *options)
+        self.drop.place(relx=0.4, rely=0.1)
+        self.submit = tk.Button(self, text="Visualise", command=self.press_submit)
+        self.submit.place(relx=0.45, rely=0.9)
 
-def hide_optimisation_data():
-    optimise_btn.place_forget()
-
-def visualise():
-    pass
-
-def optimise():
-    pass
+        # simulation widgets
+        self.traffic_light_widgets = [[tk.Scale(self, from_=0.0, to=1.0, orient='horizontal', resolution=0.1) for i in range(4)] for j in range(4)]
+        self.traffic_light_labels = [tk.Label(self, text='traffic light '+str(i+1)) for i in range(4)]
+        self.speed_limit = tk.Scale(self, from_=0.0, to=100.0, orient='horizontal', resolution=1)
+        self.speed_limit_label = tk.Label(self, text="Speed limit")
+        self.debug_checkbutton = tk.Checkbutton(self,
+                                                text='Debug mode',
+                                                variable=self.debug,
+                                                onvalue=True,
+                                                offvalue=False)
+        
+        self.show_simulation_widgets()
 
 
-# Create object
-root = Tk()
-  
-# Adjust size
-root.geometry("500x500")
-  
+    # hides and shows appropriate widgets based on chosen mode
+    def alter_widgtes(self, *args):
+        if self.mode.get() == "visualisation":
+            self.hide_optimisation_widgets()
+            self.show_simulation_widgets()
+        else:
+            self.hide_simulation_widgets()
+            self.show_optimisation_widgets()
 
-# Tkinter variables  
-mode = StringVar()
-mode.set( "visualisation" )
-mode.trace("w", alter_widgtes)
+    # shows widgets that allow user to provide simulation data
+    def show_simulation_widgets(self):
+        y = 0.25
+        for i in range(len(self.traffic_light_widgets)):
+            self.traffic_light_labels[i].place(relx=0.2, rely=y+0.04)
+            x = 0.3
+            for slider in self.traffic_light_widgets[i]:
+                slider.place(relx=x, rely=y)
+                x += 0.1
+            y += 0.1
+        
+        self.speed_limit.place(relx=0.3, rely=0.65)
+        self.speed_limit_label.place(relx=0.2, rely=0.69)
+        self.debug_checkbutton.place(relx=0.3, rely=0.8)
+        self.submit.configure(text='Visualise')
 
-debug = BooleanVar()
-  
-# Tkinter widgets
-options = [
-    "genetic algorithm",
-    "simulated annealing",
-    "visualisation"
-]
-drop = OptionMenu(root , mode , *options)
-drop.place(relx=0.4, rely=0.1)
+    def hide_simulation_widgets(self):
+        for i in range(len(self.traffic_light_widgets)):
+            self.traffic_light_labels[i].place_forget()
+            for slider in self.traffic_light_widgets[i]:
+                slider.place_forget()
 
-debug_checkbutton = Checkbutton(root,
-                                text='Debug mode',
-                                variable=debug,
-                                onvalue=True,
-                                offvalue=False)
-  
+        self.speed_limit.place_forget()
+        self.speed_limit_label.place_forget()
+        self.debug_checkbutton.place_forget()
 
-# simulation widgets
-traffic_light_data = [[Entry(root, width=5) for i in range(4)] for j in range(4)]
-traffic_light_labels = [Label(root, text='traffic light '+str(i+1)) for i in range(4)]
-speed_limit = Entry(root, width=5)
-speed_limit_label = Label(root, text="Speed limit")
-visualise_btn = Button(root, text ="Visualise", command = visualise)
+    def show_optimisation_widgets(self):
+        self.submit.configure(text='Optimise')
 
-# optimisation widgets
-optimise_btn = Button(root, text ="Optimise", command = optimise)
+    def hide_optimisation_widgets(self):
+        pass
 
-show_simulation_data()
-root.mainloop()
+    def press_submit(self):
+        self.destroy()
 
-
-
+if __name__ == '__main__':
+    gui = GUI()
+    gui.mainloop()
