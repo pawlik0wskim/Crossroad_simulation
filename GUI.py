@@ -1,4 +1,6 @@
 import tkinter as tk
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 # Graphical User Interface class
 
@@ -8,6 +10,15 @@ class GUI(tk.Tk):
 
         w, h = 1000, 500
         self.geometry(str(w) + 'x' + str(h))
+
+        self.fig = Figure(figsize = (5, 5), dpi = 100)
+        self.canvas = FigureCanvasTkAgg(self.fig,
+                                master = self)  
+        self.canvas.draw()
+        self.canvas.get_tk_widget().configure(width=300, height=300)
+
+        # data which user provides
+        self.data = {}
 
         # tracing variables  
         self.mode = tk.StringVar()
@@ -33,8 +44,8 @@ class GUI(tk.Tk):
         self.speed_limit_label = tk.Label(self, text="Speed limit")
         self.debug_checkbutton = tk.Checkbutton(self,
                                                 text='Debug mode',
-                                                onvalue=True,
-                                                offvalue=False)
+                                                onvalue=1,
+                                                offvalue=0)
         
         self.show_visualisation_widgets()
 
@@ -110,23 +121,50 @@ class GUI(tk.Tk):
             labels[i].place(relx=0.17, rely=y+0.04)
             y += 0.1
         self.submit.configure(text='Optimise')
+        self.canvas.get_tk_widget().place(relx=0.6, rely=0.2)
 
     def hide_annealing_widgets(self):
         for i in range(len(self.annealing_widgets)):
             self.annealing_widgets[i].place_forget()
             self.annealing_labels[i].place_forget()
+        self.canvas.get_tk_widget().place_forget()
 
     def hide_genetic_widgets(self):
         for i in range(len(self.genetic_widgets)):
             self.genetic_widgets[i].place_forget()
             self.genetic_labels[i].place_forget()
+        self.canvas.get_tk_widget().place_forget()
 
     def collect_data(self):
-        pass
-
+        self.data['mode'] = self.mode.get()
+        if self.data['mode'] == 'visualisation':
+            # collect visualisations data
+            traffic_lights = []
+            for tl in self.traffic_light_widgets:
+                tl_data = []
+                for l in tl:
+                    tl_data.append(l.get())
+                traffic_lights.append(tl_data)
+            self.data['traffic_lights'] = traffic_lights
+            self.data['speed_limit'] = self.speed_limit.get()
+            # self.data['debug'] = self.debug_checkbutton.get()
+        else:
+            if self.data['mode'] == 'simulated annealing':
+                widgets = self.annealing_widgets
+            else:
+                widgets = self.genetic_widgets
+            data = []
+            for widget in widgets:
+                data.append(widget.get())
+            self.data[self.data['mode']] = data
+        
     def press_submit(self):
-        self.destroy()
+        self.collect_data()
+        # self.quit()
+        # self.destroy()
 
 if __name__ == '__main__':
     gui = GUI()
     gui.mainloop()
+    for key in gui.data:
+        print(gui.data[key])
