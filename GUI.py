@@ -14,7 +14,6 @@ class GUI(tk.Tk):
         self.mode.set("visualisation")
         # call alter_widgets method any time the value of mode variable was changed
         self.mode.trace("w", self.alter_widgtes)
-        self.debug = tk.BooleanVar()
 
         # main widgets
         options = [
@@ -34,24 +33,52 @@ class GUI(tk.Tk):
         self.speed_limit_label = tk.Label(self, text="Speed limit")
         self.debug_checkbutton = tk.Checkbutton(self,
                                                 text='Debug mode',
-                                                variable=self.debug,
                                                 onvalue=True,
                                                 offvalue=False)
         
-        self.show_simulation_widgets()
+        self.show_visualisation_widgets()
 
+        # simulated annealing widgets
+        from_tmp = [0.0, 0.0]
+        to_tmp = [3.0, 0.999]
+        resolution_tmp = [0.1, 0.001]
+        labels_tmp = ['Initial temperature', 'Decrease rate']
+        self.annealing_widgets = [tk.Scale(self, from_=from_tmp[i], to=to_tmp[i], orient='horizontal', resolution=resolution_tmp[i]) for i in range(len(to_tmp))]
+        self.annealing_labels = [tk.Label(self, text=labels_tmp[i]) for i in range(len(to_tmp))]
+
+        # genetic algorithm widgets
+        from_tmp = [10, 1, 0.0, 0.0]
+        to_tmp = [100, 10, 1.0, 1.0]
+        resolution_tmp = [1, 1, 0.01, 0.01]
+        labels_tmp = ['Population size', 'Population number', 'Elite part', 'Mutation probability']
+        self.genetic_widgets = [tk.Scale(self, from_=from_tmp[i], to=to_tmp[i], orient='horizontal', resolution=resolution_tmp[i]) for i in range(len(to_tmp))]
+        self.genetic_labels = [tk.Label(self, text=labels_tmp[i]) for i in range(len(to_tmp))]
+
+
+        # mutual optimisation widgets
+        max_iter = tk.Scale(self, from_=1000, to=40000, orient='horizontal', resolution=100)
+        max_iter_label = tk.Label(self, text='Maximum iterations')
+        self.annealing_widgets.append(max_iter)
+        self.genetic_widgets.append(max_iter)
+        self.annealing_labels.append(max_iter_label)
+        self.genetic_labels.append(max_iter_label)
 
     # hides and shows appropriate widgets based on chosen mode
     def alter_widgtes(self, *args):
         if self.mode.get() == "visualisation":
-            self.hide_optimisation_widgets()
-            self.show_simulation_widgets()
+            self.hide_annealing_widgets()
+            self.hide_genetic_widgets()
+            self.show_visualisation_widgets()
+        elif self.mode.get() == "simulated annealing":
+            self.hide_visualisation_widgets()
+            self.hide_genetic_widgets()
+            self.show_optimisation_widgets(self.annealing_widgets, self.annealing_labels)
         else:
-            self.hide_simulation_widgets()
-            self.show_optimisation_widgets()
+            self.hide_visualisation_widgets()
+            self.hide_annealing_widgets()
+            self.show_optimisation_widgets(self.genetic_widgets, self.genetic_labels)
 
-    # shows widgets that allow user to provide simulation data
-    def show_simulation_widgets(self):
+    def show_visualisation_widgets(self):
         y = 0.25
         for i in range(len(self.traffic_light_widgets)):
             self.traffic_light_labels[i].place(relx=0.2, rely=y+0.04)
@@ -66,7 +93,7 @@ class GUI(tk.Tk):
         self.debug_checkbutton.place(relx=0.3, rely=0.8)
         self.submit.configure(text='Visualise')
 
-    def hide_simulation_widgets(self):
+    def hide_visualisation_widgets(self):
         for i in range(len(self.traffic_light_widgets)):
             self.traffic_light_labels[i].place_forget()
             for slider in self.traffic_light_widgets[i]:
@@ -76,10 +103,25 @@ class GUI(tk.Tk):
         self.speed_limit_label.place_forget()
         self.debug_checkbutton.place_forget()
 
-    def show_optimisation_widgets(self):
+    def show_optimisation_widgets(self, widgets, labels):
+        y = 0.25
+        for i in range(len(widgets)):
+            widgets[i].place(relx=0.3, rely=y)
+            labels[i].place(relx=0.17, rely=y+0.04)
+            y += 0.1
         self.submit.configure(text='Optimise')
 
-    def hide_optimisation_widgets(self):
+    def hide_annealing_widgets(self):
+        for i in range(len(self.annealing_widgets)):
+            self.annealing_widgets[i].place_forget()
+            self.annealing_labels[i].place_forget()
+
+    def hide_genetic_widgets(self):
+        for i in range(len(self.genetic_widgets)):
+            self.genetic_widgets[i].place_forget()
+            self.genetic_labels[i].place_forget()
+
+    def collect_data(self):
         pass
 
     def press_submit(self):
