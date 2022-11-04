@@ -1,5 +1,6 @@
 from Map import *
 from utilities import *
+from GUI import *
 class Application:    
     def simulate(self, map,  speed_limit, max_iter, frames_per_car, light_cycle_time, acceleration_exponent, visualise = False, debug = False): 
         Collisions = 0
@@ -57,11 +58,10 @@ class Application:
                 break
             
         return Flow, Collisions
-    def run_gui(self):
-        speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car = 5, 0.1, 0.2, 300, 10000, 4, 30
-        return speed_limit * unit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car
+
+        
         
 app = Application()
-speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car = app.run_gui()
+speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car = run_gui()
 
 Flow, Collisions= app.simulate(generate_crossroad(WIDTH, HEIGHT), speed_limit, simulation_length, frames_per_car, light_cycle_time, acceleration_exponent, visualise = True)
