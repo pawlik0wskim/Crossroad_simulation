@@ -1,12 +1,15 @@
 import pygame
 import numpy as np
 from Node import Node
+from utilities import l2_dist
+from os.path import join
+from utilities import ROAD_COLOR, NODE_COLOR, dir
 
-ROAD_COLOR = "Red"
-NODE_COLOR = "Yellow"
 eps = 10**(-5)
+light_color_dict = {3:"yellow",2:"red", 1:"yellow", 0:"green"}
+
 class Road:
-    def __init__(self, start_node, end_node, type, curve = None):
+    def __init__(self, start_node, end_node, type, curve = None, light = False, light_cycle = [0.25, 0.4, 0.85, 0.9]):
         self.start_node = start_node
         self.end_node = end_node
         self.start_point = start_node.pos
@@ -30,6 +33,9 @@ class Road:
         self.radius = np.abs(self.start_point[1] - self.end_point[1]) if self.type == "arc" else None
         self.direction = (np.sign(self.start_point[0]-self.end_point[0]),np.sign(self.start_point[1]-self.end_point[1]))
         self.cars = []
+        self.light = light
+        self.light_color = 0 if np.abs(self.direction[0]) else 2  
+        self.light_cycle = light_cycle
         
     #calculates center of an arc road
     def calculate_center(self):
@@ -38,7 +44,19 @@ class Road:
         else: 
             center = (self.end_point[0], self.start_point[1]) if (self.start_point[1]-self.end_point[1])/(self.start_point[0]-self.end_point[0])>0 else  (self.start_point[0], self.end_point[1])
         return center   
-         
+    
+    
+    #draws traffic light of correct color on selected surface
+    def draw_traffic_light(self, win):
+        if self.type=="straight" and self.light:
+            color = light_color_dict[self.light_color]+"_light.png"
+            WIDTH,HEIGHT = win.get_size()
+            image = pygame.transform.scale(pygame.image.load(join(dir , color)).convert_alpha(),(WIDTH//45,HEIGHT//15))
+            position = (self.end_point[0]+self.direction[1]*WIDTH//12,self.end_point[1]-self.direction[0]*HEIGHT//12)
+            rect = image.get_rect(center=position)
+            win.blit(image, rect)
+            
+            
     # draws cars path on selected surface
     def draw_path(self, win):
         if self.type == "arc":
@@ -68,83 +86,103 @@ class Road:
         pygame.draw.circle(win, NODE_COLOR, self.start_point,3)
         pygame.draw.circle(win, NODE_COLOR, self.end_point,3)
 
-
-    def get_next_road(self):
+    #determines where car will turn when reaching intersection with accorrdance to predetermined probabilities of turning
+    def get_next_road(self, right_prob, left_prob):
         if len(self.end_node.exiting_roads)==0: return None
-        next_road = self.end_node.exiting_roads[np.random.randint(0,len(self.end_node.exiting_roads))]
+        prob = np.random.rand()
+        road_types = [ x.curve for x in self.end_node.exiting_roads]
+        roads = {x.curve:x for x in self.end_node.exiting_roads}
+        if "right" in road_types and prob<right_prob:
+            next_road = roads["right"]
+        elif "left" in road_types and prob<right_prob+left_prob:
+            next_road = roads["left"]
+        else:
+            next_road = roads[None]
         return next_road    
+    
     #Checks if car should stop       
     def check_stopping(self):
-        p = np.random.rand()
-        if p<1/3 and len(self.start_node.entering_roads)==0:
-            return True
-        else: 
-            return False
-    
-    def calculate_car_next_pos(self, car, dist = None):
+        if self.light:
+            ans = True if self.light_color in [1,2] else False
+            return ans
+        return False
+        
+    #Moves car to next position
+    def calculate_car_next_pos(self, car, right_prob, left_prob, dist = None):
+        car.update_acceleration( nearest_node = self.end_node, first = self.cars[0]==car)
+            
         if dist == None:
             dist = car.velocity
         elif self.type == "straight":
             if self.direction[0]==0:
                 car.angle =90*(-self.direction[1]+1)
             else: 
-                car.angle =180 + 90*(-self.direction[0])
+                car.angle = 180 + 90*(-self.direction[0])
             car.visable_angle = car.angle
             
         if self.type != "arc":
-            if car.stopping:
-                car.velocity=car.velocity - car.acceleration/2 if car.velocity>car.acceleration/2 else 0
-            else:
-                car.velocity =car.acceleration + car.velocity if car.velocity + car.acceleration< car.limit  else car.limit
+            
             pos = car.rect.center
 
-            velocity = car.velocity*(1 - np.exp(-car.dist_to_nearest_car/10000))
+            
             if self.direction[0]==0: 
-                new_pos = (self.end_point[0], pos[1] - velocity*self.direction[1])
+                new_pos = (self.end_point[0], pos[1] - dist*self.direction[1])
             elif self.direction[1]==0:
-                new_pos = (pos[0] - velocity*self.direction[0], self.end_point[1])
+                new_pos = (pos[0] - dist*self.direction[0], self.end_point[1])
             else:
-                new_pos = (pos[0] - velocity*self.direction[0], pos[1] - velocity*self.direction[1])
+                new_pos = (pos[0] - dist*self.direction[0], pos[1] - dist*self.direction[1])
             dist_from_start = (np.abs((new_pos[0]-self.start_point[0])*self.direction[0]),np.abs((new_pos[1]-self.start_point[1])*self.direction[1]))
             length = (np.abs(self.start_point[0]-self.end_point[0]),np.abs(self.start_point[1]-self.end_point[1]))
             #Checking stopping conditions
-            slowing_road = car.velocity/car.acceleration*2
+            slowing_road = np.sum(np.abs(length)) * 0.4
             remaining_road = np.abs(dist_from_start[0] - length[0]) + np.abs( dist_from_start[1] - length[1])-np.max([car.rect.height, car.rect.width])/2
-            if remaining_road - 3*car.velocity < slowing_road and remaining_road - 2*car.velocity > slowing_road and 1-car.stopping:
+            
+            if remaining_road - car.velocity < slowing_road and remaining_road > slowing_road and 1-car.stopping or car.stopping:
                 car.stopping = self.check_stopping()
+
+            # update driven distance of the car
+            car.dist_driven = l2_dist(new_pos, self.start_point)/l2_dist(self.start_point, self.end_point)
             #Checking if car moved to another road
             if dist_from_start[0] > length[0] or dist_from_start[1] > length[1]:
-                next_road = self.get_next_road()
+                next_road = self.get_next_road(right_prob, left_prob)
                 self.cars.remove(car)
                 if next_road!=None:
-                    car.rect = car.img.get_rect(center=next_road.start_point) 
+                    car.rect = car.get_img_rect(center=next_road.start_point) 
                     next_road.cars.append(car)
-                    next_road.calculate_car_next_pos(car, dist_from_start[0] - length[0] + dist_from_start[1] - length[1])
+                    next_road.calculate_car_next_pos(car, right_prob, left_prob, dist_from_start[0] - length[0] + dist_from_start[1] - length[1])
                 else:
                     del car  
+                    return 1
             else:
-                car.rect = car.img.get_rect(center=new_pos)
+                car.rect = car.get_img_rect(center=new_pos)
         else:
-            dist = car.velocity*(1 - np.exp(-car.dist_to_nearest_car/10000))
+            
             angle = dist/2/np.pi/self.radius*360
             new_angle = car.angle + angle*(int(self.curve=="right")-1/2)*2
             pos = car.rect.center
             new_pos = (self.radius*np.cos((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[0],self.radius*np.sin((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[1])
+            
+            # update driven distance of the car
+            car.dist_driven = 2**((90 - (int(self.curve=="left")*new_angle)%90)/90)-1
+            
             if np.abs(new_angle)%90 < np.abs(angle) - eps:
-                next_road = self.get_next_road()
+                next_road = self.get_next_road(right_prob, left_prob)
                 self.cars.remove(car)
                 if next_road!=None:
-                    car.rect = car.img.get_rect(center=next_road.start_point) 
+                    car.rect = car.get_img_rect(center=next_road.start_point) 
                     next_road.cars.append(car)
                     remaining_distance = np.abs(new_angle)%90/180*np.pi*self.radius
-                    next_road.calculate_car_next_pos(car, remaining_distance)
+                    next_road.calculate_car_next_pos(car, right_prob, left_prob, remaining_distance)
                 else:
-                    del car  
+                    del car
+                    return 1  
             else:
                 car.angle = new_angle
                 car.visable_angle -= angle*(int(self.curve=="right")-1/2)*2
-                car.rect = car.img.get_rect(center=new_pos)
+                car.rect = car.get_img_rect(center=new_pos)
+        return 0
 
+#Draws set of roads checking if all angles, traffic lights and roaad lengths are drawn properly
 def test():
     win = pygame.display.set_mode((400, 400))
     clock=pygame.time.Clock()
@@ -180,12 +218,15 @@ def test():
         test_road8 = Road(Node((230,230)),Node((220,220)), "arc", "left")
         test_road8.draw_path(win)
         #straight road
-        test_road6 = Road(Node((330,230)),Node((300,200)), "straight")
+        test_road6 = Road(Node((300,230)),Node((300,200)), "straight", light = True)
         test_road6.draw_path(win)
-        test_road7 = Road(Node((330,230)),Node((330,210)), "straight")
+        test_road7 = Road(Node((330,210)),Node((330,240)), "straight", light = True)
         test_road7.draw_path(win)
-        test_road8 = Road(Node((330,200)),Node((360,200)), "straight")
+        test_road8 = Road(Node((330,200)),Node((360,200)), "straight", light = True)
         test_road8.draw_path(win)
+        test_road6.draw_traffic_light(win)
+        test_road7.draw_traffic_light(win)
+        test_road8.draw_traffic_light(win)
         pygame.display.update()
         clock.tick(60)
 #test()
