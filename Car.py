@@ -1,12 +1,12 @@
 import pygame
 import numpy as np
-from utilities import l2_dist, visualize, unit, speed_limit, acceleration_exponent
+from utilities import l2_dist, unit
 import cv2
 
 
 dir = r""
 class Car:
-    def __init__(self, position, angle, WIDTH, HEIGHT):
+    def __init__(self, position, angle, WIDTH, HEIGHT, speed_limit, acceleration_exponent):
         global unit
         w, h = WIDTH//30, HEIGHT//11
         rand = np.random.rand()
@@ -35,6 +35,8 @@ class Car:
         self.velocity = speed_limit
         self.vision = pygame.Rect(self.rect.center, [10, 10])
         self.acceleration = unit/4
+        self.speed_limit = speed_limit
+        self.acceleration_exponent = acceleration_exponent
         
         self.reaction_time = 1
         self.minimum_dist = np.max([self.rect.h,self.rect.w])*5/3
@@ -108,7 +110,7 @@ class Car:
     ### Calculates current car acceleration based on its distance to nearest car
     def update_acceleration(self, nearest_node=None, first = False):
         
-        new_acceleration = 1 - (self.velocity/speed_limit)**acceleration_exponent
+        new_acceleration = 1 - (self.velocity/self.speed_limit)**self.acceleration_exponent
         if self.nearest_car is not None:
             sign = np.sign(np.cos(self.visable_angle - self.nearest_car.visable_angle))
             desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - sign*self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.maximum_deceleration))   
@@ -121,6 +123,10 @@ class Car:
             new_acceleration -= (desired_dist/real_dist)**2
         self.acceleration = new_acceleration*self.maximum_acceleration
         
+        self.velocity = self.acceleration + self.velocity if self.velocity + self.acceleration< self.speed_limit else self.speed_limit
+        if self.velocity<0:
+            self.velocity = 0
+            
      #Draws vehicle on provided surface       
     def draw(self, win):
         center = self.rect.center
@@ -155,5 +161,5 @@ def test():  #rotation around the center of vehicle
         car.draw(win)
         pygame.display.update()
         clock.tick(60)
-        car.update_acceleration(car)
+        car.update_acceleration(car, 5)
 #test()

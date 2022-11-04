@@ -1,9 +1,9 @@
 import pygame
 import numpy as np
 from Node import Node
-from utilities import l2_dist, speed_limit
+from utilities import l2_dist
 from os.path import join
-from utilities import left_prob, right_prob, ROAD_COLOR, NODE_COLOR, dir
+from utilities import ROAD_COLOR, NODE_COLOR, dir
 
 eps = 10**(-5)
 light_color_dict = {3:"yellow",2:"red", 1:"yellow", 0:"green"}
@@ -87,7 +87,7 @@ class Road:
         pygame.draw.circle(win, NODE_COLOR, self.end_point,3)
 
     #determines where car will turn when reaching intersection with accorrdance to predetermined probabilities of turning
-    def get_next_road(self):
+    def get_next_road(self, right_prob, left_prob):
         if len(self.end_node.exiting_roads)==0: return None
         prob = np.random.rand()
         road_types = [ x.curve for x in self.end_node.exiting_roads]
@@ -108,11 +108,8 @@ class Road:
         return False
         
     #Moves car to next position
-    def calculate_car_next_pos(self, car, dist = None):
-        car.update_acceleration(nearest_node = self.end_node, first = self.cars[0]==car)
-        car.velocity = car.acceleration + car.velocity if car.velocity + car.acceleration< speed_limit else speed_limit
-        if car.velocity<0:
-            car.velocity = 0
+    def calculate_car_next_pos(self, car, right_prob, left_prob, dist = None):
+        car.update_acceleration( nearest_node = self.end_node, first = self.cars[0]==car)
             
         if dist == None:
             dist = car.velocity
@@ -147,12 +144,12 @@ class Road:
             car.dist_driven = l2_dist(new_pos, self.start_point)/l2_dist(self.start_point, self.end_point)
             #Checking if car moved to another road
             if dist_from_start[0] > length[0] or dist_from_start[1] > length[1]:
-                next_road = self.get_next_road()
+                next_road = self.get_next_road(right_prob, left_prob)
                 self.cars.remove(car)
                 if next_road!=None:
                     car.rect = car.get_img_rect(center=next_road.start_point) 
                     next_road.cars.append(car)
-                    next_road.calculate_car_next_pos(car, dist_from_start[0] - length[0] + dist_from_start[1] - length[1])
+                    next_road.calculate_car_next_pos(car, right_prob, left_prob, dist_from_start[0] - length[0] + dist_from_start[1] - length[1])
                 else:
                     del car  
                     return 1
@@ -169,13 +166,13 @@ class Road:
             car.dist_driven = 2**((90 - (int(self.curve=="left")*new_angle)%90)/90)-1
             
             if np.abs(new_angle)%90 < np.abs(angle) - eps:
-                next_road = self.get_next_road()
+                next_road = self.get_next_road(right_prob, left_prob)
                 self.cars.remove(car)
                 if next_road!=None:
                     car.rect = car.get_img_rect(center=next_road.start_point) 
                     next_road.cars.append(car)
                     remaining_distance = np.abs(new_angle)%90/180*np.pi*self.radius
-                    next_road.calculate_car_next_pos(car, remaining_distance)
+                    next_road.calculate_car_next_pos(car, right_prob, left_prob, remaining_distance)
                 else:
                     del car
                     return 1  
