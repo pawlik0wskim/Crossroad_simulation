@@ -1,6 +1,14 @@
 import tkinter as tk
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+# import matplotlib.pyplot as plt
+# from matplotlib.animation import FuncAnimation
+# from matplotlib.figure import Figure
+# from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+# from itertools import count
+# import random
+
+# x_vals = []
+# y_vals = []
+# index = count()
 
 # Graphical User Interface class
 
@@ -11,11 +19,9 @@ class GUI(tk.Tk):
         w, h = 1000, 500
         self.geometry(str(w) + 'x' + str(h))
 
-        self.fig = Figure(figsize = (5, 5), dpi = 100)
-        self.canvas = FigureCanvasTkAgg(self.fig,
-                                master = self)  
-        self.canvas.draw()
-        self.canvas.get_tk_widget().configure(width=300, height=300)
+        # self.fig = Figure(figsize = (5, 5), dpi = 100)
+        # self.canvas = FigureCanvasTkAgg(self.fig, master=self)  
+        # self.canvas.get_tk_widget().configure(width=300, height=300)
 
         # data which user provides
         self.data = {}
@@ -42,10 +48,12 @@ class GUI(tk.Tk):
         self.traffic_light_labels = [tk.Label(self, text='traffic light '+str(i+1)) for i in range(4)]
         self.speed_limit = tk.Scale(self, from_=0.0, to=100.0, orient='horizontal', resolution=1)
         self.speed_limit_label = tk.Label(self, text="Speed limit")
+        self.debug = tk.IntVar(value=0)
         self.debug_checkbutton = tk.Checkbutton(self,
                                                 text='Debug mode',
                                                 onvalue=1,
-                                                offvalue=0)
+                                                offvalue=0,
+                                                variable=self.debug)
         
         self.show_visualisation_widgets()
 
@@ -121,19 +129,19 @@ class GUI(tk.Tk):
             labels[i].place(relx=0.17, rely=y+0.04)
             y += 0.1
         self.submit.configure(text='Optimise')
-        self.canvas.get_tk_widget().place(relx=0.6, rely=0.2)
+        # self.canvas.get_tk_widget().place(relx=0.6, rely=0.2)
 
     def hide_annealing_widgets(self):
         for i in range(len(self.annealing_widgets)):
             self.annealing_widgets[i].place_forget()
             self.annealing_labels[i].place_forget()
-        self.canvas.get_tk_widget().place_forget()
+        # self.canvas.get_tk_widget().place_forget()
 
     def hide_genetic_widgets(self):
         for i in range(len(self.genetic_widgets)):
             self.genetic_widgets[i].place_forget()
             self.genetic_labels[i].place_forget()
-        self.canvas.get_tk_widget().place_forget()
+        # self.canvas.get_tk_widget().place_forget()
 
     def collect_data(self):
         self.data['mode'] = self.mode.get()
@@ -147,8 +155,9 @@ class GUI(tk.Tk):
                 traffic_lights.append(tl_data)
             self.data['traffic_lights'] = traffic_lights
             self.data['speed_limit'] = self.speed_limit.get()
-            # self.data['debug'] = self.debug_checkbutton.get()
+            self.data['debug'] = self.debug.get()
         else:
+            # collect optimisation algorithm data
             if self.data['mode'] == 'simulated annealing':
                 widgets = self.annealing_widgets
             else:
@@ -160,11 +169,27 @@ class GUI(tk.Tk):
         
     def press_submit(self):
         self.collect_data()
-        # self.quit()
-        # self.destroy()
+        self.quit()
+        self.destroy()
+        # self.fig.subplots(1, 1)
+        # ani = FuncAnimation(self.fig, self.animate, interval=1000, blit=False)
+        # self.canvas.draw()
+
+    
+    # def animate(self, i):
+    #     global x_vals
+    #     global y_vals
+    #     x_vals.append(next(index))
+    #     y_vals.append(random.randint(0, 5))
+    #     # Get all axes of figure
+    #     ax = self.fig.get_axes()[0]
+    #     # Clear current data
+    #     ax.cla()
+    #     # Plot new data
+    #     ax.plot(x_vals, y_vals)
 
 if __name__ == '__main__':
     gui = GUI()
     gui.mainloop()
     for key in gui.data:
-        print(gui.data[key])
+        print(key, gui.data[key])
