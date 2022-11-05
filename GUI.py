@@ -19,12 +19,6 @@ class GUI(tk.Tk):
         w, h = 1000, 500
         self.geometry(str(w) + 'x' + str(h))
 
-        # self.fig = Figure(figsize = (5, 5), dpi = 100)
-        # self.canvas = FigureCanvasTkAgg(self.fig, master=self)  
-        # self.canvas.get_tk_widget().configure(width=300, height=300)
-        self.__column1x_visualisation = 0.15
-        self.__column1y = 0.25
-
         # data which user provides
         self.data = {}
 
@@ -77,12 +71,24 @@ class GUI(tk.Tk):
 
 
         # mutual optimisation widgets
-        max_iter = tk.Scale(self, from_=1000, to=40000, orient='horizontal', resolution=100)
-        max_iter_label = tk.Label(self, text='Maximum iterations')
-        self.annealing_widgets.append(max_iter)
-        self.genetic_widgets.append(max_iter)
-        self.annealing_labels.append(max_iter_label)
-        self.genetic_labels.append(max_iter_label)
+        from_tmp = [1000, 10, 0.0, 0.0]
+        to_tmp = [40000, 60, 1.0, 1.0]
+        resolution_tmp = [100, 1, 0.01, 0.01]
+        labels_tmp = ['Maximum iterations', 'Frames per car', 'Left turn prob', 'Right turn prob']
+        
+        self.mutual_widgets = [tk.Scale(self, from_=from_tmp[i], to=to_tmp[i], orient='horizontal', resolution=resolution_tmp[i]) for i in range(len(to_tmp))]
+        self.mutual_widgets[2].bind("<ButtonRelease-1>", self.update_right_turn_prob)
+        self.mutual_labels = [tk.Label(self, text=labels_tmp[i]) for i in range(len(to_tmp))]
+
+        y = 0.25
+        padx = 0.75
+        for i in range(len(self.mutual_widgets)):
+            self.mutual_widgets[i].place(relx=padx, rely=y)
+            self.mutual_labels[i].place(relx=padx-0.13, rely=y+0.04)
+            y += 0.1
+    
+    def update_right_turn_prob(self, event):
+        self.mutual_widgets[3].configure(to=1-self.mutual_widgets[2].get())
 
     # hides and shows appropriate widgets based on chosen mode
     def alter_widgtes(self, *args):
@@ -100,18 +106,19 @@ class GUI(tk.Tk):
             self.show_optimisation_widgets(self.genetic_widgets, self.genetic_labels)
 
     def show_visualisation_widgets(self):
-        y = self.__column1y
+        y = 0.25
+        padx = 0.15
         for i in range(len(self.traffic_light_widgets)):
-            self.traffic_light_labels[i].place(relx=self.__column1x_visualisation-0.1, rely=y+0.04)
-            x = self.__column1x_visualisation
+            self.traffic_light_labels[i].place(relx=padx-0.1, rely=y+0.04)
+            x = padx
             for slider in self.traffic_light_widgets[i]:
                 slider.place(relx=x, rely=y)
                 x += 0.1
             y += 0.1
         
-        self.speed_limit.place(relx=self.__column1x_visualisation, rely=0.65)
-        self.speed_limit_label.place(relx=self.__column1x_visualisation-0.1, rely=0.69)
-        self.debug_checkbutton.place(relx=self.__column1x_visualisation, rely=0.8)
+        self.speed_limit.place(relx=padx, rely=0.65)
+        self.speed_limit_label.place(relx=padx-0.1, rely=0.69)
+        self.debug_checkbutton.place(relx=padx, rely=0.8)
         self.submit.configure(text='Visualise')
 
     def hide_visualisation_widgets(self):
@@ -131,7 +138,6 @@ class GUI(tk.Tk):
             labels[i].place(relx=0.17, rely=y+0.04)
             y += 0.1
         self.submit.configure(text='Optimise')
-        # self.canvas.get_tk_widget().place(relx=0.6, rely=0.2)
 
     def hide_annealing_widgets(self):
         for i in range(len(self.annealing_widgets)):
@@ -147,6 +153,10 @@ class GUI(tk.Tk):
 
     def collect_data(self):
         self.data['mode'] = self.mode.get()
+        # collect data from mutual widgets
+        for widget, label in zip(self.mutual_widgets, self.mutual_labels):
+            self.data[label['text']] = widget.get()
+
         if self.data['mode'] == 'visualisation':
             # collect visualisations data
             traffic_lights = []
@@ -155,40 +165,24 @@ class GUI(tk.Tk):
                 for l in tl:
                     tl_data.append(l.get())
                 traffic_lights.append(tl_data)
-            self.data['traffic_lights'] = traffic_lights
-            self.data['speed_limit'] = self.speed_limit.get()
-            self.data['debug'] = self.debug.get()
+            self.data['Traffic lights'] = traffic_lights
+            self.data['Speed limit'] = self.speed_limit.get()
+            self.data['Debug'] = self.debug.get()
         else:
             # collect optimisation algorithm data
             if self.data['mode'] == 'simulated annealing':
                 widgets = self.annealing_widgets
+                labels = self.annealing_labels
             else:
                 widgets = self.genetic_widgets
-            data = []
-            for widget in widgets:
-                data.append(widget.get())
-            self.data[self.data['mode']] = data
+                labels = self.genetic_labels
+            for widget, label in zip(widgets, labels):
+                self.data[label['text']] = widget.get()
         
     def press_submit(self):
         self.collect_data()
         self.quit()
         self.destroy()
-        # self.fig.subplots(1, 1)
-        # ani = FuncAnimation(self.fig, self.animate, interval=1000, blit=False)
-        # self.canvas.draw()
-
-    
-    # def animate(self, i):
-    #     global x_vals
-    #     global y_vals
-    #     x_vals.append(next(index))
-    #     y_vals.append(random.randint(0, 5))
-    #     # Get all axes of figure
-    #     ax = self.fig.get_axes()[0]
-    #     # Clear current data
-    #     ax.cla()
-    #     # Plot new data
-    #     ax.plot(x_vals, y_vals)
 
 if __name__ == '__main__':
     gui = GUI()
