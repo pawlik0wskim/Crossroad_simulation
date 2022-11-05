@@ -195,7 +195,7 @@ def generate_one_straight_one_left_turn(WIDTH, HEIGHT):
 
 
 
-def test_map(WIDTH, HEIGHT):
+def generate_test_map(WIDTH, HEIGHT):
     
     
     #Outer nodes
@@ -227,125 +227,6 @@ def test_map(WIDTH, HEIGHT):
 
 
  
-# def simulate(map): 
-#     if visualize:
-#         win = pygame.display.set_mode((WIDTH, HEIGHT))   
-#         clock=pygame.time.Clock()
-#         map_img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT)).convert()
-#     start_time = time.time()
-#     map_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
-#     i=0
-#     prev_flow = -1
-#     while(True):
-
-#         iter_start_time = time.time()
-#         i+=1
-#         if visualize:
-#             win.blit(map_img, map_rect)
-#             for event in pygame.event.get():
-#                 if event.type == pygame.QUIT:
-#                         pygame.quit()
-#                         exit()    
-                
-#             map.show_vehicles(win, debug)
-        
-#         for road in map.roads:
-#             if visualize:
-#                 road.draw_traffic_light(win)
-
-#             for car in road.cars:
-#                 car.update_vision(road.direction, road.type, road.curve)
-#                 map.process_car_neighborhood(car, road)
-
-#         if i%frames_per_car == 0:
-#             map.spawn_car(speed_limit)
-        
-#         map.update_traffic_lights(i)
-#         map.move_cars()
-#         map.check_for_car_collision()
-#         if visualize:
-#             pygame.display.update()
-#             clock.tick(FPS)
-
-#         elapsed_time = time.time() - start_time
-        
-#         if i%600*FPS == 0:
-#             print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions)}, FPS: {-1/(iter_start_time-time.time())}")
-#             if Flow == prev_flow:
-#                 break
-#             prev_flow = Flow
-#         #Endsd simulation if enough time has passed or if the crossroad got stuck
-#         if elapsed_time >= max_time:
-#             break
-
-# def simulate_in_thread(map, result):
-#     start_time = time.process_time()
-#     i=0
-#     # prev_flow = 0
-
-#     while(True):
-    
-#         map.check_for_car_collision()
-#         i+=1
-        
-#         for road in map.roads:
-#             for car in road.cars:
-#                  map.process_car(car, road)
-
-#         if i%FPS == 0:
-#             map.spawn_car(WIDTH, HEIGHT)
-
-#         map.update_traffic_lights(i)
-#         map.move_cars()
-
-#         elapsed_time = time.process_time() - start_time
-#         if i == 1500:
-#             result.value =  cost_function(Flow, Collisions)
-#             break
-        # prev_flow = Flow
-
-# def cost_function(flow, collisions):
-#     return collisions*np.log(collisions + 1) - flow
-
-# conducts n simulations on map and returns array of results of each simulation
-# def conduct_simulations(map, n):
-#     processes = []
-#     results = []
-
-#     for i in range(n):
-#         val = Value('f', 0.0)
-#         results.append(val)
-
-#         p = Process(target=simulate_in_thread, args=(map, val))
-#         p.start()
-#         processes.append(p)
-    
-#     # wait for all simulations to finish
-#     for p in processes:
-#         p.join()
-    
-#     return results
-
-# def test_concurrent_simulations(map, n_jobs):
-#     start = time.time()
-#     results = conduct_simulations(map, n_jobs)
-#     print(f'Conduction of {n_jobs} simulation(s) took {time.time() - start} seconds')
-#     for res in results:
-#         print(res.value)
-
-# def main():
-#     # map = generate_crossroad(WIDTH, HEIGHT)
-#     # test_concurrent_simulations(map, 5)
-
-#     # test_concurrent_simulations(map, 1)
-
-
-#     simulate(generate_crossroad(WIDTH, HEIGHT))
-    # simulate(generate_one_straight_one_left_turn(WIDTH, HEIGHT))
-
-
-#if __name__ == "__main__":
-    #main()
 
 
 

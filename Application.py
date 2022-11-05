@@ -15,6 +15,7 @@ class Application:
         
         i=0
         prev_flow = -1
+        print(f"Speed:  {pixels_to_kmh(speed_limit)}")
         while(True):
 
             iter_start_time = time.time()
@@ -64,4 +65,4 @@ class Application:
 app = Application()
 speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car = run_gui()
 
-Flow, Collisions= app.simulate(generate_crossroad(WIDTH, HEIGHT), speed_limit, simulation_length, frames_per_car, light_cycle_time, acceleration_exponent, visualise = True)
+Flow, Collisions= app.simulate(generate_crossroad(WIDTH, HEIGHT), speed_limit, simulation_length, frames_per_car, light_cycle_time, acceleration_exponent, visualise = True, debug = False)

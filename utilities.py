@@ -18,7 +18,11 @@ FPS = 30
 unit = (1/2000*WIDTH+1/2000*HEIGHT) #unit used to calculate velocity so that window size doesn't matter
 # acceleration_exponent = 4
 # frames_per_car = 30
-
+def meters_to_pixels(dist):
+    return dist/3*70*unit
+def pixels_to_kmh(dist):
+    meters_per_frame = dist/70*3/unit
+    return meters_per_frame*FPS*3600/1000
 
 def rotate_image(win, image, top_left, angle):
     rotated_img = pygame.transform.rotate(image, angle)

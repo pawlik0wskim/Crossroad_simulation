@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from utilities import l2_dist, unit
+from utilities import *
 import cv2
 
 
@@ -69,7 +69,9 @@ class Car:
     def get_img_rect(self, center):
         img = self.rotate_image()
         w, h = img.shape[1], img.shape[0]
-        return pygame.Rect(center[0] - w/2, center[1] - h/2, w, h)
+        rect = pygame.Rect(0, 0, w, h)
+        rect.center = center
+        return rect
     
     # casts img(which is supposed to be numpy array) to pygame.Surface
     def get_img_as_surface(img):
@@ -132,6 +134,7 @@ class Car:
         center = self.rect.center
         rotated_img = self.rotate_image()
         self.rect = self.get_img_rect(center)
+        if self.rect.center!=center: print(f"{self.rect.center}, {center}")
         surface = pygame.image.frombuffer(rotated_img.tobytes(), rotated_img.shape[1::-1], "RGBA")
         win.blit(surface, self.rect)
         
@@ -157,7 +160,8 @@ def test():  #rotation around the center of vehicle
             if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()    
-        car = Car((WIDTH/2, HEIGHT/2), i*3,WIDTH, HEIGHT)
+        car = Car((WIDTH/2, HEIGHT/2), i*3, WIDTH, HEIGHT, 6*unit, 4)
+        
         car.draw(win)
         pygame.display.update()
         clock.tick(60)
