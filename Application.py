@@ -74,7 +74,7 @@ if __name__ == '__main__':
     right_prob = gui.data['Right turn prob']
     light_cycle_time = gui.data['Traffic lights'][0][0]
     debug = gui.data['Debug']
-    Flow, Collisions= app.simulate(generate_crossroad(WIDTH, HEIGHT), speed_limit, max_iter, frames_per_car, light_cycle_time, acceleration_exponent, left_prob, right_prob, visualise=True)
+    Flow, Collisions= app.simulate(generate_crossroad(WIDTH, HEIGHT), speed_limit, max_iter, frames_per_car, light_cycle_time, acceleration_exponent, left_prob, right_prob, visualise=True, debug=debug)
     print(Flow, Collisions)
 
     # speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car = run_gui()

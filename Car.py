@@ -69,7 +69,9 @@ class Car:
     def get_img_rect(self, center):
         img = self.rotate_image()
         w, h = img.shape[1], img.shape[0]
-        return pygame.Rect(center[0] - w/2, center[1] - h/2, w, h)
+        res = pygame.Rect(0, 0, w, h)
+        res.center = center
+        return res
     
     # casts img(which is supposed to be numpy array) to pygame.Surface
     def get_img_as_surface(img):

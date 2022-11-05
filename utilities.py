@@ -7,7 +7,7 @@ import numpy as np
 # debug = False
 # # left_prob, right_prob = 1, 0
 # left_prob, right_prob = 0.2, 0.3
-WIDTH, HEIGHT = (1000,1000)
+WIDTH, HEIGHT = (700,700)
 ROAD_COLOR = "Red"
 NODE_COLOR = "Yellow"
 dir = r""

@@ -1,17 +1,6 @@
 import tkinter as tk
-# import matplotlib.pyplot as plt
-# from matplotlib.animation import FuncAnimation
-# from matplotlib.figure import Figure
-# from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-# from itertools import count
-# import random
-
-# x_vals = []
-# y_vals = []
-# index = count()
 
 # Graphical User Interface class
-
 class GUI(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -42,7 +31,7 @@ class GUI(tk.Tk):
         # simulation widgets
         self.traffic_light_widgets = [[tk.Scale(self, from_=0.0, to=1.0, orient='horizontal', resolution=0.1) for i in range(4)] for j in range(4)]
         self.traffic_light_labels = [tk.Label(self, text='traffic light '+str(i+1)) for i in range(4)]
-        self.speed_limit = tk.Scale(self, from_=0.0, to=100.0, orient='horizontal', resolution=1)
+        self.speed_limit = tk.Scale(self, from_=1.0, to=100.0, orient='horizontal', resolution=1)
         self.speed_limit_label = tk.Label(self, text="Speed limit")
         self.debug = tk.IntVar(value=0)
         self.debug_checkbutton = tk.Checkbutton(self,
