@@ -1,8 +1,8 @@
 from Map import *
 from utilities import *
-from GUI import *
+from GUI import GUI
 class Application:    
-    def simulate(self, map,  speed_limit, max_iter, frames_per_car, light_cycle_time, acceleration_exponent, visualise = False, debug = False): 
+    def simulate(self, map,  speed_limit, max_iter, frames_per_car, light_cycle_time, acceleration_exponent, left_prob, right_prob, visualise = False, debug = False): 
         Collisions = 0
         Flow = 0
         
@@ -60,8 +60,15 @@ class Application:
         return Flow, Collisions
 
         
-        
-app = Application()
-speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car = run_gui()
+if __name__ == '__main__':        
+    app = Application()
 
-Flow, Collisions= app.simulate(generate_crossroad(WIDTH, HEIGHT), speed_limit, simulation_length, frames_per_car, light_cycle_time, acceleration_exponent, visualise = True)
+    gui = GUI()
+    gui.mainloop()
+    data = gui.data
+
+
+
+    # speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car = run_gui()
+
+    # Flow, Collisions= app.simulate(generate_crossroad(WIDTH, HEIGHT), speed_limit, simulation_length, frames_per_car, light_cycle_time, acceleration_exponent, visualise = True)

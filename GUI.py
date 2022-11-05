@@ -22,6 +22,8 @@ class GUI(tk.Tk):
         # self.fig = Figure(figsize = (5, 5), dpi = 100)
         # self.canvas = FigureCanvasTkAgg(self.fig, master=self)  
         # self.canvas.get_tk_widget().configure(width=300, height=300)
+        self.__column1x_visualisation = 0.15
+        self.__column1y = 0.25
 
         # data which user provides
         self.data = {}
@@ -98,18 +100,18 @@ class GUI(tk.Tk):
             self.show_optimisation_widgets(self.genetic_widgets, self.genetic_labels)
 
     def show_visualisation_widgets(self):
-        y = 0.25
+        y = self.__column1y
         for i in range(len(self.traffic_light_widgets)):
-            self.traffic_light_labels[i].place(relx=0.2, rely=y+0.04)
-            x = 0.3
+            self.traffic_light_labels[i].place(relx=self.__column1x_visualisation-0.1, rely=y+0.04)
+            x = self.__column1x_visualisation
             for slider in self.traffic_light_widgets[i]:
                 slider.place(relx=x, rely=y)
                 x += 0.1
             y += 0.1
         
-        self.speed_limit.place(relx=0.3, rely=0.65)
-        self.speed_limit_label.place(relx=0.2, rely=0.69)
-        self.debug_checkbutton.place(relx=0.3, rely=0.8)
+        self.speed_limit.place(relx=self.__column1x_visualisation, rely=0.65)
+        self.speed_limit_label.place(relx=self.__column1x_visualisation-0.1, rely=0.69)
+        self.debug_checkbutton.place(relx=self.__column1x_visualisation, rely=0.8)
         self.submit.configure(text='Visualise')
 
     def hide_visualisation_widgets(self):
