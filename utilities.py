@@ -46,5 +46,5 @@ def cross_product(x, y):
 def cross_product(x, y):
     return (x[0]*y[0] + x[1]*y[1])
 
-def cost_function(flow, collisions):
-    return collisions*np.log(collisions + 1) - flow
+def cost_function(flow, collisions, iter, stopped):
+    return (collisions*np.log(collisions + 1) - flow)

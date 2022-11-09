@@ -12,10 +12,12 @@ from multiprocessing import Process, Lock, Value
 # Flow = 0
 
 class Controller:
-    def __init__(self, roads, starting_nodes):
+    def __init__(self, roads, starting_nodes, img=None, rect=None):
         self.roads=roads
         self.starting_nodes = starting_nodes
         self.roads_with_lights = []
+        self.img= img
+        self.rect = rect
         for road in roads:
             if road.light:
                 self.roads_with_lights.append(road)
@@ -25,9 +27,17 @@ class Controller:
 
     # Draws all cars
     def show_vehicles(self, win, debug):
+        win.blit(self.img, self.rect)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()    
+            
+        
         for road in self.roads:
             if debug:
                 road.draw_path(win)
+            road.draw_traffic_light(win)
             for car in road.cars:
                 if debug:
                     pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
