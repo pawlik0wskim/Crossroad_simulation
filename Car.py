@@ -30,7 +30,7 @@ class Car:
         self.nearest_car = None
 
         self.stopping = False
-        self.maximum_acceleration = unit/2
+        self.maximum_acceleration = unit*4
         
         self.velocity = speed_limit
         self.vision = pygame.Rect(self.rect.center, [10, 10])
@@ -43,6 +43,7 @@ class Car:
         self.maximum_deceleration = self.acceleration*2
         
         self.mask = pygame.mask.from_surface(Car.get_img_as_surface(self.rotate_image()))
+        self.color = "Red"
 
     # returns rotated image according to visible angle
     def rotate_image(self):
@@ -83,19 +84,21 @@ class Car:
             center_new_x = self.rect.center[0] - direction[0]*self.rect.width*3/2
             center_new_y = self.rect.center[1] - direction[1]*self.rect.height*3/2
             w, h = self.rect.w*(1 + abs(direction[0])), self.rect.h*(1 + abs(direction[1]))
-            self.vision = pygame.Rect(center_new_x - w/2,
-                                      center_new_y - h/2, 
-                                      w, 
-                                      h)
+            self.vision = pygame.Rect(center_new_x - w,
+                                      center_new_y - h, 
+                                      2*w, 
+                                      2*h)
         else:
             if curve == "left":
-                alpha, beta = 1.5, 1.5
+                alpha, beta = 2, 2
                 dim = max(self.rect.w, self.rect.h)
-                new_x = alpha*dim if direction[0] > 0 else -self.rect.w
-                new_y = beta*dim if direction[1] > 0 else -self.rect.h
-                new_x = self.rect.x - new_x
-                new_y = self.rect.y - new_y
-                self.vision = pygame.Rect(new_x, new_y, alpha*dim, beta*dim)
+                # new_x = alpha*dim if direction[0] > 0 else -self.rect.w
+                # new_y = beta*dim if direction[1] > 0 else -self.rect.h
+                # new_x = self.rect.bottomright[0] - new_x
+                # new_y = self.rect.bottomright[1] - new_y
+                new_x = self.rect.center[0] - self.rect.w*alpha + self.rect.w/2 if direction[0]>0 else self.rect.center[0]  - self.rect.w/2
+                new_y = self.rect.center[1] - self.rect.h*beta + self.rect.h/2 if direction[1]>0 else self.rect.center[1]  - self.rect.h/2
+                self.vision = pygame.Rect(new_x, new_y, self.rect.w*alpha, self.rect.h*beta)
             else:
                 if direction[0]*direction[1] > 0:
                     alpha, beta = 0.7, 1.5
@@ -134,6 +137,7 @@ class Car:
         center = self.rect.center
         rotated_img = self.rotate_image()
         self.rect = self.get_img_rect(center)
+        self.rect.center = center
         if self.rect.center!=center: print(f"{self.rect.center}, {center}")
         surface = pygame.image.frombuffer(rotated_img.tobytes(), rotated_img.shape[1::-1], "RGBA")
         win.blit(surface, self.rect)

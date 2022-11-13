@@ -101,7 +101,7 @@ class Road:
     #Checks if car should stop       
     def check_stopping(self):
         if self.light:
-            ans = True if self.light_color in [1,2] else False
+            ans = True if self.light_color in [1,2,3] else False
             return ans
         return False
         
@@ -161,7 +161,7 @@ class Road:
             new_pos = (self.radius*np.cos((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[0],self.radius*np.sin((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[1])
             
             # update driven distance of the car
-            car.dist_driven = 2**(2**((90 - (int(self.curve=="left")*new_angle)%90)/90)-1)-1
+            car.dist_driven = ((90 - (new_angle)%90)/90)-0.2
             
             if np.abs(new_angle)%90 < np.abs(angle) - eps:
                 next_road = self.get_next_road(right_prob, left_prob)
