@@ -26,7 +26,7 @@ class Controller:
     
 
     # Draws all cars
-    def show_vehicles(self, win, debug):
+    def draw(self, win, debug):
         win.blit(self.img, self.rect)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -51,7 +51,7 @@ class Controller:
         node = self.starting_nodes[rand]
         if len(node.exiting_roads[0].cars)>0:
             previous_car = node.exiting_roads[0].cars[-1].rect # we don't want cars to spawn inside one another
-            while np.abs(previous_car.center[0]-node.pos[0]+previous_car.center[1]-node.pos[1])<np.max([previous_car.width, previous_car.height]) and rand1!=rand:
+            while np.abs(previous_car.center[0]-node.pos[0]+previous_car.center[1]-node.pos[1])<np.max([previous_car.width*(1+speed_limit/10), previous_car.height*(1+speed_limit/10)]) and rand1!=rand:
                 rand1 = rand1+1 if rand1 < len(self.starting_nodes)-1 else 0
                 node = self.starting_nodes[np.random.randint(0, len(self.starting_nodes))]
                 if len(node.exiting_roads[0].cars)>0:
@@ -68,6 +68,8 @@ class Controller:
             angle = 270
         car = Car(node.pos, angle, WIDTH, HEIGHT, speed_limit, acceleration_exponent)
         node.exiting_roads[0].cars.append(car)
+        
+        
     #Moves each car forward
     def move_cars(self, right_prob, left_prob):
         curr_flow = 0

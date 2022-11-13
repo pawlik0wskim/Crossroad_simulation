@@ -41,7 +41,7 @@ class SimulatedAnnealing(oa):
             loss_value_new = cost_function(Flow_mean, Collisions_mean, iteration, stopped)
             print(f"Loss value: :  {loss_value_new}")
             diff = loss_value_new - loss_value
-            if diff<0: 
+            if diff<0  or np.random.rand()<np.exp(-diff/self.temp): 
                 loss_value = loss_value_new
                 speed_limit, light_cycles = new_speed_limit, new_light_cycles 
                 print("______________________better______________________")

@@ -30,17 +30,17 @@ class Car:
         self.nearest_car = None
 
         self.stopping = False
-        self.maximum_acceleration = unit/2 
+        self.maximum_acceleration = unit/2
         
         self.velocity = speed_limit
         self.vision = pygame.Rect(self.rect.center, [10, 10])
-        self.acceleration = unit/4
+        self.acceleration = unit
         self.speed_limit = speed_limit
         self.acceleration_exponent = acceleration_exponent
         
         self.reaction_time = 1
         self.minimum_dist = np.max([self.rect.h,self.rect.w])*5/3
-        self.maximum_deceleration = self.acceleration*4
+        self.maximum_deceleration = self.acceleration*2
         
         self.mask = pygame.mask.from_surface(Car.get_img_as_surface(self.rotate_image()))
 

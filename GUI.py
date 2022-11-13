@@ -99,7 +99,7 @@ def run_gui():
     show_simulation_data()
     root.protocol("WM_DELETE_WINDOW", on_closing)
     root.mainloop()
-    speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car = 15, 0.1, 0.2, 300, 10000, 4, 30
+    speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car = 15, 0.1, 0.2, 300, 10000, 4, 1
     return speed_limit * unit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car
     
 
