@@ -2,6 +2,8 @@ from Map import *
 from utilities import *
 from GUI import *
 from SimulatedAnnealing import SimulatedAnnealing
+import pandas as pd
+from datetime import datetime
 class Application:   
     def __init__(self, max_iter, frames_per_car, light_cycle_time, acceleration_exponent):
         
@@ -85,7 +87,13 @@ speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , ac
 app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
 
 light_cycles = [[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]]
-Flow, Collisions, stopped, iteration= app.simulate(speed_limit, light_cycles, visualise = True, debug = True)
+#Flow, Collisions, stopped, iteration= app.simulate(speed_limit, light_cycles, visualise = True, debug = True)
 app.set_traffic_lights(light_cycles)
-sa = SimulatedAnnealing(100,2,1,0) 
+sa = SimulatedAnnealing(0,2,1,0) 
 sa.optimise(app, {"speed_limit": speed_limit, "light_cycles": light_cycles})
+df = pd.DataFrame(sa.stats)
+
+df.columns = ["main_index", "small_index", "Speed limit(km/h)", "Flow", "Collisions", "Stopped", "Iterations"]
+print(df)
+time_ = datetime.now().strftime("%H-%M-%S")
+df.to_csv(f"{time_}.csv")
