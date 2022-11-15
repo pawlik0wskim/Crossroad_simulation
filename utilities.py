@@ -20,6 +20,10 @@ unit = (1/2000*WIDTH+1/2000*HEIGHT) #unit used to calculate velocity so that win
 # frames_per_car = 30
 def meters_to_pixels(dist):
     return dist/3*70*unit
+
+def kilometers_per_hour_to_pixels(dist):
+    return dist/FPS/36*10/3*70*unit
+
 def pixels_to_kmh(dist):
     meters_per_frame = dist/70*3/unit
     return meters_per_frame*FPS*3600/1000

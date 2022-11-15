@@ -83,14 +83,15 @@ class Application:
         
         
 
-speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car = run_gui()
+light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode = run_gui()
+acceleration_exponent = 4
 app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
 
-light_cycles = [[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]]
+# light_cycles = [[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]]
 #Flow, Collisions, stopped, iteration= app.simulate(speed_limit, light_cycles, visualise = True, debug = True)
 app.set_traffic_lights(light_cycles)
-sa = SimulatedAnnealing(0,2,1,0) 
-sa.optimise(app, {"speed_limit": speed_limit, "light_cycles": light_cycles})
+sa = SimulatedAnnealing(0,1,0, 0.9995) 
+sa.optimise(app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles})
 df = pd.DataFrame(sa.stats)
 
 df.columns = ["main_index", "small_index", "Speed limit(km/h)", "Flow", "Collisions", "Stopped", "Iterations"]

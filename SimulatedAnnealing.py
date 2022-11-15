@@ -3,24 +3,13 @@ from utilities import *
 import numpy as np
 import time
 class SimulatedAnnealing(oa):
-    def __init__(self, iterations, simulation_length, step_size, initial_temp, cooling_rate = 0.99995):
+    def __init__(self, iterations, simulation_length, initial_temp, cooling_rate = 0.99995):
         
-        self.step_size = step_size
         self.temp = initial_temp
         self.cooling_rate = cooling_rate
         super().__init__(iterations, simulation_length)
     
-    def mutate(self, speed_limit, light_cycles, speed_limit_optimisation , traffic_light_optimisation ):
-        new_speed_limit, new_light_cycles = speed_limit, light_cycles
-        p = np.random.rand()
-        p=0
-        parameter_number = len(light_cycles[0])*len(light_cycles)+1
-        if p<1/parameter_number or 1-traffic_light_optimisation:
-            new_speed_limit+=np.random.normal(0,self.step_size)
-        for i in range(parameter_number-1):
-            if p<1/parameter_number*(i+2) and p>1/parameter_number*(i+1):
-                new_light_cycles[i//len(new_light_cycles)][i-i//len(new_light_cycles)*len(new_light_cycles)]+=np.random.normal()
-        return new_speed_limit, new_light_cycles
+    
     
     def optimise(self, simulation, initial_parameters, speed_limit_optimisation = True, traffic_light_optimisation = True):
         start_time = time.time()
