@@ -1,5 +1,6 @@
 from Map import *
 from utilities import *
+
 from GUI import *
 from SimulatedAnnealing import SimulatedAnnealing
 import pandas as pd
@@ -22,6 +23,7 @@ class Application:
             
     def simulate(self, speed_limit, light_cycles, visualise = False, debug = False): 
         self.set_traffic_lights( light_cycles)
+
         Collisions = 0
         Flow = 0
         
@@ -81,6 +83,7 @@ class Application:
         return Flow, Collisions, stopped, iteration
 
         
+
         
 if __name__=='__main__':
     
@@ -100,3 +103,4 @@ if __name__=='__main__':
         print(df)
         time_ = datetime.now().strftime("%H-%M-%S")
         df.to_csv(f"{time_}.csv")
+
