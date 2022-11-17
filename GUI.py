@@ -214,11 +214,12 @@ def run_gui():
     if gui.values!=None:
         values = gui.values[:4] + [float(value) for value in gui.values[4:]]
         mode = gui.drop_menu.current_value
-        speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car = values[4], values[7], values[8], values[9], values[5], values[6]
+        speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, number_of_iterations, initial_temp, cooling_rate = values[4], values[7], values[8], values[9], values[5], values[6], values[10], values[11], values[12]
         light_cycles = [values[i]for i in range(4)]
-        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode
+        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate
     return None
     
 
 #run_gui()
+
 

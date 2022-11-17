@@ -68,6 +68,7 @@ class Controller:
             angle = 270
         car = Car(node.pos, angle, WIDTH, HEIGHT, speed_limit, acceleration_exponent)
         node.exiting_roads[0].cars.append(car)
+        return car
         
         
     #Moves each car forward
@@ -213,34 +214,23 @@ def generate_one_straight_one_left_turn(WIDTH, HEIGHT):
 
 
 
-def generate_test_map(WIDTH, HEIGHT):
+def generate_test_map(WIDTH, HEIGHT, lights):
     
     
     #Outer nodes
-    node1 = Node((7/18*WIDTH, 0))
-    node2 = Node((11/18*WIDTH, 0))
-    node3 = Node((7/18*WIDTH, HEIGHT/3))
-    node4 = Node((11/18*WIDTH, 1/3*HEIGHT))
-    node5 = Node((7/18*WIDTH, 2/3*HEIGHT))
-    node6 = Node((11/18*WIDTH, 2/3*HEIGHT))
-    node7 = Node((7/18*WIDTH, HEIGHT))
-    node8 = Node((11/18*WIDTH, HEIGHT))
-    
+    node1 = Node((11/24*WIDTH, 0))
+    node2 = Node((11/24*WIDTH, HEIGHT/3))
+    node3 = Node((11/24*WIDTH, 2/3*HEIGHT))
+    node4 = Node((11/24*WIDTH, HEIGHT))
     
     roads = []
     #Vertical
-    roads.append(Road(node1, node3, "straight"))
-    roads.append(Road(node3,node5, "straight"))
-    roads.append(Road(node5, node7, "straight"))
-
-    roads.append(Road(node6, node4, "straight"))
-    roads.append(Road(node8, node6, "straight"))#bottom
-    roads.append(Road(node4, node2, "straight"))
-  
-
+    roads.append(Road(node1, node2, "straight", light = lights))
+    roads.append(Road(node2,node3, "straight"))
+    roads.append(Road(node3, node4, "straight"))
     
 
-    return Controller(roads, [node1, node8])
+    return Controller(roads, [node1])
   
 
 

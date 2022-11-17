@@ -82,20 +82,21 @@ class Application:
 
         
         
+if __name__=='__main__':
+    
+    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate = run_gui()
+    acceleration_exponent = 4
+    app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
 
-light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode = run_gui()
-acceleration_exponent = 4
-app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
 
-
-if mode == "visualisation":
-    Flow, Collisions, stopped, iteration= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
-if mode =="simulated annealing"  :  
-    app.set_traffic_lights(light_cycles)
-    sa = SimulatedAnnealing(0,1,0, 0.9995) 
-    sa.optimise(app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles})
-    df = pd.DataFrame(sa.stats)
-    df.columns = ["main_index", "small_index", "Speed limit(km/h)", "Flow", "Collisions", "Stopped", "Iterations"]
-    print(df)
-    time_ = datetime.now().strftime("%H-%M-%S")
-    df.to_csv(f"{time_}.csv")
+    if mode == "visualisation":
+        Flow, Collisions, stopped, iteration= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
+    if mode =="simulated annealing"  :  
+        app.set_traffic_lights(light_cycles)
+        sa = SimulatedAnnealing(number_of_iterations, simulation_length, initial_temp, cooling_rate) 
+        sa.optimise(app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles})
+        df = pd.DataFrame(sa.stats)
+        df.columns = ["main_index", "small_index", "Speed limit(km/h)", "Flow", "Collisions", "Stopped", "Iterations"]
+        print(df)
+        time_ = datetime.now().strftime("%H-%M-%S")
+        df.to_csv(f"{time_}.csv")

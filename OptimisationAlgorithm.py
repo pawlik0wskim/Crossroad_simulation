@@ -15,7 +15,7 @@ class OptimisationAlgorithm:
         p=0
         parameter_number = len(light_cycles[0])*len(light_cycles)+1
         if p<1/parameter_number or 1-traffic_light_optimisation:
-            new_speed_limit+=np.random.normal(0,self.step_size)
+            new_speed_limit+=np.random.normal(0,2)
         for i in range(parameter_number-1):
             if p<1/parameter_number*(i+2) and p>1/parameter_number*(i+1):
                 new_light_cycles[i//len(new_light_cycles)][i-i//len(new_light_cycles)*len(new_light_cycles)]+=np.random.normal()

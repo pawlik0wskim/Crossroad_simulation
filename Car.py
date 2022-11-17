@@ -116,6 +116,7 @@ class Car:
     def update_acceleration(self, nearest_node=None, first = False):
         
         new_acceleration = 1 - (self.velocity/self.speed_limit)**self.acceleration_exponent
+        print(self.nearest_car)
         if self.nearest_car is not None:
             sign = np.sign(np.cos(self.visable_angle - self.nearest_car.visable_angle))
             desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - sign*self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.maximum_deceleration))   

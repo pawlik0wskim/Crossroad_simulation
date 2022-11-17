@@ -19,7 +19,7 @@ class SimulatedAnnealing(oa):
         simulation.reset_map()
         self.stats.append([-1,0,pixels_to_kmh(speed_limit),Flow, Collisions, stopped, iteration])
         loss_value = cost_function(Flow, Collisions, iteration, stopped)
-        for i in range(self.iterations):
+        for i in range(int(self.iterations)):
             new_speed_limit, new_light_cycles = self.mutate(speed_limit, light_cycles, speed_limit_optimisation, traffic_light_optimisation )
             Flow_mean, Collisions_mean = 0, 0
             print(f"Speed:  {pixels_to_kmh(new_speed_limit)} km/h / {new_speed_limit} pix")
