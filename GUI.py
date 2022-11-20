@@ -235,9 +235,9 @@ def run_gui():
     if gui.values!=None:
         values = gui.values[:4] + [float(value) for value in gui.values[4:]]
         mode = gui.drop_menu.current_value
-        speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, number_of_iterations, initial_temp, cooling_rate, number_of_iterations, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = values[4], values[7], values[8], values[9], values[5], values[6], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19]
+        speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, number_of_iterations, initial_temp, cooling_rate, number_of_iterations_gen, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = values[4], values[7], values[8], values[9], values[5], values[6], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19]
         light_cycles = [values[i]for i in range(4)]
-        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part
+        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, number_of_iterations_gen, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part
     return None
     
 

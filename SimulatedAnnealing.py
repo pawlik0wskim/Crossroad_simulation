@@ -30,7 +30,11 @@ class SimulatedAnnealing(oa):
                 self.stats.append([i,j,pixels_to_kmh(new_speed_limit),Flow, Collisions, stopped, iteration])
             loss_value_new = cost_function(Flow_mean, Collisions_mean, iteration, stopped)
             simulation.reset_map()
-            self.stats.append([i,None,pixels_to_kmh(new_speed_limit), Flow_mean, Collisions_mean, None, None])
+            stat = [i,None,pixels_to_kmh(new_speed_limit)]
+            for light in light_cycles:
+                stat+=light
+            stat += [ Flow_mean, Collisions_mean, None, None]
+            self.stats.append(stat)
             print(f"Loss value: :  {loss_value_new}")
             diff = loss_value_new - loss_value
             if diff>0  or np.random.rand()<np.exp(-diff/self.temp): 
