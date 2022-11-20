@@ -132,10 +132,10 @@ class Road:
             dist_from_start = (np.abs((new_pos[0]-self.start_node.pos[0])*self.direction[0]),np.abs((new_pos[1]-self.start_node.pos[1])*self.direction[1]))
             length = (np.abs(self.start_node.pos[0]-self.end_node.pos[0]),np.abs(self.start_node.pos[1]-self.end_node.pos[1]))
             #Checking stopping conditions
-            slowing_road = np.sum(np.abs(length)) * 0.4
+            slowing_road = car.velocity**2/2/car.maximum_deceleration
             remaining_road = np.abs(dist_from_start[0] - length[0]) + np.abs( dist_from_start[1] - length[1])-np.max([car.rect.height, car.rect.width])/2
             
-            if remaining_road - car.velocity < slowing_road and remaining_road > slowing_road and 1-car.stopping or car.stopping:
+            if (remaining_road - car.velocity < slowing_road and remaining_road > slowing_road and 1-car.stopping) or car.stopping:
                 car.stopping = self.check_stopping()
 
             # update driven distance of the car
