@@ -7,8 +7,11 @@ from utilities import pixels_to_kmh
 class GeneticAlgorithm(OptimisationAlgorithm):
     def __init__(self, iterations, simulation_length, **kwargs):
         super().__init__(iterations, simulation_length)
+        # number of units in one population
+        self.pop_size = kwargs.get('population_size', 3)
         # number of best units, which will be pass selection without any changes
-        self.elite_num = int(kwargs['elite_part'] * kwargs['population_size'])
+        self.elite_num = int(kwargs.get('elite_part', 0.2) * self.pop_size)
+        pop_number = kwargs.get('population_number', 3)
         # self.populations = [[{'tl' : kwargs['traffic_lights'] if kwargs['traffic_lights'] is not None else np.random.uniform(0, 1, (4, 4)), 
         #                       's': kwargs['speed_limit'] if kwargs['speed_limit'] is not None else np.random.randint(20, 100)}
         #                     for j in range(kwargs['population_size'])] for i in range(kwargs['population_number'])]
@@ -16,11 +19,9 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         # list of populations
         self.populations = [[{'tl' : np.random.uniform(0, 1, (4, 4)), 
                               's': np.random.randint(5, 20)}
-                            for j in range(kwargs['population_size'])] for i in range(kwargs['population_number'])]
+                            for j in range(self.pop_size)] for i in range(pop_number)]
         # probability of mutation
-        self.mutation_prob = kwargs['mutation_probability']
-        # number of units in one population
-        self.pop_size = kwargs['population_size']
+        self.mutation_prob = kwargs.get('mutation_probability', 0.6)
         # global best unit
         self.champ = None
         # global best unit score
@@ -168,6 +169,14 @@ if __name__ == '__main__':
     print('====Elite num====')
     # elite number is number of organisms, which will be taken through selection without any changes
     print(ga.elite_num == 0.2*10)
+
+    print('====Default arguments====')
+    ga = GeneticAlgorithm(10, 1000, elite_part=0.2)
+    print('Default population size:', ga.pop_size)
+    print('Default population number:', len(ga.populations))
+    print('Default mutation probability:', ga.mutation_prob)
+
+
 
 
 
