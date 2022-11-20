@@ -3,8 +3,11 @@ from utilities import *
 
 from GUI import *
 from SimulatedAnnealing import SimulatedAnnealing
+from GeneticAlgorithm import GeneticAlgorithm
 import pandas as pd
 from datetime import datetime
+
+
 class Application:   
     def __init__(self, max_iter, frames_per_car, light_cycle_time, acceleration_exponent):
         
@@ -13,14 +16,17 @@ class Application:
         self.frames_per_car = frames_per_car
         self.light_cycle_time = light_cycle_time
         self.acceleration_exponent = acceleration_exponent
-        
+    
+    #Method clears the intersection    
     def reset_map(self):
         self.map = generate_crossroad(WIDTH, HEIGHT)
-        
+    
+    #Method sets traffic lights with accordance to provided light cycles    
     def set_traffic_lights(self, light_cycles):
         for i in range(len(light_cycles)):
             self.map.roads_with_lights[i].light_cycle = light_cycles[i]
-            
+    
+    #Main method responsible for simulation        
     def simulate(self, speed_limit, light_cycles, visualise = False, debug = False): 
         self.set_traffic_lights( light_cycles)
 
@@ -87,7 +93,7 @@ class Application:
         
 if __name__=='__main__':
     
-    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate = run_gui()
+    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = run_gui()
     acceleration_exponent = 4
     app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
 
@@ -103,4 +109,8 @@ if __name__=='__main__':
         print(df)
         time_ = datetime.now().strftime("%H-%M-%S")
         df.to_csv(f"{time_}.csv")
+    if mode == 'genetic algorithm':
+        app.set_traffic_lights(light_cycles)
+        ga = GeneticAlgorithm(number_of_iterations, simulation_length, elite_part=0.2, population_size=3, traffic_lights=light_cycles, speed_limit=speed_limit, mutation_probability=0.5, population_number=3) 
+        ga.optimise(app)
 

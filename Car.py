@@ -38,9 +38,11 @@ class Car:
         self.speed_limit = speed_limit
         self.acceleration_exponent = acceleration_exponent
         
-        self.reaction_time = 1
+        self.reaction_time = 30/20
         self.minimum_dist = np.max([self.rect.h,self.rect.w])*5/3
-        self.maximum_deceleration = self.acceleration*2
+        self.comfortable_deceleration = self.acceleration
+        
+        self.maximum_deceleration = self.acceleration*6
         
         self.mask = pygame.mask.from_surface(Car.get_img_as_surface(self.rotate_image()))
         self.color = "Red"
@@ -73,7 +75,6 @@ class Car:
         rect = pygame.Rect(0, 0, w, h)
         rect.center = center
         return rect
-
     
     # casts img(which is supposed to be numpy array) to pygame.Surface
     def get_img_as_surface(img):
@@ -117,18 +118,17 @@ class Car:
     def update_acceleration(self, nearest_node=None, first = False):
         
         new_acceleration = 1 - (self.velocity/self.speed_limit)**self.acceleration_exponent
-        print(self.nearest_car)
         if self.nearest_car is not None:
             sign = np.sign(np.cos(self.visable_angle - self.nearest_car.visable_angle))
-            desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - sign*self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.maximum_deceleration))   
+            desired_dist = self.minimum_dist + self.velocity*self.reaction_time + self.velocity*(self.velocity - sign*self.nearest_car.velocity)/(2*np.sqrt(self.maximum_acceleration*self.comfortable_deceleration))   
             real_dist = np.sqrt(l2_dist(self.rect.center, self.nearest_car.rect.center))
             new_acceleration -= (desired_dist/real_dist)**2
         
         if self.stopping and first: 
-            desired_dist = np.max([self.rect.h, self.rect.w])/2+7*unit+self.velocity*self.reaction_time + self.velocity*(self.velocity)/(2*np.sqrt(self.maximum_acceleration*self.maximum_deceleration))   
+            desired_dist = np.max([self.rect.h, self.rect.w])/2+7*unit+self.velocity*self.reaction_time + self.velocity**2/(2*np.sqrt(self.maximum_acceleration*self.comfortable_deceleration))   
             real_dist = np.sqrt(l2_dist(self.rect.center, nearest_node.pos))
             new_acceleration -= (desired_dist/real_dist)**2
-        self.acceleration = new_acceleration*self.maximum_acceleration
+        self.acceleration = np.max([new_acceleration*self.maximum_acceleration, -self.maximum_deceleration])
         
         self.velocity = self.acceleration + self.velocity if self.velocity + self.acceleration< self.speed_limit else self.speed_limit
         if self.velocity<0:
