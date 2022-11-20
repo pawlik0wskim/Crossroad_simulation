@@ -133,8 +133,8 @@ class GUI:
     #Generates entry fields for simulated annealing mode       
     def generate_annealing_modules(self):
         iterations_variable = EntryVariable(14,1,"Number of iterations: ","100")
-        initial_temp_variable = EntryVariable(14,7,"Initial temperature: ","100")
-        cooling_rate_variable = EntryVariable(14,13,"Cooling rate: ","0.9995", float)
+        initial_temp_variable = EntryVariable(14,7,"Initial temperature: ","50")
+        cooling_rate_variable = EntryVariable(14,13,"Cooling rate: ","0.99", float)
         annealing_modules = [iterations_variable, initial_temp_variable, cooling_rate_variable]
         return annealing_modules
     
@@ -152,9 +152,9 @@ class GUI:
 
     #Generates entry fields common for all modes  
     def generate_main_modules(self):
-        speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","45")
+        speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","25")
         maximum_iter_variable = EntryVariable(9,7,"Length of simulation: ","10000")
-        frames_per_car_variable = EntryVariable(9,13,"Frames per car: ","5")
+        frames_per_car_variable = EntryVariable(9,13,"Frames per car: ","10")
         left_prob_variable = EntryVariable(11,1,"Left turn probability: ","0.1", float)
         right_prob_variable = EntryVariable(11,7,"Right turn probability: ","0.2", float)
         light_cycle_time = EntryVariable(11,13,"Length of light cycle: ","300")

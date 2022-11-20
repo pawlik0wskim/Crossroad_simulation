@@ -12,7 +12,6 @@ class OptimisationAlgorithm:
     def mutate(self, speed_limit, light_cycles, speed_limit_optimisation = True , traffic_light_optimisation = True ):
         new_speed_limit, new_light_cycles = speed_limit, light_cycles
         p = np.random.rand()
-        p=0
         parameter_number = len(light_cycles[0])*len(light_cycles)+1
         if ( p<1/parameter_number or 1-traffic_light_optimisation) and speed_limit_optimisation:
             new_speed_limit+=np.random.normal(0,2)
