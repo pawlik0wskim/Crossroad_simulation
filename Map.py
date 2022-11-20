@@ -26,7 +26,7 @@ class Controller:
     
 
     # Draws all cars
-    def show_vehicles(self, win, debug):
+    def draw(self, win, debug):
         win.blit(self.img, self.rect)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -41,7 +41,7 @@ class Controller:
             for car in road.cars:
                 if debug:
                     pygame.draw.rect(win, [255, 255, 255], car.vision, width=3)
-                    pygame.draw.rect(win, [255, 0, 0], car.rect)
+                    pygame.draw.rect(win, car.color, car.rect)
                 car.draw(win)
     
     # Adds car on random spawning position        
@@ -51,7 +51,7 @@ class Controller:
         node = self.starting_nodes[rand]
         if len(node.exiting_roads[0].cars)>0:
             previous_car = node.exiting_roads[0].cars[-1].rect # we don't want cars to spawn inside one another
-            while np.abs(previous_car.center[0]-node.pos[0]+previous_car.center[1]-node.pos[1])<np.max([previous_car.width, previous_car.height]) and rand1!=rand:
+            while np.abs(previous_car.center[0]-node.pos[0]+previous_car.center[1]-node.pos[1])<np.max([previous_car.width*(1+speed_limit/10), previous_car.height*(1+speed_limit/10)]) and rand1!=rand:
                 rand1 = rand1+1 if rand1 < len(self.starting_nodes)-1 else 0
                 node = self.starting_nodes[np.random.randint(0, len(self.starting_nodes))]
                 if len(node.exiting_roads[0].cars)>0:
@@ -68,6 +68,9 @@ class Controller:
             angle = 270
         car = Car(node.pos, angle, WIDTH, HEIGHT, speed_limit, acceleration_exponent)
         node.exiting_roads[0].cars.append(car)
+        return car
+        
+        
     #Moves each car forward
     def move_cars(self, right_prob, left_prob):
         curr_flow = 0
@@ -96,7 +99,7 @@ class Controller:
     def process_car_neighborhood(self, car, road):
         road_type, road_direction = road.type, road.direction
         min_dist = np.Inf # distance to nearest car(if it exists)
-        c = None # nearest car(if it exists)
+        nearest_car = None # nearest car(if it exists)
         r = None # road type of nearest car(if it exists)
         r_direction = None # road direction of nearest car(if it exists)
         for road in self.roads:
@@ -108,16 +111,22 @@ class Controller:
                     r = road.type
                     r_direction = road.direction
                     if not (r == "arc" and road_type == "arc" and cross_product(road_direction, r_direction) < 0):
-                        c = road.cars[idx]
+                        nearest_car = road.cars[idx]
                         min_dist = dist
         
-        if c is not None:
-            if c.nearest_car is car:
-                if car.dist_driven > c.dist_driven:
-                    c = None
+        if nearest_car is not None:
+            if nearest_car.nearest_car == car:
+                if car.dist_driven > nearest_car.dist_driven:
+                    nearest_car.color  = "Green"
+                    nearest_car = None
+                    car.color = "Yellow"
+                    
                 else:
-                    c.nearest_car = None
-        car.nearest_car = c
+                    nearest_car.nearest_car = None
+                    nearest_car.color  = "Yellow"
+                    car.color = "Green"
+        car.nearest_car = nearest_car
+        
     # Changes the traffic lights according to light cycles of all roads 
     def update_traffic_lights(self, i, light_cycle_time):
         for road in self.roads_with_lights:
@@ -205,34 +214,23 @@ def generate_one_straight_one_left_turn(WIDTH, HEIGHT):
 
 
 
-def generate_test_map(WIDTH, HEIGHT):
+def generate_test_map(WIDTH, HEIGHT, lights):
     
     
     #Outer nodes
-    node1 = Node((7/18*WIDTH, 0))
-    node2 = Node((11/18*WIDTH, 0))
-    node3 = Node((7/18*WIDTH, HEIGHT/3))
-    node4 = Node((11/18*WIDTH, 1/3*HEIGHT))
-    node5 = Node((7/18*WIDTH, 2/3*HEIGHT))
-    node6 = Node((11/18*WIDTH, 2/3*HEIGHT))
-    node7 = Node((7/18*WIDTH, HEIGHT))
-    node8 = Node((11/18*WIDTH, HEIGHT))
-    
+    node1 = Node((11/24*WIDTH, 0))
+    node2 = Node((11/24*WIDTH, HEIGHT/3))
+    node3 = Node((11/24*WIDTH, 2/3*HEIGHT))
+    node4 = Node((11/24*WIDTH, HEIGHT))
     
     roads = []
     #Vertical
-    roads.append(Road(node1, node3, "straight"))
-    roads.append(Road(node3,node5, "straight"))
-    roads.append(Road(node5, node7, "straight"))
-
-    roads.append(Road(node6, node4, "straight"))
-    roads.append(Road(node8, node6, "straight"))#bottom
-    roads.append(Road(node4, node2, "straight"))
-  
-
+    roads.append(Road(node1, node2, "straight", light = lights))
+    roads.append(Road(node2,node3, "straight"))
+    roads.append(Road(node3, node4, "straight"))
     
 
-    return Controller(roads, [node1, node8])
+    return Controller(roads, [node1])
   
 
 

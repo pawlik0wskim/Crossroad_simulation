@@ -1,7 +1,10 @@
 from Map import *
 from utilities import *
+
 from GUI import *
 from SimulatedAnnealing import SimulatedAnnealing
+import pandas as pd
+from datetime import datetime
 class Application:   
     def __init__(self, max_iter, frames_per_car, light_cycle_time, acceleration_exponent):
         
@@ -20,14 +23,13 @@ class Application:
             
     def simulate(self, speed_limit, light_cycles, visualise = False, debug = False): 
         self.set_traffic_lights( light_cycles)
+
         Collisions = 0
         Flow = 0
         
         if visualise:
             win = pygame.display.set_mode((WIDTH, HEIGHT))   
             clock=pygame.time.Clock()
-            # map_img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT)).convert()
-            # map_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
             self.map.img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT)).convert()
             self.map.rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
         start_time = time.time()
@@ -43,7 +45,7 @@ class Application:
             i+=1
             
             if visualise:
-                self.map.show_vehicles(win, debug)
+                self.map.draw(win, debug)
             for road in self.map.roads:
                 
 
@@ -81,13 +83,24 @@ class Application:
         return Flow, Collisions, stopped, iteration
 
         
+
         
+if __name__=='__main__':
+    
+    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate = run_gui()
+    acceleration_exponent = 4
+    app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
 
-speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , acceleration_exponent, frames_per_car = run_gui()
-app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
 
-light_cycles = [[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]]
-Flow, Collisions= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
-app.set_traffic_lights(light_cycles)
-sa = SimulatedAnnealing(100,2,1,0) 
-sa.optimise(app, {"speed_limit": speed_limit, "light_cycles": light_cycles})
+    if mode == "visualisation":
+        Flow, Collisions, stopped, iteration= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
+    if mode =="simulated annealing"  :  
+        app.set_traffic_lights(light_cycles)
+        sa = SimulatedAnnealing(number_of_iterations, simulation_length, initial_temp, cooling_rate) 
+        sa.optimise(app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles})
+        df = pd.DataFrame(sa.stats)
+        df.columns = ["main_index", "small_index", "Speed limit(km/h)", "Flow", "Collisions", "Stopped", "Iterations"]
+        print(df)
+        time_ = datetime.now().strftime("%H-%M-%S")
+        df.to_csv(f"{time_}.csv")
+
