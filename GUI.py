@@ -114,14 +114,13 @@ class GUI:
         self.genetic_modules = self.generate_genetic_modules()
         self.hide(self.annealing_modules)
         self.hide(self.genetic_modules)
-        self.modules = self.lights + self.main_modules + self.annealing_modules + self.genetic_modules
         self.drop_menu = self.generate_drop_menu()
         self.button = self.generate_button()
         self.values = None
     
     #Returns submit button    
     def generate_button(self):
-        button = customtkinter.CTkButton(master=root, text="Submit", command=lambda: self.get_module_values(self.modules))
+        button = customtkinter.CTkButton(master=root, text="Submit", command=lambda: self.get_module_values())
         button.grid(sticky = "s", row =22, column =8, columnspan = 4)  
         return button         
         
@@ -186,8 +185,9 @@ class GUI:
             self.hide(self.annealing_modules)
     
     #Function behind "Submit" button that collects values and destroys root if all of the values were correct       
-    def get_module_values(self, modules):
+    def get_module_values(self):
         self.values = []
+        modules = self.lights + self.main_modules + self.annealing_modules + self.genetic_modules
         for module in modules:
             self.values.append(module.get_values())
             print(module.get_values())

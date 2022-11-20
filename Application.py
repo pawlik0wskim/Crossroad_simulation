@@ -109,7 +109,7 @@ if __name__=='__main__':
         cols = ["main_index", "small_index", "Speed limit(km/h)"]
         for i in range(len(light_cycles)):
             for j in range(4):
-                cols+="Traffic light {i}_{j}"
+                cols+=[f"Traffic light {i}_{j}"]
         cols +=["Flow", "Collisions", "Stopped", "Iterations"]
         df.columns = cols
         print(df)
