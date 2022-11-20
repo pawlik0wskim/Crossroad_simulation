@@ -114,14 +114,13 @@ class GUI:
         self.genetic_modules = self.generate_genetic_modules()
         self.hide(self.annealing_modules)
         self.hide(self.genetic_modules)
-        self.modules = self.lights + self.main_modules + self.annealing_modules + self.genetic_modules
         self.drop_menu = self.generate_drop_menu()
         self.button = self.generate_button()
         self.values = None
     
     #Returns submit button    
     def generate_button(self):
-        button = customtkinter.CTkButton(master=root, text="Submit", command=lambda: self.get_module_values(self.modules))
+        button = customtkinter.CTkButton(master=root, text="Submit", command=lambda: self.get_module_values())
         button.grid(sticky = "s", row =22, column =8, columnspan = 4)  
         return button         
         
@@ -134,8 +133,8 @@ class GUI:
     #Generates entry fields for simulated annealing mode       
     def generate_annealing_modules(self):
         iterations_variable = EntryVariable(14,1,"Number of iterations: ","100")
-        initial_temp_variable = EntryVariable(14,7,"Initial temperature: ","100")
-        cooling_rate_variable = EntryVariable(14,13,"Cooling rate: ","0.9995", float)
+        initial_temp_variable = EntryVariable(14,7,"Initial temperature: ","50")
+        cooling_rate_variable = EntryVariable(14,13,"Cooling rate: ","0.99", float)
         annealing_modules = [iterations_variable, initial_temp_variable, cooling_rate_variable]
         return annealing_modules
     
@@ -153,9 +152,9 @@ class GUI:
 
     #Generates entry fields common for all modes  
     def generate_main_modules(self):
-        speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","45")
+        speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","25")
         maximum_iter_variable = EntryVariable(9,7,"Length of simulation: ","10000")
-        frames_per_car_variable = EntryVariable(9,13,"Frames per car: ","5")
+        frames_per_car_variable = EntryVariable(9,13,"Frames per car: ","10")
         left_prob_variable = EntryVariable(11,1,"Left turn probability: ","0.1", float)
         right_prob_variable = EntryVariable(11,7,"Right turn probability: ","0.2", float)
         light_cycle_time = EntryVariable(11,13,"Length of light cycle: ","300")
@@ -186,8 +185,9 @@ class GUI:
             self.hide(self.annealing_modules)
     
     #Function behind "Submit" button that collects values and destroys root if all of the values were correct       
-    def get_module_values(self, modules):
+    def get_module_values(self):
         self.values = []
+        modules = self.lights + self.main_modules + self.annealing_modules + self.genetic_modules
         for module in modules:
             self.values.append(module.get_values())
             print(module.get_values())
@@ -235,9 +235,9 @@ def run_gui():
     if gui.values!=None:
         values = gui.values[:4] + [float(value) for value in gui.values[4:]]
         mode = gui.drop_menu.current_value
-        speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, number_of_iterations, initial_temp, cooling_rate, number_of_iterations, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = values[4], values[7], values[8], values[9], values[5], values[6], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19]
+        speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, number_of_iterations, initial_temp, cooling_rate, number_of_iterations_gen, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = values[4], values[7], values[8], values[9], values[5], values[6], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19]
         light_cycles = [values[i]for i in range(4)]
-        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part
+        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, number_of_iterations_gen, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part
     return None
     
 
