@@ -90,9 +90,9 @@ class Road:
         prob = np.random.rand()
         road_types = [ x.curve for x in self.end_node.exiting_roads]
         roads = {x.curve:x for x in self.end_node.exiting_roads}
-        if "right" in road_types and prob<right_prob:
+        if "right" in road_types and prob<right_prob or (None not in road_types and "left" not in road_types):
             next_road = roads["right"]
-        elif "left" in road_types and prob<right_prob+left_prob:
+        elif "left" in road_types and prob<right_prob+left_prob or None not in road_types:
             next_road = roads["left"]
         else:
             next_road = roads[None]
