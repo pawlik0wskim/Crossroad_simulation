@@ -3,7 +3,7 @@ from utilities import *
 import numpy as np
 import time
 class SimulatedAnnealing(oa):
-    def __init__(self, iterations, simulation_length, initial_temp, cooling_rate = 0.99995):
+    def __init__(self, iterations, simulation_length, initial_temp, cooling_rate):
         
         self.temp = initial_temp
         self.cooling_rate = cooling_rate
@@ -33,7 +33,7 @@ class SimulatedAnnealing(oa):
             self.stats.append([i,None,pixels_to_kmh(new_speed_limit), Flow_mean, Collisions_mean, None, None])
             print(f"Loss value: :  {loss_value_new}")
             diff = loss_value_new - loss_value
-            if diff<0  or np.random.rand()<np.exp(-diff/self.temp): 
+            if diff>0  or np.random.rand()<np.exp(-diff/self.temp): 
                 loss_value = loss_value_new
                 speed_limit, light_cycles = new_speed_limit, new_light_cycles 
                 print("______________________better______________________")

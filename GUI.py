@@ -141,7 +141,7 @@ class GUI:
     def generate_main_modules(self):
         speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","45")
         maximum_iter_variable = EntryVariable(9,7,"Length of simulation: ","10000")
-        frames_per_car_variable = EntryVariable(9,13,"Frames per car: ","30")
+        frames_per_car_variable = EntryVariable(9,13,"Frames per car: ","5")
         left_prob_variable = EntryVariable(11,1,"Left turn probability: ","0.1", float)
         right_prob_variable = EntryVariable(11,7,"Right turn probability: ","0.2", float)
         light_cycle_time = EntryVariable(11,13,"Length of light cycle: ","300")
