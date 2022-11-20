@@ -139,7 +139,7 @@ class Controller:
 
 
 
-
+#Method generates main crossroaad map
 def generate_crossroad(WIDTH, HEIGHT):
     light_cycle = [0.25, 0.4, 0.85, 0.9]
     #nodes
@@ -192,7 +192,7 @@ def generate_crossroad(WIDTH, HEIGHT):
     return Controller(roads, [ node1, node8, node13, node16]) 
 
 
-
+#Method generates map used for testing
 def generate_one_straight_one_left_turn(WIDTH, HEIGHT):
     node1 = Node((7/24*WIDTH, 0))
     node2 = Node((9/24*WIDTH, 0))
@@ -204,7 +204,7 @@ def generate_one_straight_one_left_turn(WIDTH, HEIGHT):
     node14 = Node((WIDTH*20/24, HEIGHT*13/24))    
 
     roads = []
-    roads.append(Road(node1, node3, "straight"))#top
+    roads.append(Road(node1, node3, "straight"))
     roads.append(Road(node4, node2, "straight"))
     roads.append(Road(node8, node6, "straight"))
     roads.append(Road(node10, node14, "straight"))
@@ -213,7 +213,7 @@ def generate_one_straight_one_left_turn(WIDTH, HEIGHT):
     return Controller(roads, [node1, node8]) 
 
 
-
+#Method generates map used for testing
 def generate_test_map(WIDTH, HEIGHT, lights):
     
     

@@ -8,6 +8,7 @@ from Application import *
 zero = 10**(-100)
 
 class Test(unittest.TestCase):
+    #Main simulation loop with car spawning and traffic jam recognising mechanisms removed
     def main_loop(self, test_map, visualise, max_iter = 300):
         if visualise:
             win = pygame.display.set_mode((WIDTH, HEIGHT))   
@@ -36,7 +37,8 @@ class Test(unittest.TestCase):
                 
         return Collisions, Flow
     
-    def test_0_car_leaves_road(self):
+    #Test if cars correctly elave intersection
+    def test_0_car_leaves_intersection(self):
         test_map = generate_test_map(1000,1000, False)
         
         car = test_map.spawn_car(4,4)
@@ -45,6 +47,7 @@ class Test(unittest.TestCase):
                 
         self.assertEqual(Flow, 1) #Car has to leave intersection
     
+    #Test of collision mechanisms
     def test_1_collisions(self):
         test_map = generate_test_map(1000,1000, False)
         
@@ -55,8 +58,9 @@ class Test(unittest.TestCase):
         
         Collisions , _ = self.main_loop(test_map, visualise, max_iter = 100)
                 
-        self.assertEqual(Collisions, 1) #Car has to leave intersection   
+        self.assertEqual(Collisions, 1) #Cars have to collide
         
+    #Test if cars will stop on red light
     def test_2_stopping_on_red_light(self):
         test_map = generate_test_map(1000,1000, True)
         for i in range(len(test_map.roads_with_lights)):
@@ -70,6 +74,7 @@ class Test(unittest.TestCase):
         self.assertGreater(1/2, car.velocity) #Car has to stop(velocity smaller than 1/2)
         self.assertGreater(test_map.roads[0].end_node.pos[1], car.rect.center[1]+car.rect.height/2) #Car has to stop before end of segment
     
+    #Test if cars stop when driver sees another stationaary vehicle
     def test_3_stopping_to_vehicle(self):
         test_map = generate_test_map(1000,1000, False)
         
@@ -82,7 +87,8 @@ class Test(unittest.TestCase):
         self.assertEqual(Flow, 0) #Cars can't leave road segment
         self.assertGreater(1/2, car2.velocity) #Car has to stop(velocity smaller than 1/2)
         self.assertGreaterEqual(car.rect.center[1], car2.rect.center[1]+car2.minimum_dist) #Car has to leave some space before vehicles
-        
+     
+    #Test if car will slow down if positioned behined slower vehicle   
     def test_4_adjustting_velocity(self):
         test_map = generate_test_map(1000,1000, False)
         
@@ -97,7 +103,7 @@ class Test(unittest.TestCase):
         self.assertGreaterEqual(car.rect.center[1], car2.rect.center[1]+car2.minimum_dist) #Car has to leave some space before vehicles
         self.assertEqual(Collisions, 0) #Cars cannot collide
 
-    
+    #Test if car driving straight will have priority on car turning left
     def test_5_car_priority_straight(self):
         test_map = generate_one_straight_one_left_turn(1000,1000)
         
@@ -121,6 +127,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cars[0], car) #It has to be a car driving in a straight line
         self.assertEqual(Collisions, 0) #Cars cannot collide
     
+    #Test if car that has already turned will have priority over car driving straight
     def test_6_car_priority_turning(self):
         test_map = generate_one_straight_one_left_turn(1000,1000)
         

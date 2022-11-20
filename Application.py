@@ -13,14 +13,17 @@ class Application:
         self.frames_per_car = frames_per_car
         self.light_cycle_time = light_cycle_time
         self.acceleration_exponent = acceleration_exponent
-        
+    
+    #Method clears the intersection    
     def reset_map(self):
         self.map = generate_crossroad(WIDTH, HEIGHT)
-        
+    
+    #Method sets traffic lights with accordance to provided light cycles    
     def set_traffic_lights(self, light_cycles):
         for i in range(len(light_cycles)):
             self.map.roads_with_lights[i].light_cycle = light_cycles[i]
-            
+    
+    #Main method responsible for simulation        
     def simulate(self, speed_limit, light_cycles, visualise = False, debug = False): 
         self.set_traffic_lights( light_cycles)
 
