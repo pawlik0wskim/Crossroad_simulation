@@ -75,6 +75,7 @@ class Car:
         rect = pygame.Rect(0, 0, w, h)
         rect.center = center
         return rect
+
     
     # casts img(which is supposed to be numpy array) to pygame.Surface
     def get_img_as_surface(img):
