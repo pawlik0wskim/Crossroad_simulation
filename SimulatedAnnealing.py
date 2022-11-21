@@ -28,7 +28,7 @@ class SimulatedAnnealing(oa):
             Flow_mean, Collisions_mean = 0, 0
             print(f"Speed:  {pixels_to_kmh(new_speed_limit)} km/h / {new_speed_limit} pix")
             for j in range(3):
-                Flow, Collisions, stopped, iteration = simulation.simulate(new_speed_limit, new_light_cycles) 
+                Flow, Collisions, stopped, iteration = simulation.simulate(new_speed_limit, new_light_cycles, sim = j, sim_max = 3, it=i, iter_max = self.iterations) 
                 simulation.reset_map()
                 Flow_mean, Collisions_mean = Flow_mean + Flow/3, Collisions_mean + Collisions/3
                 stat = [i,None,pixels_to_kmh(new_speed_limit)]

@@ -27,7 +27,7 @@ class Application:
             self.map.roads_with_lights[i].light_cycle = light_cycles[i]
     
     #Main method responsible for simulation        
-    def simulate(self, speed_limit, light_cycles, visualise = False, debug = False): 
+    def simulate(self, speed_limit, light_cycles, visualise = False, debug = False, sim=0,sim_max = 0, it=0, iter_max=0): 
         self.set_traffic_lights( light_cycles)
 
         Collisions = 0
@@ -45,8 +45,10 @@ class Application:
         
         stopped = False
         FPS_counter = 0
+        
         while(True):
-
+            bar="-"*int(40*i/self.max_iter)+"_"*int(40*(self.max_iter-i)/self.max_iter)
+            print(f'_____Iteration: [{it}/{iter_max}]_______Simulation: {sim}/{sim_max}_______[{bar}]_{int(100*i/self.max_iter)}%__', end='\r')
             iter_start_time = time.time()
             i+=1
             

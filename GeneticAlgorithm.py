@@ -24,7 +24,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             i += 1
 
             # calculate fitness of organisms in current populations
-            costs = self.calculate_cost(simulation)
+            costs = self.calculate_cost(simulation, j=i)
 
             # sort organisms and their costs by values of costs
             for j in range(len(self.populations)):
@@ -61,14 +61,14 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             self.populations = new_populations
 
     
-    def calculate_cost(self, simulation):
+    def calculate_cost(self, simulation, j=0):
         costs = []
         for population in self.populations:
             pop_costs = []
             for unit in population:
                 Flow, Collisions = 0, 0
                 for i in range(3):
-                    f, c, iter, stopped = simulation.simulate(unit['s'], unit['tl'])
+                    f, c, iter, stopped = simulation.simulate(unit['s'], unit['tl'], sim = i, sim_max = 3, it=j, iter_max = self.iterations )
                     simulation.reset_map()
                     Flow += f
                     Collisions += c
