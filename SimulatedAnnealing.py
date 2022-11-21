@@ -17,7 +17,11 @@ class SimulatedAnnealing(oa):
         print(f"Speed:  {pixels_to_kmh(speed_limit)} km/h / {speed_limit} pix")
         Flow, Collisions, stopped, iteration = simulation.simulate(speed_limit, light_cycles) 
         simulation.reset_map()
-        self.stats.append([-1,0,pixels_to_kmh(speed_limit),Flow, Collisions, stopped, iteration])
+        stat = [-1,0,pixels_to_kmh(speed_limit)]
+        for light in light_cycles:
+            stat+=light
+        stat += [ Flow, Collisions, stopped, iteration]
+        self.stats.append(stat)
         loss_value = cost_function(Flow, Collisions, iteration, stopped)
         for i in range(int(self.iterations)):
             new_speed_limit, new_light_cycles = self.mutate(speed_limit, light_cycles, speed_limit_optimisation, traffic_light_optimisation )
@@ -27,7 +31,11 @@ class SimulatedAnnealing(oa):
                 Flow, Collisions, stopped, iteration = simulation.simulate(new_speed_limit, new_light_cycles) 
                 simulation.reset_map()
                 Flow_mean, Collisions_mean = Flow_mean + Flow/3, Collisions_mean + Collisions/3
-                self.stats.append([i,j,pixels_to_kmh(new_speed_limit),Flow, Collisions, stopped, iteration])
+                stat = [i,None,pixels_to_kmh(new_speed_limit)]
+                for light in light_cycles:
+                    stat+=light
+                stat += [ Flow, Collisions, stopped, iteration]
+                self.stats.append(stat)
             loss_value_new = cost_function(Flow_mean, Collisions_mean, iteration, stopped)
             simulation.reset_map()
             stat = [i,None,pixels_to_kmh(new_speed_limit)]
@@ -37,7 +45,7 @@ class SimulatedAnnealing(oa):
             self.stats.append(stat)
             print(f"Loss value: :  {loss_value_new}")
             diff = loss_value_new - loss_value
-            if diff>0  or np.random.rand()<np.exp(-diff/self.temp): 
+            if diff<0  or np.random.rand()<np.exp(-diff/self.temp): 
                 loss_value = loss_value_new
                 speed_limit, light_cycles = new_speed_limit, new_light_cycles 
                 print("______________________better______________________")

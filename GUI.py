@@ -108,7 +108,7 @@ class EntryVariable:
 #Main class of Graphical User Interface        
 class GUI:
     def __init__(self):
-        self.lights = [TraficLigthsWidget(30,30+150*i) for i in range(4)]
+        self.lights = [TraficLigthsWidget(30,30+150*i, starting_light = "Red") if i>1 else TraficLigthsWidget(30,30+150*i, starting_light = "Green") for i in range(4)]
         self.main_modules =  self.generate_main_modules()     
         self.annealing_modules = self.generate_annealing_modules() 
         self.genetic_modules = self.generate_genetic_modules()

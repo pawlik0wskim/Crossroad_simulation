@@ -4,8 +4,6 @@ from utilities import *
 from Car import *
 from Node import Node
 from Application import *
-from GeneticAlgorithm import GeneticAlgorithm
-import numpy as np
 
 zero = 10**(-100)
 
@@ -80,14 +78,14 @@ class Test(unittest.TestCase):
     def test_3_stopping_to_vehicle(self):
         test_map = generate_test_map(1000,1000, False)
         
-        car = test_map.spawn_car(zero,4)
+        car = test_map.spawn_car(zero**2,4)
         car.rect.center = test_map.roads[0].end_node.pos
         
         car2 = test_map.spawn_car(3,4)
         _ , Flow = self.main_loop(test_map, visualise, max_iter = 200)
                 
         self.assertEqual(Flow, 0) #Cars can't leave road segment
-        self.assertGreater(1/2, car2.velocity) #Car has to stop(velocity smaller than 1/2)
+        self.assertGreater(1, car2.velocity) #Car has to stop(velocity smaller than 1)
         self.assertGreaterEqual(car.rect.center[1], car2.rect.center[1]+car2.minimum_dist) #Car has to leave some space before vehicles
      
     #Test if car will slow down if positioned behined slower vehicle   
@@ -141,19 +139,19 @@ class Test(unittest.TestCase):
         car2 = Car(node2.pos, 0, WIDTH, HEIGHT, 3, 4)
         node2.exiting_roads[0].cars.append(car2)
         
-        Collisions , Flow = self.main_loop(test_map, visualise, max_iter = 350)
+        Collisions , Flow = self.main_loop(test_map, visualise, max_iter = 360)
         
         cars = []
         for road in test_map.roads:
             for car in road.cars:
                 cars.append(car)
                 
-        self.assertEqual(Flow, 1) #One car has to leave intersection
+        self.assertEqual(Flow, 1) #One car has o leave intersection
         self.assertEqual(len(cars), 1)
         self.assertEqual(cars[0], car2) #It has to be a car turning
         self.assertEqual(Collisions, 0) #Cars cannot collide
     
-    # Test if crossover mechanism works correctly
+    #Test if crossover mechanism works correctly  
     def test_7_crossover(self):
         np.random.seed(123)
         ga = GeneticAlgorithm(10, 1000, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
@@ -166,13 +164,12 @@ class Test(unittest.TestCase):
         for i in range(4):
             self.assertEqual(child['tl'][i], expected_tl[i])
     
-    # Test if elite number(number of organisms, which will be taken through selection without any changes)
-    # is calculated correctly
+    #Test if elite number(number of organisms, which will be taken through selection without any changes) is calculated correctly
     def test_8_elite_num(self):
         ga = GeneticAlgorithm(10, 1000, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
         self.assertEqual(ga.elite_num, int(0.3*10))
     
-    # Test if default parameters are inserted correctly
+    #Test if default parameters are inserted correctly
     def test_9_default_parameters(self):
         ga = GeneticAlgorithm(10, 1000)
         self.assertEqual(ga.pop_size, 3)
@@ -193,5 +190,5 @@ class Test(unittest.TestCase):
         
 if __name__ == '__main__':
     global visualise
-    visualise = True
+    visualise = False
     unittest.main(exit = False)

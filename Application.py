@@ -118,11 +118,6 @@ if __name__=='__main__':
         
     if mode == 'genetic algorithm':
         app.set_traffic_lights(light_cycles)
-        ga = GeneticAlgorithm(number_of_iterations_gen, simulation_length, elite_part=0.1, population_size=2, traffic_lights=light_cycles, speed_limit=speed_limit, mutation_probability=0.5, population_number=1) 
+        ga = GeneticAlgorithm(number_of_iterations_gen, simulation_length, elite_part=0.2, population_size=3, traffic_lights=light_cycles, speed_limit=speed_limit, mutation_probability=0.5, population_number=3) 
         ga.optimise(app)
-        df = pd.DataFrame(ga.stats)
-        df.columns = ["main_index", "population", "small_index", "Speed limit(km/h)", "Flow", "Collisions", "Stopped", "Iterations"]
-        print(df)
-        time_ = datetime.now().strftime("%H-%M-%S")
-        df.to_csv(f"{time_}.csv")
 
