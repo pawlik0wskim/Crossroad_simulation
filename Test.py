@@ -9,7 +9,7 @@ zero = 10**(-100)
 
 class Test(unittest.TestCase):
     #Main simulation loop with car spawning and traffic jam recognising mechanisms removed
-    def main_loop(self, test_map, visualise, max_iter = 300):
+    def main_loop(self, test_map, visualise, max_iter = 300, break_on_flow = False):
         if visualise:
             win = pygame.display.set_mode((WIDTH, HEIGHT))   
             clock=pygame.time.Clock()
@@ -29,7 +29,7 @@ class Test(unittest.TestCase):
             test_map.update_traffic_lights(i, 300)
             Flow+=test_map.move_cars( 0, 0)
             Collisions+=test_map.check_for_car_collision()
-            if i >= max_iter:
+            if i >= max_iter or(Flow and break_on_flow):
                 break
             if visualise:
                 pygame.display.update()
@@ -132,14 +132,14 @@ class Test(unittest.TestCase):
         test_map = generate_one_straight_one_left_turn(1000,1000)
         
         node = test_map.starting_nodes[0]
-        car = Car(node.pos, 180, WIDTH, HEIGHT, 3.5, 4)
+        car = Car(node.pos, 180, WIDTH, HEIGHT, 3.7, 4)
         node.exiting_roads[0].cars.append(car)
         
         node2 = test_map.starting_nodes[1]
         car2 = Car(node2.pos, 0, WIDTH, HEIGHT, 3, 4)
         node2.exiting_roads[0].cars.append(car2)
         
-        Collisions , Flow = self.main_loop(test_map, visualise, max_iter = 360)
+        Collisions , Flow = self.main_loop(test_map, visualise, max_iter = 400, break_on_flow = True)
         
         cars = []
         for road in test_map.roads:
@@ -168,14 +168,7 @@ class Test(unittest.TestCase):
     def test_8_elite_num(self):
         ga = GeneticAlgorithm(10, 1000, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
         self.assertEqual(ga.elite_num, int(0.3*10))
-    
-    #Test if default parameters are inserted correctly
-    def test_9_default_parameters(self):
-        ga = GeneticAlgorithm(10, 1000)
-        self.assertEqual(ga.pop_size, 3)
-        self.assertEqual(len(ga.populations), 3)
-        self.assertEqual(ga.mutation_prob, 0.6)
-        self.assertEqual(ga.elite_num, int(0.2*3))
+
         
         
         
