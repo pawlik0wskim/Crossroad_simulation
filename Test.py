@@ -4,6 +4,8 @@ from utilities import *
 from Car import *
 from Node import Node
 from Application import *
+from GeneticAlgorithm import GeneticAlgorithm
+import numpy as np
 
 zero = 10**(-100)
 
@@ -146,10 +148,37 @@ class Test(unittest.TestCase):
             for car in road.cars:
                 cars.append(car)
                 
-        self.assertEqual(Flow, 1) #One car has o leave intersection
+        self.assertEqual(Flow, 1) #One car has to leave intersection
         self.assertEqual(len(cars), 1)
         self.assertEqual(cars[0], car2) #It has to be a car turning
         self.assertEqual(Collisions, 0) #Cars cannot collide
+    
+    # Test if crossover mechanism works correctly
+    def test_7_crossover(self):
+        np.random.seed(123)
+        ga = GeneticAlgorithm(10, 1000, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
+        parent1 = {'s': 10, 'tl': [[0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5]]}
+        parent2 = {'s': 25, 'tl': [[0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9]]}
+        child = ga.crossover(parent1, parent2)
+        
+        self.assertEqual(child['s'], 25)
+        expected_tl = [[0.0, 0.7, 0.3, 0.9], [0.2, 0.1, 0.8, 0.5], [0.0, 0.7, 0.3, 0.9], [0.2, 0.1, 0.8, 0.5]]
+        for i in range(4):
+            self.assertEqual(child['tl'][i], expected_tl[i])
+    
+    # Test if elite number(number of organisms, which will be taken through selection without any changes)
+    # is calculated correctly
+    def test_8_elite_num(self):
+        ga = GeneticAlgorithm(10, 1000, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
+        self.assertEqual(ga.elite_num, int(0.3*10))
+    
+    # Test if default parameters are inserted correctly
+    def test_9_default_parameters(self):
+        ga = GeneticAlgorithm(10, 1000)
+        self.assertEqual(ga.pop_size, 3)
+        self.assertEqual(len(ga.populations), 3)
+        self.assertEqual(ga.mutation_prob, 0.6)
+        self.assertEqual(ga.elite_num, int(0.2*3))
         
         
         
