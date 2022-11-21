@@ -2,20 +2,29 @@ from OptimisationAlgorithm import OptimisationAlgorithm
 import numpy as np
 from utilities import cost_function
 import copy
+from utilities import pixels_to_kmh
 
 class GeneticAlgorithm(OptimisationAlgorithm):
     def __init__(self, iterations, simulation_length, **kwargs):
         super().__init__(iterations, simulation_length)
-        self.elite_num = int(kwargs['elite_part'] * kwargs['population_size'])
+        # number of units in one population
+        self.pop_size = kwargs.get('population_size', 3)
+        # number of best units, which will be pass selection without any changes
+        self.elite_num = int(kwargs.get('elite_part', 0.2) * self.pop_size)
+        pop_number = kwargs.get('population_number', 3)
         # self.populations = [[{'tl' : kwargs['traffic_lights'] if kwargs['traffic_lights'] is not None else np.random.uniform(0, 1, (4, 4)), 
         #                       's': kwargs['speed_limit'] if kwargs['speed_limit'] is not None else np.random.randint(20, 100)}
         #                     for j in range(kwargs['population_size'])] for i in range(kwargs['population_number'])]
+        
+        # list of populations
         self.populations = [[{'tl' : np.random.uniform(0, 1, (4, 4)), 
-                              's': min(np.random.randint(20, 100), 5)}
-                            for j in range(kwargs['population_size'])] for i in range(kwargs['population_number'])]
-        self.mutation_prob = kwargs['mutation_probability']
-        self.pop_size = kwargs['population_size']
+                              's': np.random.randint(5, 20)}
+                            for j in range(self.pop_size)] for i in range(pop_number)]
+        # probability of mutation
+        self.mutation_prob = kwargs.get('mutation_probability', 0.6)
+        # global best unit
         self.champ = None
+        # global best unit score
         self.champ_cost = np.Inf
     
     def optimise(self, simulation):
@@ -23,8 +32,8 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         while i < self.iterations:
             i += 1
 
-            # calculate fitness of organisms in current populations
-            costs = self.calculate_cost(simulation, j=i)
+            # calculate costs of organisms in current populations
+            costs = self.calculate_cost(simulation, i)
 
             # sort organisms and their costs by values of costs
             for j in range(len(self.populations)):
@@ -41,12 +50,14 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 print(self.champ)
                 print('---------------------------------')
 
-            # migration of top organisms to next population
+            # migration of top units to next population
             if len(self.populations) > 1:
                 for j in range(len(self.populations)):
                     n = 2
+                    # top n units are moved to next population
                     if j < len(self.populations) - 1:
                         k, h = j, j+1
+                    # units from last population are moved to first one
                     else:
                         k, h = -1, 0
                     self.populations[h] += self.populations[k][0:n]
@@ -60,24 +71,30 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 new_populations.append(self.generate_new_population(pop, pop_costs))
             self.populations = new_populations
 
-    
-    def calculate_cost(self, simulation, j=0):
+    # returns nested list of costs of each unit from each population
+    # iter - current iteration number, used for statistics
+    def calculate_cost(self, simulation, iter):
         costs = []
-        for population in self.populations:
+        for j in range(len(self.populations)):
             pop_costs = []
-            for unit in population:
+            for unit in self.populations[j]:
                 Flow, Collisions = 0, 0
+                # run simulation several times for same unit
                 for i in range(3):
-                    f, c, iter, stopped = simulation.simulate(unit['s'], unit['tl'], sim = i, sim_max = 3, it=j, iter_max = self.iterations )
+                    f, c, stopped, iteration = simulation.simulate(unit['s'], unit['tl'], sim = i, sim_max = 3, it=iter, iter_max = self.iterations )
                     simulation.reset_map()
+                    self.stats.append([iter, j, i, pixels_to_kmh(unit['s']), f, c, stopped, iteration])
                     Flow += f
                     Collisions += c
                 Flow /= 3
                 Collisions /= 3
+                self.stats.append([iter, j, None, pixels_to_kmh(unit['s']), Flow, Collisions, None, None])
+                # save cost function of units mean stats as its cost
                 pop_costs.append(cost_function(Collisions, Flow, iter, stopped))
             costs.append(pop_costs)
         return costs
     
+    # returns list of new populations with elite, mutated or crossovered units 
     def generate_new_population(self, population, pop_costs):
         new_population = []
 
@@ -112,6 +129,8 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         
         return new_population
 
+    # returns child unit, which inherits parameters from its two parents
+    # each parameter has equal probability of being inherited from parent1 or parent2
     def crossover(self, parent1, parent2, speed_limit_optimisation=True, traffic_light_optimisation=True):
         child = {}
         child['s'] = parent1['s'] if np.random.uniform(0, 1) < 0.5 else parent2['s']
@@ -120,12 +139,15 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             child_tl.append(parent1['tl'][i].copy() if np.random.uniform(0, 1) < 0.5 else parent2['tl'][i].copy())
         child['tl'] = child_tl
         return child
-
+    
+    # checks if there is a better unit in current populations than the globa best found till the call of this function
+    # assumes that populations are sorted by costs
     def update_champ(self, costs):
         for population, pop_costs in zip(self.populations, costs):
             if pop_costs[0] < self.champ_cost:
                 self.champ, self.champ_cost = copy.deepcopy(population[0]), pop_costs[0]
     
+    # help method, returns permutation of a list based on given indexes list - ind
     def __permute(self, ls, ind):
         return [ls[ind[i]] for i in range(len(ls))]
 
@@ -135,8 +157,21 @@ class GeneticAlgorithm(OptimisationAlgorithm):
 
 
 if __name__ == '__main__':
-    pop_costs = [1, 2, 5, 3, 7]
-    a = [1, 4, 2]
-    print(pop_costs + a)
-
+    ga = GeneticAlgorithm(10, 1000, elite_part=0.2, population_size=10, population_number=5, mutation_probability=0.2)
+    print('====Crossover====')
+    # only speed limit and parameters of 1st traffic light differ
+    parent1 = {'s': 10, 'tl': [[0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5]]}
+    parent2 = {'s': 25, 'tl': [[0.0, 0.7, 0.3, 0.9], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5]]}
+    child = ga.crossover(parent1, parent2)
+    for k in child.keys():
+        print(k, child[k])
     
+    print('====Elite num====')
+    # elite number is number of organisms, which will be taken through selection without any changes
+    print(ga.elite_num == 0.2*10)
+
+    print('====Default arguments====')
+    ga = GeneticAlgorithm(10, 1000, elite_part=0.2)
+    print('Default population size:', ga.pop_size)
+    print('Default population number:', len(ga.populations))
+    print('Default mutation probability:', ga.mutation_prob)
