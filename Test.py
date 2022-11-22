@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
         return Collisions, Flow
     
     #Test if cars correctly elave intersection
-    def test_0_car_leaves_intersection(self):
+    def test_00_car_leaves_intersection(self):
         test_map = generate_test_map(1000,1000, False)
         
         car = test_map.spawn_car(4,4)
@@ -50,7 +50,7 @@ class Test(unittest.TestCase):
         self.assertEqual(Flow, 1) #Car has to leave intersection
     
     #Test of collision mechanisms
-    def test_1_collisions(self):
+    def test_01_collisions(self):
         test_map = generate_test_map(1000,1000, False)
         
         car = test_map.spawn_car(zero,4)
@@ -63,7 +63,7 @@ class Test(unittest.TestCase):
         self.assertEqual(Collisions, 1) #Cars have to collide
         
     #Test if cars will stop on red light
-    def test_2_stopping_on_red_light(self):
+    def test_02_stopping_on_red_light(self):
         test_map = generate_test_map(1000,1000, True)
         for i in range(len(test_map.roads_with_lights)):
             test_map.roads_with_lights[i].light_cycle = [2,2,2,2] 
@@ -77,7 +77,7 @@ class Test(unittest.TestCase):
         self.assertGreater(test_map.roads[0].end_node.pos[1], car.rect.center[1]+car.rect.height/2) #Car has to stop before end of segment
     
     #Test if cars stop when driver sees another stationary vehicle
-    def test_3_stopping_to_vehicle(self):
+    def test_03_stopping_to_vehicle(self):
         test_map = generate_test_map(1000,1000, False)
         
         car = test_map.spawn_car(zero**2,4)
@@ -91,7 +91,7 @@ class Test(unittest.TestCase):
         self.assertGreaterEqual(car.rect.center[1], car2.rect.center[1]+car2.minimum_dist) #Car has to leave some space before vehicles
      
     #Test if car will slow down if positioned behined slower vehicle   
-    def test_4_adjustting_velocity(self):
+    def test_04_adjustting_velocity(self):
         test_map = generate_test_map(1000,1000, False)
         
         car = test_map.spawn_car(4,4)
@@ -106,7 +106,7 @@ class Test(unittest.TestCase):
         self.assertEqual(Collisions, 0) #Cars cannot collide
 
     #Test if car driving straight will have priority on car turning left
-    def test_5_car_priority_straight(self):
+    def test_05_car_priority_straight(self):
         test_map = generate_one_straight_one_left_turn(1000,1000)
         
         node = test_map.starting_nodes[0]
@@ -130,7 +130,7 @@ class Test(unittest.TestCase):
         self.assertEqual(Collisions, 0) #Cars cannot collide
     
     #Test if car that has already turned will have priority over car driving straight
-    def test_6_car_priority_turning(self):
+    def test_06_car_priority_turning(self):
         test_map = generate_one_straight_one_left_turn(1000,1000)
         
         node = test_map.starting_nodes[0]
@@ -154,7 +154,7 @@ class Test(unittest.TestCase):
         self.assertEqual(Collisions, 0) #Cars cannot collide
     
     #Test if crossover mechanism works correctly  
-    def test_7_crossover(self):
+    def test_07_crossover(self):
         np.random.seed(123)
         ga = GeneticAlgorithm(10, 1000, speed_limit_optimization=True, traffic_light_optimization=True, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
         parent1 = {'s': 10, 'tl': [[0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5]]}
@@ -167,12 +167,12 @@ class Test(unittest.TestCase):
             self.assertEqual(child['tl'][i], expected_tl[i])
     
     #Test if elite number(number of organisms, which will be taken through selection without any changes) is calculated correctly
-    def test_8_elite_num(self):
+    def test_08_elite_num(self):
         ga = GeneticAlgorithm(10, 1000, speed_limit_optimization=True, traffic_light_optimization=True, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
         self.assertEqual(ga.elite_num, int(0.3*10))
         
     #Test if mutation changes parameters
-    def test_9_mutation(self):
+    def test_09_mutation(self):
         #Test if mutation changes random parameter
         oa = OptimizationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=True, traffic_light_optimization=True)
         speed_limit, light_cycles = (5,[[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]])
