@@ -5,8 +5,8 @@ import copy
 from utilities import pixels_to_kmh
 
 class GeneticAlgorithm(OptimisationAlgorithm):
-    def __init__(self, iterations, simulation_length, **kwargs):
-        super().__init__(iterations, simulation_length)
+    def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, **kwargs):
+        super().__init__(iterations, simulation_length, speed_limit_optimization, traffic_light_optimization)
         # self.populations = [[{'tl' : kwargs['traffic_lights'] if kwargs['traffic_lights'] is not None else np.random.uniform(0, 1, (4, 4)), 
         #                       's': kwargs['speed_limit'] if kwargs['speed_limit'] is not None else np.random.randint(20, 100)}
         #                     for j in range(kwargs['population_size'])] for i in range(kwargs['population_number'])]
@@ -81,12 +81,6 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                     f, c, iter, stopped = simulation.simulate(unit['s'], unit['tl'], sim=j, sim_max=3, it=iteration, iter_max=self.iterations )
                     self.__append_stats(iteration, p, u, j, f, c, unit['s'], unit['tl'], stopped, iter)
                     simulation.reset_map()
-                    stat = [iter,j,i,pixels_to_kmh(unit['s'])]
-                    for light in unit['tl']:
-                        for i in range(len(light)):
-                            stat.append(light[i])
-                    stat += [f, c, stopped, iteration]
-                    self.stats.append(stat)
                     Flow += f
                     Collisions += c
 
@@ -127,7 +121,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 unit = np.random.choice(population, 1, p=pop_costs)[0]
 
             if np.random.uniform(0, 1) < self.mutation_prob:
-                unit['s'], unit['tl'] = self.mutate(unit['s'], unit['tl'], True, True)
+                unit['s'], unit['tl'] = self.mutate(unit['s'], unit['tl'])
             
             new_population.append(unit)
         

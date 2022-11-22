@@ -2,12 +2,12 @@ import numpy as np
 from copy import deepcopy
 
 class OptimisationAlgorithm:
-    def __init__(self, iterations, simulation_length):
+    def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization):
         self.iterations = int(iterations)
         self.simulation_length = int(simulation_length)
         self.stats = []
-        self.speed_limit_optimization = True
-        self.traffic_light_optimization = True
+        self.speed_limit_optimization = speed_limit_optimization
+        self.traffic_light_optimization = traffic_light_optimization
     def visualise_learning(self):
         pass
     def optimise(self, simulation):

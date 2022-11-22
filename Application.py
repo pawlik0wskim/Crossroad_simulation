@@ -94,14 +94,14 @@ class Application:
 #Saves data from optimization algorithm to csv file
 def save_to_csv(optimization_algorithm, type_, num_of_light_cycles = 4):
     df = pd.DataFrame(optimization_algorithm.stats)
-    cols = ["main_index", "small_index", "Speed limit(km/h)"] if type_=="Annealing" else ["main_index", "population_index", "small_index", "Speed limit(km/h)"]
+    cols = ["Main index", "Small index", "Speed limit(km/h)"] if type_=="simulated annealing" else ["Main index", "Population", "Unit", "Small index", "Speed limit(km/h)"]
     for i in range(num_of_light_cycles):
         for j in range(4):
             cols+=[f"Traffic light {i}_{j}"]
     cols +=["Flow", "Collisions", "Stopped", "Iterations"]
     df.columns = cols
     time_ = datetime.now().strftime("%H-%M-%S")
-    df.to_csv(f"{time_}.csv")
+    df.to_csv(f"{time_}.csv", index=False)
 
         
 if __name__=='__main__':
@@ -116,22 +116,14 @@ if __name__=='__main__':
         
     if mode =="simulated annealing"  :  
         app.set_traffic_lights(light_cycles)
-        sa = SimulatedAnnealing(number_of_iterations, simulation_length, initial_temp, cooling_rate) 
+        sa = SimulatedAnnealing(number_of_iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate) 
         sa.optimise(app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles})
-        df = pd.DataFrame(sa.stats)
-        cols = ["main_index", "small_index", "Speed limit(km/h)"]
-        for i in range(len(light_cycles)):
-            for j in range(4):
-                cols+=[f"Traffic light {i}_{j}"]
-        cols +=["Flow", "Collisions", "Stopped", "Iterations"]
-        df.columns = cols
-        print(df)
-        time_ = datetime.now().strftime("%H-%M-%S")
-        df.to_csv(f"{time_}.csv")
+        save_to_csv(sa, mode)
         
     if mode == "genetic algorithm":
         app.set_traffic_lights(light_cycles)
         ga = GeneticAlgorithm(number_of_iterations, simulation_length, 
+                              speed_limit_optimization, traffic_light_optimization,
                               elite_part=elite_part, 
                               population_size=population_size, 
                               traffic_lights=light_cycles, 
@@ -141,15 +133,5 @@ if __name__=='__main__':
                               population_number=population_number,
                               migration_part=migration_part) 
         ga.optimise(app)
-
-        df = pd.DataFrame(ga.stats)
-        cols = ["Main index", "Population", "Unit", "Small Index", "Speed limit(km/h)"]
-        for i in range(len(light_cycles)):
-            for j in range(4):
-                cols+=[f"Traffic light {i}_{j}"]
-        cols +=["Flow", "Collisions", "Stopped", "IterNum"]
-        df.columns = cols
-        print(df)
-        time_ = datetime.now().strftime("%H-%M-%S")
-        df.to_csv(f"{time_}.csv", index=False)
+        save_to_csv(ga, mode)
 
