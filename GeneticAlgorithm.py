@@ -83,12 +83,22 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 for i in range(3):
                     f, c, stopped, iteration = simulation.simulate(unit['s'], unit['tl'], sim = i, sim_max = 3, it=iter, iter_max = self.iterations )
                     simulation.reset_map()
-                    self.stats.append([iter, j, i, pixels_to_kmh(unit['s']), f, c, stopped, iteration])
+                    stat = [iter,j,i,pixels_to_kmh(unit['s'])]
+                    for light in unit['tl']:
+                        for i in range(len(light)):
+                            stat.append(light[i])
+                    stat += [f, c, stopped, iteration]
+                    self.stats.append(stat)
                     Flow += f
                     Collisions += c
                 Flow /= 3
                 Collisions /= 3
-                self.stats.append([iter, j, None, pixels_to_kmh(unit['s']), Flow, Collisions, None, None])
+                stat = [iter,j,None,pixels_to_kmh(unit['s'])]
+                for light in unit['tl']:
+                    for i in range(len(light)):
+                        stat.append(light[i])
+                stat += [ Flow, Collisions, None, None]
+                self.stats.append(stat)
                 # save cost function of units mean stats as its cost
                 pop_costs.append(cost_function(Collisions, Flow, iter, stopped))
             costs.append(pop_costs)
