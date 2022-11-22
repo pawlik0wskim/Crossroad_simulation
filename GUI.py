@@ -4,7 +4,7 @@ from  utilities import unit
 import customtkinter
 from RangeSlider import RangeSliderH 
 import tkinter as tk
-import copy
+import tkinter
 
 BG_COLOR = "#212325" 
 
@@ -78,11 +78,17 @@ class TraficLigthsWidget:
 
 #Class representing entry field and label for all variables that are singular int, float value
 class EntryVariable:
-    def __init__(self, row, col, text, value = "placeholder", type =int):
+    def __init__(self, row, col, text, value = "placeholder", type =int, entry_type="entry"):
         self.label = customtkinter.CTkLabel(root, text=text)
         self.label.grid(column=col, row= row, columnspan = 4)
-        self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=value)
-        self.entry.grid(column=col+4, row= row, columnspan = 1)
+        self.entry_type = entry_type
+        if entry_type == "entry":
+            self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=value)
+            self.entry.grid(column=col+4, row= row, columnspan = 1)
+        elif entry_type=="check_box":
+            self.entry = customtkinter.CTkCheckBox(width=Width/3, text="" )
+            self.entry.grid(column=col+4, row= row, columnspan = 1)
+            self.entry.select()
         self.type = type
         self.row = row
         self.col = col
@@ -91,15 +97,15 @@ class EntryVariable:
     # Method returns field value. If its incorrect False value will be returned    
     def get_values(self):
         fl = False
-        if(self.entry.entry.get()=="<0,1>"):
+        if(self.entry_type=="entry" and self.entry.entry.get()=="<0,1>"):
             return False
         try:
-            fl = self.type(self.entry.entry.get()) 
+            fl = self.type(self.entry.entry.get()) if self.entry_type=="entry" else  self.entry.get()+1
             
         except ValueError:
             self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=f"{self.type_name}")
             self.entry.grid(column=self.col+4, row= self.row, columnspan = 1)
-        if 1-fl and self.type_name == "float" and (fl<0 or fl>1):
+        if self.entry_type=="entry" and 1-fl and self.type_name == "float" and (fl<0 or fl>1):
             self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text="<0,1>")
             self.entry.grid(column=self.col+4, row= self.row, columnspan = 1)
             fl = False
@@ -112,8 +118,10 @@ class GUI:
         self.main_modules =  self.generate_main_modules()     
         self.annealing_modules = self.generate_annealing_modules() 
         self.genetic_modules = self.generate_genetic_modules()
+        self.common_optimization_modules = self.generate_common_optimization_modules()
         self.hide(self.annealing_modules)
         self.hide(self.genetic_modules)
+        self.hide(self.common_optimization_modules)
         self.drop_menu = self.generate_drop_menu()
         self.button = self.generate_button()
         self.values = None
@@ -132,23 +140,29 @@ class GUI:
     
     #Generates entry fields for simulated annealing mode       
     def generate_annealing_modules(self):
-        iterations_variable = EntryVariable(14,1,"Number of iterations: ","100")
-        initial_temp_variable = EntryVariable(14,7,"Initial temperature: ","50")
-        cooling_rate_variable = EntryVariable(14,13,"Cooling rate: ","0.99", float)
-        annealing_modules = [iterations_variable, initial_temp_variable, cooling_rate_variable]
+        initial_temp_variable = EntryVariable(16,7,"Initial temperature: ","50")
+        cooling_rate_variable = EntryVariable(16,1,"Cooling rate: ","0.99", float)
+        annealing_modules = [initial_temp_variable, cooling_rate_variable]
         return annealing_modules
     
     #Generates entry fields for genetic algorithm mode       
     def generate_genetic_modules(self):
-        number_of_iterations_variable = EntryVariable(14,1,"Number of iterations: ","100")
         Elite_part_variable  = EntryVariable(18,1,"Elitism: ","0.3", float)
-        mutation_probability_variable  = EntryVariable(14,7,"Mutation probability: ","0.2", float)
-        crossover_probability_variable = EntryVariable(14,13,"Crossover probability: ","0.2", float)
+        mutation_probability_variable  = EntryVariable(16,7,"Mutation probability: ","0.2", float)
+        crossover_probability_variable = EntryVariable(16,13,"Crossover probability: ","0.2", float)
         population_size_variable = EntryVariable(16,1,"Population size: ","100")
-        population_number_variable = EntryVariable(16,7,"Number of populations: ","10")
-        migration_part_variable = EntryVariable(16,13,"Chance of migrations: ","0.2", float)
-        genetic_modules = [number_of_iterations_variable, Elite_part_variable, mutation_probability_variable, crossover_probability_variable, population_size_variable, population_number_variable, migration_part_variable]
+        population_number_variable = EntryVariable(18,7,"Number of populations: ","10")
+        migration_part_variable = EntryVariable(18,13,"Chance of migrations: ","0.2", float)
+        genetic_modules = [Elite_part_variable, mutation_probability_variable, crossover_probability_variable, population_size_variable, population_number_variable, migration_part_variable]
         return genetic_modules
+
+    #Generates entry fields common for all optimization modes  
+    def generate_common_optimization_modules(self):
+        iterations_variable = EntryVariable(14,1,"Number of iterations: ","100")
+        speed_check_variale = EntryVariable(14,7,"Speed limit optimization: ","0.2", float, "check_box")
+        light_check_variale = EntryVariable(14,13,"Traffic light optimization: ","0.2", float, "check_box")
+        common_modules = [iterations_variable, speed_check_variale, light_check_variale]
+        return common_modules
 
     #Generates entry fields common for all modes  
     def generate_main_modules(self):
@@ -177,17 +191,22 @@ class GUI:
         if choice=="visualisation":
             self.hide(self.annealing_modules)
             self.hide(self.genetic_modules)
+            self.hide(self.common_optimization_modules)
         elif choice=="simulated annealing":
+            self.hide(self.common_optimization_modules)
             self.annealing_modules = self.generate_annealing_modules()
             self.hide(self.genetic_modules)
+            self.common_optimization_modules = self.generate_common_optimization_modules()
         elif choice=="genetic algorithm":
+            self.hide(self.common_optimization_modules)
             self.genetic_modules = self.generate_genetic_modules()
             self.hide(self.annealing_modules)
+            self.common_optimization_modules = self.generate_common_optimization_modules()
     
     #Function behind "Submit" button that collects values and destroys root if all of the values were correct       
     def get_module_values(self):
         self.values = []
-        modules = self.lights + self.main_modules + self.annealing_modules + self.genetic_modules
+        modules = self.lights + self.main_modules + self.common_optimization_modules + self.annealing_modules + self.genetic_modules
         for module in modules:
             self.values.append(module.get_values())
             print(module.get_values())
@@ -235,9 +254,11 @@ def run_gui():
     if gui.values!=None:
         values = gui.values[:4] + [float(value) for value in gui.values[4:]]
         mode = gui.drop_menu.current_value
-        speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, number_of_iterations, initial_temp, cooling_rate, number_of_iterations_gen, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = values[4], values[7], values[8], values[9], values[5], values[6], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19]
+        speed_limit, simulation_length, frames_per_car, left_prob , right_prob, light_cycle_time, number_of_iterations, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = values[4:]
         light_cycles = [values[i]for i in range(4)]
-        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, number_of_iterations_gen, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part
+        speed_limit_optimization-=1
+        traffic_light_optimization-=1
+        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
     return None
     
 

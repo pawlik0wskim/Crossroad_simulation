@@ -1,12 +1,12 @@
-from OptimisationAlgorithm import OptimisationAlgorithm
+from OptimisationAlgorithm import OptimizationAlgorithm
 import numpy as np
 from utilities import cost_function
 import copy
 from utilities import pixels_to_kmh
 
-class GeneticAlgorithm(OptimisationAlgorithm):
-    def __init__(self, iterations, simulation_length, **kwargs):
-        super().__init__(iterations, simulation_length)
+class GeneticAlgorithm(OptimizationAlgorithm):
+    def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, **kwargs):
+        super().__init__(iterations, simulation_length, speed_limit_optimization, traffic_light_optimization)
         # number of units in one population
         self.pop_size = kwargs.get('population_size', 3)
         # number of best units, which will be pass selection without any changes
@@ -19,7 +19,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         # list of populations
         self.populations = [[{'tl' : np.random.uniform(0, 1, (4, 4)), 
                               's': np.random.randint(5, 20)}
-                            for j in range(self.pop_size)] for i in range(pop_number)]
+                            for j in range(self.pop_size)] for i in range(int(pop_number))]
         # probability of mutation
         self.mutation_prob = kwargs.get('mutation_probability', 0.6)
         # global best unit
@@ -141,7 +141,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
 
     # returns child unit, which inherits parameters from its two parents
     # each parameter has equal probability of being inherited from parent1 or parent2
-    def crossover(self, parent1, parent2, speed_limit_optimisation=True, traffic_light_optimisation=True):
+    def crossover(self, parent1, parent2, speed_limit_optimization=True, traffic_light_optimization=True):
         child = {}
         child['s'] = parent1['s'] if np.random.uniform(0, 1) < 0.5 else parent2['s']
         child_tl = []

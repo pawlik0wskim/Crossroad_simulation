@@ -183,5 +183,5 @@ class Test(unittest.TestCase):
         
 if __name__ == '__main__':
     global visualise
-    visualise = False
+    visualise = True
     unittest.main(exit = False)
