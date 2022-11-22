@@ -37,7 +37,7 @@ class Application:
         if visualise:
             win = pygame.display.set_mode((WIDTH, HEIGHT))   
             clock=pygame.time.Clock()
-            self.map.img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT)).convert()
+            self.map.img = pygame.transform.scale(pygame.image.load(images_dir+"map_crossroad.png"),(WIDTH,HEIGHT)).convert()
             self.map.rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
         start_time = time.time()
         

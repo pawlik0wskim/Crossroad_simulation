@@ -5,7 +5,7 @@ import numpy as np
 WIDTH, HEIGHT = (1000,1000)
 ROAD_COLOR = "Red"
 NODE_COLOR = "Yellow"
-dir = r""
+images_dir = r"images/"
 FPS = 30
 unit = (1/2000*WIDTH+1/2000*HEIGHT) #unit used to calculate velocity so that window size doesn't matter
 
