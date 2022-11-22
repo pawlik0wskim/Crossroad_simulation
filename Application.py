@@ -91,7 +91,17 @@ class Application:
         print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions, i, stopped)}, FPS: {FPS_counter}, Stopped: {stopped}")    
         return Flow, Collisions, stopped, iteration
 
-        
+#Saves data from optimization algorithm to csv file
+def save_to_csv(optimization_algorithm, type_, num_of_light_cycles = 4):
+    df = pd.DataFrame(optimization_algorithm.stats)
+    cols = ["main_index", "small_index", "Speed limit(km/h)"] if type_=="Annealing" else ["main_index", "population_index", "small_index", "Speed limit(km/h)"]
+    for i in range(num_of_light_cycles):
+        for j in range(4):
+            cols+=[f"Traffic light {i}_{j}"]
+    cols +=["Flow", "Collisions", "Stopped", "Iterations"]
+    df.columns = cols
+    time_ = datetime.now().strftime("%H-%M-%S")
+    df.to_csv(f"{time_}.csv")
 
         
 if __name__=='__main__':

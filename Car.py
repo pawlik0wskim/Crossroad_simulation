@@ -36,8 +36,8 @@ class Car:
         self.speed_limit = speed_limit
         self.acceleration_exponent = acceleration_exponent
         
-        self.reaction_time = 30/20
-        self.minimum_dist = np.max([self.rect.h,self.rect.w])*5/3
+        self.reaction_time = 30/20+np.random.rand()
+        self.minimum_dist = np.max([self.rect.h,self.rect.w])*5/3+np.random.normal()
         self.comfortable_deceleration = self.acceleration
         
         self.maximum_deceleration = self.acceleration*6

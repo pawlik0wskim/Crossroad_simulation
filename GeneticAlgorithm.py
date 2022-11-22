@@ -1,7 +1,8 @@
-from OptimisationAlgorithm import OptimisationAlgorithm
+from OptimisationAlgorithm import OptimizationAlgorithm
 import numpy as np
 from utilities import cost_function, pixels_to_kmh
 import copy
+from utilities import pixels_to_kmh
 
 class GeneticAlgorithm(OptimisationAlgorithm):
     def __init__(self, iterations, simulation_length, **kwargs):
@@ -19,6 +20,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         self.elite_num = int(self.pop_size*kwargs['elite_part'])
         self.migration_num = int(self.pop_size*kwargs['migration_part'])
         self.champ = None
+        # global best unit score
         self.champ_cost = np.Inf
     
     def optimise(self, simulation):
@@ -44,7 +46,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 print(self.champ)
                 print('---------------------------------')
 
-            # migration of top organisms to next population
+            # migration of top units to next population
             if len(self.populations) > 1:
                 for j in range(len(self.populations)):
                     if j < len(self.populations) - 1:
@@ -79,6 +81,12 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                     f, c, iter, stopped = simulation.simulate(unit['s'], unit['tl'], sim=j, sim_max=3, it=iteration, iter_max=self.iterations )
                     self.__append_stats(iteration, p, u, j, f, c, unit['s'], unit['tl'], stopped, iter)
                     simulation.reset_map()
+                    stat = [iter,j,i,pixels_to_kmh(unit['s'])]
+                    for light in unit['tl']:
+                        for i in range(len(light)):
+                            stat.append(light[i])
+                    stat += [f, c, stopped, iteration]
+                    self.stats.append(stat)
                     Flow += f
                     Collisions += c
 
@@ -125,7 +133,9 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         
         return new_population
 
-    def crossover(self, parent1, parent2, speed_limit_optimisation=True, traffic_light_optimisation=True):
+    # returns child unit, which inherits parameters from its two parents
+    # each parameter has equal probability of being inherited from parent1 or parent2
+    def crossover(self, parent1, parent2, speed_limit_optimization=True, traffic_light_optimization=True):
         child = {}
         child['s'] = parent1['s'] if np.random.uniform(0, 1) < 0.5 else parent2['s']
         child_tl = []
@@ -174,3 +184,12 @@ if __name__ == '__main__':
     print(a)
     print(b)
     
+    print('====Elite num====')
+    # elite number is number of organisms, which will be taken through selection without any changes
+    print(ga.elite_num == 0.2*10)
+
+    print('====Default arguments====')
+    ga = GeneticAlgorithm(10, 1000, elite_part=0.2)
+    print('Default population size:', ga.pop_size)
+    print('Default population number:', len(ga.populations))
+    print('Default mutation probability:', ga.mutation_prob)
