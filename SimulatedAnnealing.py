@@ -52,6 +52,7 @@ class SimulatedAnnealing(oa):
             self.temp *= self.cooling_rate
         
         print(f"Best speed:  {pixels_to_kmh(speed_limit)} km/h / {speed_limit} pix")
+        print(f"Best light cycles:  {light_cycles} ")
         time_final = time.time()-start_time
         print(f'Total time: {int(time_final//3600)}:{int((time_final-time_final//3600*3600)//60)}:{(time_final-(time_final-time_final//3600)//60*60)}')
         
