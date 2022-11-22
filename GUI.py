@@ -86,7 +86,7 @@ class EntryVariable:
             self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=value)
             self.entry.grid(column=col+4, row= row, columnspan = 1)
         elif entry_type=="check_box":
-            self.entry = customtkinter.CTkCheckBox(width=Width/3, text="" )
+            self.entry = customtkinter.CTkCheckBox(width=Width/3, text="")
             self.entry.grid(column=col+4, row= row, columnspan = 1)
             self.entry.select()
         self.type = type
