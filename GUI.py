@@ -4,7 +4,6 @@ from  utilities import unit
 import customtkinter
 from RangeSlider import RangeSliderH 
 import tkinter as tk
-import copy
 
 BG_COLOR = "#212325" 
 

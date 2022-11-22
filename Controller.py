@@ -1,14 +1,9 @@
-from unittest import result
 import pygame
-from regex import P
-from sqlalchemy import values
 from Road import Road
 import numpy as np
 from Car import Car
 from Node import Node
-import time
 from utilities import *
-from multiprocessing import Process, Lock, Value
 
 # Collisions = 0
 # Flow = 0
@@ -97,7 +92,7 @@ class Controller:
                             continue
         return curr_collisions
                         
-    #Method manages what does car and nearest car to it see as hindrance
+    #Method manages what does car and the nearest car to it see as hindrance
     def process_car_neighborhood(self, car, road):
         road_type, road_direction = road.type, road.direction
         min_dist = np.Inf # distance to nearest car(if it exists)
@@ -141,7 +136,7 @@ class Controller:
 
 
 
-#Method generates main crossroaad map
+#Method generates main crossroad map
 def generate_crossroad(WIDTH, HEIGHT):
     light_cycle = [0.25, 0.4, 0.85, 0.9]
     #nodes

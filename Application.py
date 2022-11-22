@@ -1,4 +1,4 @@
-from Map import *
+from Controller import *
 from utilities import *
 
 from GUI import *
@@ -6,6 +6,7 @@ from SimulatedAnnealing import SimulatedAnnealing
 from GeneticAlgorithm import GeneticAlgorithm
 import pandas as pd
 from datetime import datetime
+import time
 
 
 class Application:   
@@ -95,7 +96,7 @@ class Application:
         
 if __name__=='__main__':
     
-    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, number_of_iterations_gen, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = run_gui()
+    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, number_of_iterations_gen, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = run_gui()
     acceleration_exponent = 4
     app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
 
@@ -118,8 +119,27 @@ if __name__=='__main__':
         time_ = datetime.now().strftime("%H-%M-%S")
         df.to_csv(f"{time_}.csv")
         
-    if mode == 'genetic algorithm':
+    if mode == "genetic algorithm":
         app.set_traffic_lights(light_cycles)
-        ga = GeneticAlgorithm(number_of_iterations_gen, simulation_length, elite_part=0.2, population_size=3, traffic_lights=light_cycles, speed_limit=speed_limit, mutation_probability=0.5, population_number=3) 
+        ga = GeneticAlgorithm(number_of_iterations_gen, simulation_length, 
+                              elite_part=elite_part, 
+                              population_size=population_size, 
+                              traffic_lights=light_cycles, 
+                              speed_limit=speed_limit, 
+                              crossover_probability=crossover_probability, 
+                              mutation_probability=mutation_probability, 
+                              population_number=population_number,
+                              migration_part=migration_part) 
         ga.optimise(app)
+
+        df = pd.DataFrame(ga.stats)
+        cols = ["Main index", "Population", "Unit", "Small Index", "Speed limit(km/h)"]
+        for i in range(len(light_cycles)):
+            for j in range(4):
+                cols+=[f"Traffic light {i}_{j}"]
+        cols +=["Flow", "Collisions", "Stopped", "IterNum"]
+        df.columns = cols
+        print(df)
+        time_ = datetime.now().strftime("%H-%M-%S")
+        df.to_csv(f"{time_}.csv", index=False)
 
