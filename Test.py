@@ -76,7 +76,7 @@ class Test(unittest.TestCase):
         self.assertGreater(1/2, car.velocity) #Car has to stop(velocity smaller than 1/2)
         self.assertGreater(test_map.roads[0].end_node.pos[1], car.rect.center[1]+car.rect.height/2) #Car has to stop before end of segment
     
-    #Test if cars stop when driver sees another stationaary vehicle
+    #Test if cars stop when driver sees another stationary vehicle
     def test_3_stopping_to_vehicle(self):
         test_map = generate_test_map(1000,1000, False)
         
@@ -219,4 +219,5 @@ class Test(unittest.TestCase):
 if __name__ == '__main__':
     global visualise
     visualise = False
-    unittest.main(exit = False)
+    for i in range(100):
+        unittest.main(exit = False)

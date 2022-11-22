@@ -23,7 +23,7 @@ class OptimizationAlgorithm:
         if (1-self.speed_limit_optimization):
             parameter_number-=1
         for i in range(len(light_cycles[0])*len(light_cycles)):
-            if p<1/parameter_number*(i+2) and p>1/parameter_number*(i+1) and self.traffic_light_optimization:
+            if p<1/parameter_number*(i+1) and p>=1/parameter_number*i and self.traffic_light_optimization:
                 prev_value = light_cycles[i//len(light_cycles)][i-i//len(light_cycles)*len(light_cycles)]
                 new_value = np.random.rand()/2+1/2 if prev_value>1/2 else np.random.rand()/2
                 new_light_cycles[i//len(new_light_cycles)][i-i//len(new_light_cycles)*len(new_light_cycles)]=new_value
