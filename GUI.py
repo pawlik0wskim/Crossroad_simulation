@@ -1,195 +1,246 @@
+
+from tkinter import *
+from  utilities import unit
+import customtkinter
+from RangeSlider import RangeSliderH 
 import tkinter as tk
-# import matplotlib.pyplot as plt
-# from matplotlib.animation import FuncAnimation
-# from matplotlib.figure import Figure
-# from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-# from itertools import count
-# import random
+import copy
 
-# x_vals = []
-# y_vals = []
-# index = count()
+BG_COLOR = "#212325" 
 
-# Graphical User Interface class
+class TraficLigthsWidget:
+    def __init__(self, x, y, width = 180, starting_light = "Red", starting_row = 4):
+        self.x, self.y = x, y
+        self.width = width
+        self.starting_row = starting_row
+        self.generate_lights_sliders(starting_light=starting_light)
+        
+        #Add and place text entry widgets
+        self.entries = [self.generate_entry(int(self.sliders[i//2].getValues()[i-i//2*2]*100)/100, i+6) for i in range(4)]
+            
+        #Add and place refresh button   
+        self.button = customtkinter.CTkButton(master=root, text="Refresh", command=self.button_replace_function, width=self.width/3)
+        self.button.grid(row = starting_row + (self.y-30)//150, column = 10, columnspan = 2)
+        
+        #Add few empty lines to increase readibility
+        l0 = tk.Label(root, text='     \n   ', bg = BG_COLOR)
+        l1 = tk.Label(root, text='     \n   ', bg = BG_COLOR)
+        l2 = tk.Label(root, text='     \n   ', bg = BG_COLOR)
+        l0.grid(column=12, row= starting_row + (self.y-30)//150)
+        l2.grid(column=21, row= starting_row + (self.y-30)//150)
+        l1.grid(column=5, row= starting_row + (self.y-30)//150)
+        
+        #Add and place traffic light label
+        label = customtkinter.CTkLabel(root, text=f'Traffic light {(self.y-30)//150}' )
+        label.grid(column=0, row= starting_row + (self.y-30)//150, columnspan = 4)
+        
+    # Method creates double range sliders representing traffic light cycle   
+    def generate_lights_sliders(self, values=[0.1,0.2], values2=[0.6,0.7], starting_light = "Red"):
+        color1, color2 = ("Red", "Green") if starting_light == "Red" else ("Green", "Red")
+        sliders = []
+        sliders.append(RangeSliderH(root, [DoubleVar(), DoubleVar()], Width=self.width, Height=24, min_val=0, max_val=1/2, show_value= True, padX=11, bgColor=BG_COLOR, font_size =1, right_color=color1, left_color=color2, values = values))
+        sliders.append(RangeSliderH(root, [DoubleVar(), DoubleVar()], Width=self.width, Height=24, min_val=1/2, max_val=1, show_value= True, padX=11, bgColor=BG_COLOR, font_size =1, right_color=color2, left_color=color1, values = values2))
+        for i in range(2):
+            #sliders[i].place(x=self.x+self.width*(i+1.4),y=self.y)
+            sliders[i].grid(row = self.starting_row + (self.y-30)//150, column = 13+i*4, columnspan = 4)
+        self.sliders = sliders
+    
+    #Method creating entry field in selected column with determined placeholder value
+    def generate_entry(self, place_holder, col) :
+        entry = customtkinter.CTkEntry(width=self.width/4.5,placeholder_text=place_holder)
+        entry.grid(row = self.starting_row + (self.y-30)//150, column = col)
+        return entry
+           
+    #Method check for correctness of traffic light cycle, gives user hints how to repair input and if everything was correct updates sliders
+    def button_replace_function(self):
+        for i in range(len(self.entries)):
+            fl =None
+            try:
+                fl = float(self.entries[i].entry.get())
+                if fl>1/2*(1+i//2):
+                    self.entries[i] = self.generate_entry(f"<{1/2*(1+i//2)}", i+6)
+                elif fl<1/2*(i//2):
+                    self.entries[i] = self.generate_entry(f">{1/2*(i//2)}", i+6)
+                elif i ==len(self.entries)-1:
+                    self.generate_lights_sliders( values = [float(self.entries[0].entry.get()), float(self.entries[1].entry.get())], values2 = [float(self.entries[2].entry.get()), float(self.entries[3].entry.get())])
+            except ValueError:
+                if i!=3 or 1-isinstance(fl, float):
+                    self.entries[i] = self.generate_entry("float", i+6)
+                    
+    #Returns light cycle of traffic light        
+    def get_values(self):
+        values = []
+        for i in range(2):
+            value = self.sliders[i].getValues()
+            values.append(value[0])
+            values.append(value[1])
+        return values
 
-class GUI(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+#Class representing entry field and label for all variables that are singular int, float value
+class EntryVariable:
+    def __init__(self, row, col, text, value = "placeholder", type =int):
+        self.label = customtkinter.CTkLabel(root, text=text)
+        self.label.grid(column=col, row= row, columnspan = 4)
+        self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=value)
+        self.entry.grid(column=col+4, row= row, columnspan = 1)
+        self.type = type
+        self.row = row
+        self.col = col
+        self.type_name = "int" if type == int else "float"
+        
+    # Method returns field value. If its incorrect False value will be returned    
+    def get_values(self):
+        fl = False
+        if(self.entry.entry.get()=="<0,1>"):
+            return False
+        try:
+            fl = self.type(self.entry.entry.get()) 
+            
+        except ValueError:
+            self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=f"{self.type_name}")
+            self.entry.grid(column=self.col+4, row= self.row, columnspan = 1)
+        if 1-fl and self.type_name == "float" and (fl<0 or fl>1):
+            self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text="<0,1>")
+            self.entry.grid(column=self.col+4, row= self.row, columnspan = 1)
+            fl = False
+        return fl
+    
+#Main class of Graphical User Interface        
+class GUI:
+    def __init__(self):
+        self.lights = [TraficLigthsWidget(30,30+150*i, starting_light = "Red") if i>1 else TraficLigthsWidget(30,30+150*i, starting_light = "Green") for i in range(4)]
+        self.main_modules =  self.generate_main_modules()     
+        self.annealing_modules = self.generate_annealing_modules() 
+        self.genetic_modules = self.generate_genetic_modules()
+        self.hide(self.annealing_modules)
+        self.hide(self.genetic_modules)
+        self.drop_menu = self.generate_drop_menu()
+        self.button = self.generate_button()
+        self.values = None
+    
+    #Returns submit button    
+    def generate_button(self):
+        button = customtkinter.CTkButton(master=root, text="Submit", command=lambda: self.get_module_values())
+        button.grid(sticky = "s", row =22, column =8, columnspan = 4)  
+        return button         
+        
+    #Hides selected modules from the user
+    def hide(self,modules):
+        for module in modules:
+            module.label.grid_remove()
+            module.entry.grid_remove()
+    
+    #Generates entry fields for simulated annealing mode       
+    def generate_annealing_modules(self):
+        iterations_variable = EntryVariable(14,1,"Number of iterations: ","100")
+        initial_temp_variable = EntryVariable(14,7,"Initial temperature: ","50")
+        cooling_rate_variable = EntryVariable(14,13,"Cooling rate: ","0.99", float)
+        annealing_modules = [iterations_variable, initial_temp_variable, cooling_rate_variable]
+        return annealing_modules
+    
+    #Generates entry fields for genetic algorithm mode       
+    def generate_genetic_modules(self):
+        number_of_iterations_variable = EntryVariable(14,1,"Number of iterations: ","100")
+        Elite_part_variable  = EntryVariable(18,1,"Elitism: ","0.3", float)
+        mutation_probability_variable  = EntryVariable(14,7,"Mutation probability: ","0.2", float)
+        crossover_probability_variable = EntryVariable(14,13,"Crossover probability: ","0.2", float)
+        population_size_variable = EntryVariable(16,1,"Population size: ","100")
+        population_number_variable = EntryVariable(16,7,"Number of populations: ","10")
+        migration_part_variable = EntryVariable(16,13,"Chance of migrations: ","0.2", float)
+        genetic_modules = [number_of_iterations_variable, Elite_part_variable, mutation_probability_variable, crossover_probability_variable, population_size_variable, population_number_variable, migration_part_variable]
+        return genetic_modules
 
-        w, h = 1000, 500
-        self.geometry(str(w) + 'x' + str(h))
-
-        # self.fig = Figure(figsize = (5, 5), dpi = 100)
-        # self.canvas = FigureCanvasTkAgg(self.fig, master=self)  
-        # self.canvas.get_tk_widget().configure(width=300, height=300)
-
-        # data which user provides
-        self.data = {}
-
-        # tracing variables  
-        self.mode = tk.StringVar()
-        self.mode.set("visualisation")
-        # call alter_widgets method any time the value of mode variable was changed
-        self.mode.trace("w", self.alter_widgtes)
-
-        # main widgets
+    #Generates entry fields common for all modes  
+    def generate_main_modules(self):
+        speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","25")
+        maximum_iter_variable = EntryVariable(9,7,"Length of simulation: ","10000")
+        frames_per_car_variable = EntryVariable(9,13,"Frames per car: ","10")
+        left_prob_variable = EntryVariable(11,1,"Left turn probability: ","0.1", float)
+        right_prob_variable = EntryVariable(11,7,"Right turn probability: ","0.2", float)
+        light_cycle_time = EntryVariable(11,13,"Length of light cycle: ","300")
+        modules =[speed_limit_variable, maximum_iter_variable, frames_per_car_variable, left_prob_variable, right_prob_variable, light_cycle_time]
+        return modules
+    
+    #Generates drop menu allowing mode changing
+    def generate_drop_menu(self):
         options = [
+            "visualisation",
             "genetic algorithm",
-            "simulated annealing",
-            "visualisation"
+            "simulated annealing"
         ]
-        self.drop = tk.OptionMenu(self, self.mode, *options)
-        self.drop.place(relx=0.4, rely=0.1)
-        self.submit = tk.Button(self, text="Visualise", command=self.press_submit)
-        self.submit.place(relx=0.45, rely=0.9)
-
-        # simulation widgets
-        self.traffic_light_widgets = [[tk.Scale(self, from_=0.0, to=1.0, orient='horizontal', resolution=0.1) for i in range(4)] for j in range(4)]
-        self.traffic_light_labels = [tk.Label(self, text='traffic light '+str(i+1)) for i in range(4)]
-        self.speed_limit = tk.Scale(self, from_=0.0, to=100.0, orient='horizontal', resolution=1)
-        self.speed_limit_label = tk.Label(self, text="Speed limit")
-        self.debug = tk.IntVar(value=0)
-        self.debug_checkbutton = tk.Checkbutton(self,
-                                                text='Debug mode',
-                                                onvalue=1,
-                                                offvalue=0,
-                                                variable=self.debug)
+        drop = customtkinter.CTkOptionMenu(root  ,values = options,command=self.optionmenu_callback)
+        drop.grid(column = 8, row = 1, columnspan =5, sticky = "n")
+        return drop
+    
+    #Method controlling GUi during mode change
+    def optionmenu_callback(self, choice):
+        if choice=="visualisation":
+            self.hide(self.annealing_modules)
+            self.hide(self.genetic_modules)
+        elif choice=="simulated annealing":
+            self.annealing_modules = self.generate_annealing_modules()
+            self.hide(self.genetic_modules)
+        elif choice=="genetic algorithm":
+            self.genetic_modules = self.generate_genetic_modules()
+            self.hide(self.annealing_modules)
+    
+    #Function behind "Submit" button that collects values and destroys root if all of the values were correct       
+    def get_module_values(self):
+        self.values = []
+        modules = self.lights + self.main_modules + self.annealing_modules + self.genetic_modules
+        for module in modules:
+            self.values.append(module.get_values())
+            print(module.get_values())
+        if all(self.values):
+            root.destroy()
         
-        self.show_visualisation_widgets()
-
-        # simulated annealing widgets
-        from_tmp = [0.0, 0.0]
-        to_tmp = [3.0, 0.999]
-        resolution_tmp = [0.1, 0.001]
-        labels_tmp = ['Initial temperature', 'Decrease rate']
-        self.annealing_widgets = [tk.Scale(self, from_=from_tmp[i], to=to_tmp[i], orient='horizontal', resolution=resolution_tmp[i]) for i in range(len(to_tmp))]
-        self.annealing_labels = [tk.Label(self, text=labels_tmp[i]) for i in range(len(to_tmp))]
-
-        # genetic algorithm widgets
-        from_tmp = [10, 1, 0.0, 0.0]
-        to_tmp = [100, 10, 1.0, 1.0]
-        resolution_tmp = [1, 1, 0.01, 0.01]
-        labels_tmp = ['Population size', 'Population number', 'Elite part', 'Mutation probability']
-        self.genetic_widgets = [tk.Scale(self, from_=from_tmp[i], to=to_tmp[i], orient='horizontal', resolution=resolution_tmp[i]) for i in range(len(to_tmp))]
-        self.genetic_labels = [tk.Label(self, text=labels_tmp[i]) for i in range(len(to_tmp))]
-
-
-        # mutual optimisation widgets
-        max_iter = tk.Scale(self, from_=1000, to=40000, orient='horizontal', resolution=100)
-        max_iter_label = tk.Label(self, text='Maximum iterations')
-        self.annealing_widgets.append(max_iter)
-        self.genetic_widgets.append(max_iter)
-        self.annealing_labels.append(max_iter_label)
-        self.genetic_labels.append(max_iter_label)
-
-    # hides and shows appropriate widgets based on chosen mode
-    def alter_widgtes(self, *args):
-        if self.mode.get() == "visualisation":
-            self.hide_annealing_widgets()
-            self.hide_genetic_widgets()
-            self.show_visualisation_widgets()
-        elif self.mode.get() == "simulated annealing":
-            self.hide_visualisation_widgets()
-            self.hide_genetic_widgets()
-            self.show_optimisation_widgets(self.annealing_widgets, self.annealing_labels)
-        else:
-            self.hide_visualisation_widgets()
-            self.hide_annealing_widgets()
-            self.show_optimisation_widgets(self.genetic_widgets, self.genetic_labels)
-
-    def show_visualisation_widgets(self):
-        y = 0.25
-        for i in range(len(self.traffic_light_widgets)):
-            self.traffic_light_labels[i].place(relx=0.2, rely=y+0.04)
-            x = 0.3
-            for slider in self.traffic_light_widgets[i]:
-                slider.place(relx=x, rely=y)
-                x += 0.1
-            y += 0.1
-        
-        self.speed_limit.place(relx=0.3, rely=0.65)
-        self.speed_limit_label.place(relx=0.2, rely=0.69)
-        self.debug_checkbutton.place(relx=0.3, rely=0.8)
-        self.submit.configure(text='Visualise')
-
-    def hide_visualisation_widgets(self):
-        for i in range(len(self.traffic_light_widgets)):
-            self.traffic_light_labels[i].place_forget()
-            for slider in self.traffic_light_widgets[i]:
-                slider.place_forget()
-
-        self.speed_limit.place_forget()
-        self.speed_limit_label.place_forget()
-        self.debug_checkbutton.place_forget()
-
-    def show_optimisation_widgets(self, widgets, labels):
-        y = 0.25
-        for i in range(len(widgets)):
-            widgets[i].place(relx=0.3, rely=y)
-            labels[i].place(relx=0.17, rely=y+0.04)
-            y += 0.1
-        self.submit.configure(text='Optimise')
-        # self.canvas.get_tk_widget().place(relx=0.6, rely=0.2)
-
-    def hide_annealing_widgets(self):
-        for i in range(len(self.annealing_widgets)):
-            self.annealing_widgets[i].place_forget()
-            self.annealing_labels[i].place_forget()
-        # self.canvas.get_tk_widget().place_forget()
-
-    def hide_genetic_widgets(self):
-        for i in range(len(self.genetic_widgets)):
-            self.genetic_widgets[i].place_forget()
-            self.genetic_labels[i].place_forget()
-        # self.canvas.get_tk_widget().place_forget()
-
-    def collect_data(self):
-        self.data['mode'] = self.mode.get()
-        if self.data['mode'] == 'visualisation':
-            # collect visualisations data
-            traffic_lights = []
-            for tl in self.traffic_light_widgets:
-                tl_data = []
-                for l in tl:
-                    tl_data.append(l.get())
-                traffic_lights.append(tl_data)
-            self.data['traffic_lights'] = traffic_lights
-            self.data['speed_limit'] = self.speed_limit.get()
-            self.data['debug'] = self.debug.get()
-        else:
-            # collect optimisation algorithm data
-            if self.data['mode'] == 'simulated annealing':
-                widgets = self.annealing_widgets
-            else:
-                widgets = self.genetic_widgets
-            data = []
-            for widget in widgets:
-                data.append(widget.get())
-            self.data[self.data['mode']] = data
-        
-    def press_submit(self):
-        self.collect_data()
-        self.quit()
-        self.destroy()
-        # self.fig.subplots(1, 1)
-        # ani = FuncAnimation(self.fig, self.animate, interval=1000, blit=False)
-        # self.canvas.draw()
+#Function addinng empty line to GUI(used to improve visual layer of the application)
+def add_empty_line(row):
+    l0 = tk.Label(root, bg=BG_COLOR)
+    l0.grid(column=0, row=row, columnspan=21)
 
     
-    # def animate(self, i):
-    #     global x_vals
-    #     global y_vals
-    #     x_vals.append(next(index))
-    #     y_vals.append(random.randint(0, 5))
-    #     # Get all axes of figure
-    #     ax = self.fig.get_axes()[0]
-    #     # Clear current data
-    #     ax.cla()
-    #     # Plot new data
-    #     ax.plot(x_vals, y_vals)
 
-if __name__ == '__main__':
+
+ 
+
+   
+  
+ #Main gui method    
+def run_gui():
+    
+    global  Width
+    global mode, speed_limit, root
+    # Create object 
+    customtkinter.set_default_color_theme("blue")
+    customtkinter.set_appearance_mode("Dark")
+    root = customtkinter.CTk()
+    Width =180
+    # Adjust size
+    root.geometry("1072x603")
+    #Adding few empty rodes to improve visual effect of GUI
+    add_empty_line(0)
+    add_empty_line(3)
+    add_empty_line(8)
+    add_empty_line(10)
+    add_empty_line(12)
+    add_empty_line(13)
+    add_empty_line(15)
+    add_empty_line(17)
+    add_empty_line(20)
+    
+    
     gui = GUI()
-    gui.mainloop()
-    for key in gui.data:
-        print(key, gui.data[key])
+    root.mainloop()
+    if gui.values!=None:
+        values = gui.values[:4] + [float(value) for value in gui.values[4:]]
+        mode = gui.drop_menu.current_value
+        speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, number_of_iterations, initial_temp, cooling_rate, number_of_iterations_gen, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = values[4], values[7], values[8], values[9], values[5], values[6], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19]
+        light_cycles = [values[i]for i in range(4)]
+        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, number_of_iterations_gen, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part
+    return None
+    
+
+#run_gui()
+
+
