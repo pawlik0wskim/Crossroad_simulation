@@ -1,4 +1,4 @@
-from OptimisationAlgorithm import OptimizationAlgorithm
+from OptimisationAlgorithm import OptimisationAlgorithm
 import numpy as np
 from utilities import cost_function, pixels_to_kmh
 import copy
@@ -171,25 +171,4 @@ class GeneticAlgorithm(OptimisationAlgorithm):
 
 
 if __name__ == '__main__':
-    # pop_costs = [-281, 203, -1000, 293]
-    # pop_costs = np.array(pop_costs)
-    # ind = np.argsort(pop_costs)
-    # print([pop_costs[ind[i]] for i in range(len(pop_costs))])
-    # print(pop_costs[0:2])
-    
-    a = [1, 2, 3, 4]
-    b = [5, 6, 7]
-    b += a[0:2]
-    b[-1] += 1
-    print(a)
-    print(b)
-    
-    print('====Elite num====')
-    # elite number is number of organisms, which will be taken through selection without any changes
-    print(ga.elite_num == 0.2*10)
-
-    print('====Default arguments====')
-    ga = GeneticAlgorithm(10, 1000, elite_part=0.2)
-    print('Default population size:', ga.pop_size)
-    print('Default population number:', len(ga.populations))
-    print('Default mutation probability:', ga.mutation_prob)
+    pass

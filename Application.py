@@ -106,7 +106,7 @@ def save_to_csv(optimization_algorithm, type_, num_of_light_cycles = 4):
         
 if __name__=='__main__':
     
-    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, number_of_iterations_gen, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = run_gui()
+    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization = run_gui()
     acceleration_exponent = 4
     app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
 
@@ -131,7 +131,7 @@ if __name__=='__main__':
         
     if mode == "genetic algorithm":
         app.set_traffic_lights(light_cycles)
-        ga = GeneticAlgorithm(number_of_iterations_gen, simulation_length, 
+        ga = GeneticAlgorithm(number_of_iterations, simulation_length, 
                               elite_part=elite_part, 
                               population_size=population_size, 
                               traffic_lights=light_cycles, 

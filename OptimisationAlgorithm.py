@@ -6,8 +6,8 @@ class OptimisationAlgorithm:
         self.iterations = int(iterations)
         self.simulation_length = int(simulation_length)
         self.stats = []
-        self.speed_limit_optimization = speed_limit_optimization
-        self.traffic_light_optimization = traffic_light_optimization
+        self.speed_limit_optimization = True
+        self.traffic_light_optimization = True
     def visualise_learning(self):
         pass
     def optimise(self, simulation):
