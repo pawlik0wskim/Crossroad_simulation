@@ -4,6 +4,8 @@ from utilities import *
 from Car import *
 from Node import Node
 from Application import *
+from OptimisationAlgorithm import OptimizationAlgorithm
+from copy import copy
 
 zero = 10**(-100)
 
@@ -154,7 +156,7 @@ class Test(unittest.TestCase):
     #Test if crossover mechanism works correctly  
     def test_7_crossover(self):
         np.random.seed(123)
-        ga = GeneticAlgorithm(10, 1000, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
+        ga = GeneticAlgorithm(10, 1000, speed_limit_optimization=True, traffic_light_optimization=True, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
         parent1 = {'s': 10, 'tl': [[0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5]]}
         parent2 = {'s': 25, 'tl': [[0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9]]}
         child = ga.crossover(parent1, parent2)
@@ -166,8 +168,41 @@ class Test(unittest.TestCase):
     
     #Test if elite number(number of organisms, which will be taken through selection without any changes) is calculated correctly
     def test_8_elite_num(self):
-        ga = GeneticAlgorithm(10, 1000, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
+        ga = GeneticAlgorithm(10, 1000, speed_limit_optimization=True, traffic_light_optimization=True, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
         self.assertEqual(ga.elite_num, int(0.3*10))
+        
+    #Test if mutation changes parameters
+    def test_9_mutation(self):
+        #Test if mutation changes random parameter
+        oa = OptimizationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=True, traffic_light_optimization=True)
+        speed_limit, light_cycles = (5,[[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]])
+        
+        new_speed_limit, new_light_cycles = oa.mutate(copy(speed_limit),copy(light_cycles))
+        variables = light_cycles
+        variables.append(speed_limit)
+        variables_new = new_light_cycles
+        variables_new.append(new_speed_limit)
+        
+        self.assertNotEqual(variables, variables_new)#we want parameters changed
+        
+    #Test if mutation changes correct parameters   
+    def test_10_mutation2(self):
+        #Test if mutation changes speed limit
+        oa = OptimizationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=True, traffic_light_optimization=False)
+        speed_limit, light_cycles = (5,[[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]])
+        new_speed_limit, new_light_cycles = oa.mutate(copy(speed_limit),copy(light_cycles))
+        
+        self.assertNotEqual(speed_limit, new_speed_limit)#we want speed limit changed
+        self.assertEqual(light_cycles, new_light_cycles)#we want light cycles unchanged
+        
+        #Test if mutation changes light cycles
+        oa = OptimizationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=False, traffic_light_optimization=True)
+        speed_limit, light_cycles = (5,[[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]])
+        new_speed_limit, new_light_cycles = oa.mutate(speed_limit,light_cycles)
+        
+        self.assertEqual(speed_limit, new_speed_limit)#we want speed limit unchanged
+        self.assertNotEqual(light_cycles, new_light_cycles)#we want light cycles changed
+        
 
         
         
@@ -183,5 +218,5 @@ class Test(unittest.TestCase):
         
 if __name__ == '__main__':
     global visualise
-    visualise = True
+    visualise = False
     unittest.main(exit = False)
