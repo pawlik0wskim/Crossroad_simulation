@@ -7,14 +7,31 @@ from utilities import pixels_to_kmh
 class GeneticAlgorithm(OptimisationAlgorithm):
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, **kwargs):
         super().__init__(iterations, simulation_length, speed_limit_optimization, traffic_light_optimization)
-        # self.populations = [[{'tl' : kwargs['traffic_lights'] if kwargs['traffic_lights'] is not None else np.random.uniform(0, 1, (4, 4)), 
-        #                       's': kwargs['speed_limit'] if kwargs['speed_limit'] is not None else np.random.randint(20, 100)}
-        #                     for j in range(kwargs['population_size'])] for i in range(kwargs['population_number'])]
+
         self.pop_size = int(kwargs['population_size'])
-        self.populations = [[{'tl' : np.random.uniform(0, 1, (4, 4)).tolist(), 
-                              's': np.random.randint(kwargs['speed_limit']*0.75, kwargs['speed_limit']*1.15)}
-                            for j in range(self.pop_size)] 
-                            for i in range(int(kwargs['population_number']))]
+        self.populations = [[{'tl' : None, 
+                              's': None}
+                              for j in range(self.pop_size)] 
+                              for i in range(int(kwargs['population_number']))]
+
+        if self.traffic_light_optimization:
+            for i in range(len(self.populations)):
+                for j in range(self.pop_size):
+                    self.populations[i][j]['tl'] = np.random.uniform(0, 1, (4, 4)).tolist()
+        else:
+            for i in range(len(self.populations)):
+                for j in range(self.pop_size):
+                    self.populations[i][j]['tl'] = copy.deepcopy(kwargs['traffic_lights'])
+
+        if self.speed_limit_optimization:
+            for i in range(len(self.populations)):
+                for j in range(self.pop_size):
+                    self.populations[i][j]['s'] = np.random.uniform(0.75, 1.15) * kwargs['speed_limit']
+        else:
+            for i in range(len(self.populations)):
+                for j in range(self.pop_size):
+                    self.populations[i][j]['s'] = kwargs['speed_limit']
+
         self.mutation_prob = kwargs['mutation_probability']
         self.crossover_prob = kwargs['crossover_probability']
         self.elite_num = int(self.pop_size*kwargs['elite_part'])
@@ -129,13 +146,25 @@ class GeneticAlgorithm(OptimisationAlgorithm):
 
     # returns child unit, which inherits parameters from its two parents
     # each parameter has equal probability of being inherited from parent1 or parent2
-    def crossover(self, parent1, parent2, speed_limit_optimization=True, traffic_light_optimization=True):
+    def crossover(self, parent1, parent2):
         child = {}
+
+        # if speed limit is not optimised, child will always have same speed limit as all other units
+        # if it is optimised, one of the parents values is chosen with equal probability
         child['s'] = parent1['s'] if np.random.uniform(0, 1) < 0.5 else parent2['s']
-        child_tl = []
-        for i in range(len(parent1['tl'])):
-            child_tl.append(parent1['tl'][i].copy() if np.random.uniform(0, 1) < 0.5 else parent2['tl'][i].copy())
-        child['tl'] = child_tl
+
+        if self.traffic_light_optimization:
+            # if traffic light cycles are optimised, take parameters for each traffic light
+            # from the corresponding traffic light of randomy chosen parent 
+            child_tl = []
+            for i in range(len(parent1['tl'])):
+                child_tl.append(parent1['tl'][i].copy() if np.random.uniform(0, 1) < 0.5 else parent2['tl'][i].copy())
+            child['tl'] = child_tl
+        else:
+            # if traffic light cycles are not optimised, 
+            # just copy traffic light parameters from one of the parents to speed up the crossover
+            child['tl'] = copy.deepcopy(parent1['tl'])
+
         return child
 
     # updates champion(global best unit)

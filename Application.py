@@ -127,7 +127,7 @@ if __name__=='__main__':
                               elite_part=elite_part, 
                               population_size=population_size, 
                               traffic_lights=light_cycles, 
-                              speed_limit=speed_limit, 
+                              speed_limit=kilometers_per_hour_to_pixels(speed_limit), 
                               crossover_probability=crossover_probability, 
                               mutation_probability=mutation_probability, 
                               population_number=population_number,

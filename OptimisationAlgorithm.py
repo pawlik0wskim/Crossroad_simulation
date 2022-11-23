@@ -14,7 +14,7 @@ class OptimisationAlgorithm:
         pass
     #Returns randomly changed input parameters
     def mutate(self, speed_limit, light_cycles):
-        new_speed_limit, new_light_cycles = deepcopy(speed_limit), deepcopy(light_cycles)
+        new_speed_limit, new_light_cycles = speed_limit, deepcopy(light_cycles)
         p = np.random.rand()
         parameter_number = len(light_cycles[0])*len(light_cycles)+1
         if ( p<1/parameter_number or 1-self.traffic_light_optimization) and self.speed_limit_optimization:
