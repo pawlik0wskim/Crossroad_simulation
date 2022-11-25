@@ -26,7 +26,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         if self.speed_limit_optimization:
             for i in range(len(self.populations)):
                 for j in range(self.pop_size):
-                    self.populations[i][j]['s'] = np.random.uniform(0.75, 1.15) * kwargs['speed_limit']
+                    self.populations[i][j]['s'] = np.random.uniform(0.5, 1.5) * kwargs['speed_limit']
         else:
             for i in range(len(self.populations)):
                 for j in range(self.pop_size):
@@ -36,6 +36,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         self.crossover_prob = kwargs['crossover_probability']
         self.elite_num = int(self.pop_size*kwargs['elite_part'])
         self.migration_num = int(self.pop_size*kwargs['migration_part'])
+        self.migration_freq = 10
         self.champ = None
         # global best unit score
         self.champ_cost = np.Inf
@@ -64,7 +65,10 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 print('---------------------------------')
 
             # migration of top units to next population
-            if len(self.populations) > 1:
+            # perform migration only if there is more than one population
+            # migration frequency is defined with self.migration_freq
+            if len(self.populations) > 1 and i % self.migration_freq == 0:
+                print('Migration!')
                 for j in range(len(self.populations)):
                     if j < len(self.populations) - 1:
                         outgoing_pop, ingoing_pop = j, j+1
