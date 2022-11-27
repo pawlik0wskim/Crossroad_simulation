@@ -2,6 +2,7 @@ from OptimisationAlgorithm import OptimisationAlgorithm
 import numpy as np
 from utilities import pixels_to_kmh
 import copy
+import json
 
 class GeneticAlgorithm(OptimisationAlgorithm):
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, **kwargs):
@@ -87,6 +88,13 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             for pop, pop_costs in zip(self.populations, costs):
                 new_populations.append(self.generate_new_population(pop, pop_costs))
             self.populations = new_populations
+        
+        for i in range(len(self.champions)):
+            self.champions[i]['stats'] = self.champions_stats[i]
+        with open('champions.json', 'w') as fp:
+            json.dump(self.champions, fp)
+            fp.close()
+
 
     # calculates values of cost function for all units in all populations
     # returns 2d list, which has same dimensions as self.populations,
