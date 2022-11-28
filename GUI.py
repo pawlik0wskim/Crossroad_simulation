@@ -288,15 +288,8 @@ def run_gui():
     # Adjust size
     root.geometry("1072x603")
     #Adding few empty rodes to improve visual effect of GUI
-    add_empty_line(0)
-    add_empty_line(3)
-    add_empty_line(8)
-    add_empty_line(10)
-    add_empty_line(12)
-    add_empty_line(13)
-    add_empty_line(15)
-    add_empty_line(17)
-    add_empty_line(20)
+    for line in [0, 3, 8, 10, 12, 13, 15, 17, 20]:
+        add_empty_line(line)
     
     
     gui = GUI()
