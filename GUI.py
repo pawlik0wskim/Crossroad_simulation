@@ -12,6 +12,7 @@ class TraficLigthsWidget:
     def __init__(self, x, y, width = 180, starting_light = "Red", starting_row = 4):
         self.x, self.y = x, y
         self.width = width
+        self.starting_light = starting_light
         self.starting_row = starting_row
         self.generate_lights_sliders(starting_light=starting_light)
         
@@ -83,7 +84,8 @@ class TraficLigthsWidget:
                 elif fl<1/2*(i//2):
                     self.entries[i] = self.generate_entry(f">{1/2*(i//2)}", i+6)
                 elif i ==len(self.entries)-1:
-                    self.generate_lights_sliders( values = [float(self.entries[0].entry.get()), float(self.entries[1].entry.get())], values2 = [float(self.entries[2].entry.get()), float(self.entries[3].entry.get())])
+                    color = self.starting_light
+                    self.generate_lights_sliders( values = [float(self.entries[0].entry.get()), float(self.entries[1].entry.get())], values2 = [float(self.entries[2].entry.get()), float(self.entries[3].entry.get())], starting_light=color)
             except ValueError:
                 if i!=3 or 1-isinstance(fl, float):
                     self.entries[i].placeholder_text = self.sliders[i//2].getValues()[i%2]
@@ -100,7 +102,7 @@ class TraficLigthsWidget:
 
 #Class representing entry field and label for all variables that are singular int, float value
 class EntryVariable:
-    def __init__(self, row, col, text, value = "placeholder", type =int, entry_type="entry"):
+    def __init__(self, row, col, text, value = "placeholder", type =int, entry_type="entry", command=None, variable=None):
         self.label = customtkinter.CTkLabel(root, text=text)
         self.label.grid(column=col, row= row, columnspan = 4)
         self.entry_type = entry_type
@@ -110,7 +112,7 @@ class EntryVariable:
             self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=value, validatecommand=vcmd, validate = "key")
             self.entry.grid(column=col+4, row= row, columnspan = 1)
         elif entry_type=="check_box":
-            self.entry = customtkinter.CTkCheckBox(width=Width/3, text="")
+            self.entry = customtkinter.CTkCheckBox(width=Width/3, text="", command=command, variable=variable)
             self.entry.grid(column=col+4, row= row, columnspan = 1)
             self.entry.select()
         
@@ -151,6 +153,8 @@ class EntryVariable:
 class GUI:
     def __init__(self):
         self.lights = [TraficLigthsWidget(30,30+150*i, starting_light = "Red") if i>1 else TraficLigthsWidget(30,30+150*i, starting_light = "Green") for i in range(4)]
+        self.traffic_lights_optimisation = IntVar()
+        self.speed_limit_optimisation = IntVar()
         self.main_modules =  self.generate_main_modules()     
         self.annealing_modules = self.generate_annealing_modules() 
         self.genetic_modules = self.generate_genetic_modules()
@@ -195,8 +199,8 @@ class GUI:
     #Generates entry fields common for all optimization modes  
     def generate_common_optimization_modules(self):
         iterations_variable = EntryVariable(14,1,"Number of iterations: ","100")
-        speed_check_variale = EntryVariable(14,7,"Speed limit optimization: ","0.2", float, "check_box")
-        light_check_variale = EntryVariable(14,13,"Traffic light optimization: ","0.2", float, "check_box")
+        speed_check_variale = EntryVariable(14,7,"Speed limit optimization: ","0.2", float, "check_box", command=self.__toggle_checkboxes, variable=self.speed_limit_optimisation)
+        light_check_variale = EntryVariable(14,13,"Traffic light optimization: ","0.2", float, "check_box", command=self.__toggle_checkboxes, variable=self.traffic_lights_optimisation)
         common_modules = [iterations_variable, speed_check_variale, light_check_variale]
         return common_modules
 
@@ -248,7 +252,17 @@ class GUI:
             print(module.get_values())
         if all(self.values):
             root.destroy()
-        
+            
+            
+    def __toggle_checkboxes(self):
+        if not self.speed_limit_optimisation.get():
+         self.common_optimization_modules[2].entry.configure(state=DISABLED)
+        if self.speed_limit_optimisation.get():
+            self.common_optimization_modules[2].entry.configure(state=NORMAL)
+        if not self.traffic_lights_optimisation.get():
+            self.common_optimization_modules[1].entry.configure(state=DISABLED)
+        if self.traffic_lights_optimisation.get():
+            self.common_optimization_modules[1].entry.configure(state=NORMAL)  
 #Function addinng empty line to GUI(used to improve visual layer of the application)
 def add_empty_line(row):
     l0 = tk.Label(root, bg=BG_COLOR)
