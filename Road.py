@@ -2,12 +2,10 @@ import pygame
 import numpy as np
 from Node import Node
 from utilities import l2_dist
-from os.path import join
-from utilities import ROAD_COLOR, NODE_COLOR, dir
+from utilities import ROAD_COLOR, NODE_COLOR, images_dir
 
 eps = 10**(-5)
 light_color_dict = {3:"yellow",2:"red", 1:"yellow", 0:"green"}
-
 class Road:
     def __init__(self, start_node, end_node, type, curve = None, light = False, light_cycle = [0.25, 0.4, 0.85, 0.9]):
         self.start_node = start_node
@@ -49,7 +47,7 @@ class Road:
         if self.type=="straight" and self.light:
             color = light_color_dict[self.light_color]+"_light.png"
             WIDTH,HEIGHT = win.get_size()
-            image = pygame.transform.scale(pygame.image.load(join(dir , color)).convert_alpha(),(WIDTH//45,HEIGHT//15))
+            image = pygame.transform.scale(pygame.image.load(images_dir + color).convert_alpha(),(WIDTH//45,HEIGHT//15))
             position = (self.end_node.pos[0]+self.direction[1]*WIDTH//12,self.end_node.pos[1]-self.direction[0]*HEIGHT//12)
             rect = image.get_rect(center=position)
             win.blit(image, rect)

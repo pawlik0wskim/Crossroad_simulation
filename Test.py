@@ -1,5 +1,5 @@
 import unittest
-from Map import *
+from Controller import *
 from utilities import *
 from Car import *
 from Node import Node

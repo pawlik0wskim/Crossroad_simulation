@@ -15,6 +15,7 @@ class TraficLigthsWidget:
         self.starting_row = starting_row
         self.generate_lights_sliders(starting_light=starting_light)
         
+        self.entries = False
         #Add and place text entry widgets
         self.entries = [self.generate_entry(int(self.sliders[i//2].getValues()[i-i//2*2]*100)/100, i+6) for i in range(4)]
             
@@ -44,10 +45,30 @@ class TraficLigthsWidget:
             #sliders[i].place(x=self.x+self.width*(i+1.4),y=self.y)
             sliders[i].grid(row = self.starting_row + (self.y-30)//150, column = 13+i*4, columnspan = 4)
         self.sliders = sliders
-    
+        
+    #Function validating inputs provided by the user   
+    def validate_function(self, val, col):
+        if len(val)>1:
+            i=col-6
+            try:
+                fl = float(val)
+                if self.entries:
+                    if fl>1/2*(1+(col-6)//2):
+                        self.entries[i].placeholder_text = f"<{1/2*(1+i//2)}"
+                        self.entries[i].delete(0,END)
+                    elif fl<1/2*((col-6)//2) and (len(val)>2 or col==6):
+                        self.entries[i].placeholder_text = f">{1/2*(i//2)}"
+                        self.entries[i].delete(0,END)  
+                return True
+            except ValueError:
+                return False
+        return False
+        
     #Method creating entry field in selected column with determined placeholder value
     def generate_entry(self, place_holder, col) :
-        entry = customtkinter.CTkEntry(width=self.width/4.5,placeholder_text=place_holder)
+        vcmd  = (root.register(lambda val: self.validate_function(val,col)),"%P")
+        entry = customtkinter.CTkEntry(width=self.width/4.5,placeholder_text=place_holder, validatecommand=vcmd, validate = "key")
+        
         entry.grid(row = self.starting_row + (self.y-30)//150, column = col)
         return entry
            
@@ -65,7 +86,8 @@ class TraficLigthsWidget:
                     self.generate_lights_sliders( values = [float(self.entries[0].entry.get()), float(self.entries[1].entry.get())], values2 = [float(self.entries[2].entry.get()), float(self.entries[3].entry.get())])
             except ValueError:
                 if i!=3 or 1-isinstance(fl, float):
-                    self.entries[i] = self.generate_entry("float", i+6)
+                    self.entries[i].placeholder_text = self.sliders[i//2].getValues()[i%2]
+                    self.entries[i].delete(0,END)
                     
     #Returns light cycle of traffic light        
     def get_values(self):
@@ -82,14 +104,16 @@ class EntryVariable:
         self.label = customtkinter.CTkLabel(root, text=text)
         self.label.grid(column=col, row= row, columnspan = 4)
         self.entry_type = entry_type
+        self.type = type
         if entry_type == "entry":
-            self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=value)
+            vcmd  = (root.register(lambda val: self.validate_function(val)),"%P")
+            self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=value, validatecommand=vcmd, validate = "key")
             self.entry.grid(column=col+4, row= row, columnspan = 1)
         elif entry_type=="check_box":
             self.entry = customtkinter.CTkCheckBox(width=Width/3, text="")
             self.entry.grid(column=col+4, row= row, columnspan = 1)
             self.entry.select()
-        self.type = type
+        
         self.row = row
         self.col = col
         self.type_name = "int" if type == int else "float"
@@ -110,6 +134,18 @@ class EntryVariable:
             self.entry.grid(column=self.col+4, row= self.row, columnspan = 1)
             fl = False
         return fl
+    
+    #Function validating inputs provided by the user   
+    def validate_function(self, val):
+        try:
+            fl = self.type(val)
+            if (fl>1 or fl<0) and self.type == float:
+                self.entry.placeholder_text = "<0,1>"
+                self.entry.delete(0,END)
+                
+            return True
+        except ValueError:
+            return False
     
 #Main class of Graphical User Interface        
 class GUI:
@@ -254,11 +290,11 @@ def run_gui():
     if gui.values!=None:
         values = gui.values[:4] + [float(value) for value in gui.values[4:]]
         mode = gui.drop_menu.current_value
-        speed_limit, simulation_length, frames_per_car, left_prob , right_prob, light_cycle_time, number_of_iterations, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = values[4:]
+        speed_limit, simulation_length, frames_per_car, left_prob , right_prob, light_cycle_time, number_of_iterations, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = values[4:]
         light_cycles = [values[i]for i in range(4)]
         speed_limit_optimization-=1
         traffic_light_optimization-=1
-        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
+        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
     return None
     
 

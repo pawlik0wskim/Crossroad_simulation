@@ -3,21 +3,19 @@ import numpy as np
 from utilities import *
 import cv2
 
-
-dir = r""
 class Car:
     def __init__(self, position, angle, WIDTH, HEIGHT, speed_limit, acceleration_exponent):
         global unit
         w, h = WIDTH//30, HEIGHT//11
         rand = np.random.rand()
         if rand < 1/4:
-            image = cv2.imread(dir + 'car_black.png', cv2.IMREAD_UNCHANGED)
+            image = cv2.imread(images_dir + 'car_black.png', cv2.IMREAD_UNCHANGED)
         elif rand < 2/4:
-            image = cv2.imread(dir + 'car_red.png', cv2.IMREAD_UNCHANGED)
+            image = cv2.imread(images_dir + 'car_red.png', cv2.IMREAD_UNCHANGED)
         elif rand < 3/4:
-            image = cv2.imread(dir + 'car_green.png', cv2.IMREAD_UNCHANGED)
+            image = cv2.imread(images_dir + 'car_green.png', cv2.IMREAD_UNCHANGED)
         else:
-            image = cv2.imread(dir + 'car_yellow.png', cv2.IMREAD_UNCHANGED)
+            image = cv2.imread(images_dir + 'car_yellow.png', cv2.IMREAD_UNCHANGED)
 
         self.img = cv2.resize(image, (w, h), interpolation=cv2.INTER_LINEAR)
         
