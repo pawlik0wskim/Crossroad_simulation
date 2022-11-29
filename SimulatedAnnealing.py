@@ -1,4 +1,4 @@
-from OptimisationAlgorithm import OptimisationAlgorithm as oa
+from OptimizationAlgorithm import OptimizationAlgorithm as oa
 from utilities import *
 import numpy as np
 import time

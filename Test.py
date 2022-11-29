@@ -4,7 +4,7 @@ from utilities import *
 from Car import *
 from Node import Node
 from Application import *
-from OptimisationAlgorithm import OptimizationAlgorithm
+from OptimizationAlgorithm import OptimizationAlgorithm
 from copy import copy
 
 zero = 10**(-100)

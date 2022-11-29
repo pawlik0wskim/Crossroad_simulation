@@ -1,10 +1,10 @@
-from OptimisationAlgorithm import OptimisationAlgorithm
+from OptimizationAlgorithm import OptimizationAlgorithm
 import numpy as np
 from utilities import cost_function, pixels_to_kmh
 import copy
 from utilities import pixels_to_kmh
 
-class GeneticAlgorithm(OptimisationAlgorithm):
+class GeneticAlgorithm(OptimizationAlgorithm):
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, **kwargs):
         super().__init__(iterations, simulation_length, speed_limit_optimization, traffic_light_optimization)
         # self.populations = [[{'tl' : kwargs['traffic_lights'] if kwargs['traffic_lights'] is not None else np.random.uniform(0, 1, (4, 4)), 
