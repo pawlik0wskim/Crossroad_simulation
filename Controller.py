@@ -1,5 +1,5 @@
 import pygame
-from Road import Road
+from Segment import Segment
 import numpy as np
 from Car import Car
 from Node import Node
@@ -161,31 +161,31 @@ def generate_crossroad(WIDTH, HEIGHT):
 
     roads = []
     #Vertical
-    roads.append(Road(node1, node3, "straight", light = True, light_cycle = light_cycle))#top
-    roads.append(Road(node4, node2, "straight"))
-    roads.append(Road(node5, node7, "straight"))#bottom
-    roads.append(Road(node8, node6, "straight", light = True, light_cycle = light_cycle))
+    roads.append(Segment(node1, node3, "straight", light = True, light_cycle = light_cycle))#top
+    roads.append(Segment(node4, node2, "straight"))
+    roads.append(Segment(node5, node7, "straight"))#bottom
+    roads.append(Segment(node8, node6, "straight", light = True, light_cycle = light_cycle))
     #Horrizontal
-    roads.append(Road(node11, node15, "straight"))#left
-    roads.append(Road(node16, node12, "straight", light = True, light_cycle = light_cycle))
-    roads.append(Road(node13, node9, "straight", light = True, light_cycle = light_cycle))#right
-    roads.append(Road(node10, node14, "straight"))
+    roads.append(Segment(node11, node15, "straight"))#left
+    roads.append(Segment(node16, node12, "straight", light = True, light_cycle = light_cycle))
+    roads.append(Segment(node13, node9, "straight", light = True, light_cycle = light_cycle))#right
+    roads.append(Segment(node10, node14, "straight"))
     #Bottom turns
-    roads.append(Road(node6,node10, type = "arc", curve = "right"))
-    roads.append(Road(node6,node11, type = "arc", curve = "left"))
-    roads.append(Road(node6,node4, "straight"))
+    roads.append(Segment(node6,node10, type = "arc", curve = "right"))
+    roads.append(Segment(node6,node11, type = "arc", curve = "left"))
+    roads.append(Segment(node6,node4, "straight"))
     #Left turns
-    roads.append(Road(node12,node5, type = "arc", curve = "right"))
-    roads.append(Road(node12,node4, type = "arc", curve = "left"))
-    roads.append(Road(node12,node10, "straight"))
+    roads.append(Segment(node12,node5, type = "arc", curve = "right"))
+    roads.append(Segment(node12,node4, type = "arc", curve = "left"))
+    roads.append(Segment(node12,node10, "straight"))
     #Top turns
-    roads.append(Road(node3,node11, type = "arc", curve = "right"))
-    roads.append(Road(node3,node10, type = "arc", curve = "left"))
-    roads.append(Road(node3,node5, "straight"))
+    roads.append(Segment(node3,node11, type = "arc", curve = "right"))
+    roads.append(Segment(node3,node10, type = "arc", curve = "left"))
+    roads.append(Segment(node3,node5, "straight"))
     #Right turns
-    roads.append(Road(node9,node4, type = "arc", curve = "right"))
-    roads.append(Road(node9,node5, type = "arc", curve = "left"))
-    roads.append(Road(node9,node11, "straight"))
+    roads.append(Segment(node9,node4, type = "arc", curve = "right"))
+    roads.append(Segment(node9,node5, type = "arc", curve = "left"))
+    roads.append(Segment(node9,node11, "straight"))
     return Controller(roads, [ node1, node8, node13, node16]) 
 
 
@@ -201,12 +201,12 @@ def generate_one_straight_one_left_turn(WIDTH, HEIGHT):
     node14 = Node((WIDTH*20/24, HEIGHT*13/24))    
 
     roads = []
-    roads.append(Road(node1, node3, "straight"))
-    roads.append(Road(node4, node2, "straight"))
-    roads.append(Road(node8, node6, "straight"))
-    roads.append(Road(node10, node14, "straight"))
-    roads.append(Road(node6,node4, "straight"))
-    roads.append(Road(node3,node10, type = "arc", curve = "left"))
+    roads.append(Segment(node1, node3, "straight"))
+    roads.append(Segment(node4, node2, "straight"))
+    roads.append(Segment(node8, node6, "straight"))
+    roads.append(Segment(node10, node14, "straight"))
+    roads.append(Segment(node6,node4, "straight"))
+    roads.append(Segment(node3,node10, type = "arc", curve = "left"))
     return Controller(roads, [node1, node8]) 
 
 
@@ -222,9 +222,9 @@ def generate_test_map(WIDTH, HEIGHT, lights):
     
     roads = []
     #Vertical
-    roads.append(Road(node1, node2, "straight", light = lights))
-    roads.append(Road(node2,node3, "straight"))
-    roads.append(Road(node3, node4, "straight"))
+    roads.append(Segment(node1, node2, "straight", light = lights))
+    roads.append(Segment(node2,node3, "straight"))
+    roads.append(Segment(node3, node4, "straight"))
     
 
     return Controller(roads, [node1])
@@ -246,36 +246,36 @@ def generate_test_map(WIDTH, HEIGHT, lights):
 # def generate_roundabout(WIDTH, HEIGHT):
 #     roads = []
 #     #Vertical
-#     roads.append(Road((7/13*WIDTH, HEIGHT*2/13),(7/13*WIDTH, 0), "straight"))#top
-#     roads.append(Road((6/13*WIDTH, 0),(6/13*WIDTH, HEIGHT*2/13), "straight"))
-#     roads.append(Road((7/13*WIDTH, HEIGHT),(7/13*WIDTH, HEIGHT*11/13), "straight"))#bottom
-#     roads.append(Road((6/13*WIDTH, HEIGHT*11/13),(6/13*WIDTH, HEIGHT), "straight"))
+#     roads.append(Segment((7/13*WIDTH, HEIGHT*2/13),(7/13*WIDTH, 0), "straight"))#top
+#     roads.append(Segment((6/13*WIDTH, 0),(6/13*WIDTH, HEIGHT*2/13), "straight"))
+#     roads.append(Segment((7/13*WIDTH, HEIGHT),(7/13*WIDTH, HEIGHT*11/13), "straight"))#bottom
+#     roads.append(Segment((6/13*WIDTH, HEIGHT*11/13),(6/13*WIDTH, HEIGHT), "straight"))
 #     #Horrizontal
-#     roads.append(Road((0, HEIGHT*7/13),(WIDTH*2/13, HEIGHT*7/13), "straight"))#left
-#     roads.append(Road((WIDTH*2/13, HEIGHT*6/13),(0, HEIGHT*6/13), "straight"))
-#     roads.append(Road((WIDTH*11/13, HEIGHT*7/13),(WIDTH, HEIGHT*7/13), "straight"))#right
-#     roads.append(Road((WIDTH, HEIGHT*6/13),(WIDTH*11/13, HEIGHT*6/13), "straight"))
+#     roads.append(Segment((0, HEIGHT*7/13),(WIDTH*2/13, HEIGHT*7/13), "straight"))#left
+#     roads.append(Segment((WIDTH*2/13, HEIGHT*6/13),(0, HEIGHT*6/13), "straight"))
+#     roads.append(Segment((WIDTH*11/13, HEIGHT*7/13),(WIDTH, HEIGHT*7/13), "straight"))#right
+#     roads.append(Segment((WIDTH, HEIGHT*6/13),(WIDTH*11/13, HEIGHT*6/13), "straight"))
 #     #Entering roundabout
 #     #Vertical
-#     roads.append(Road((7/13*WIDTH, HEIGHT*2/13),(8/13*WIDTH, HEIGHT*3/13), "arc", "left"))#top
-#     roads.append(Road((6/13*WIDTH, HEIGHT*2/13),(5/13*WIDTH, HEIGHT*3/13), "arc", "right"))
-#     roads.append(Road((7/13*WIDTH, HEIGHT*11/13),(8/13*WIDTH, HEIGHT*10/13), "arc", "right"))#bottom
-#     roads.append(Road((6/13*WIDTH, HEIGHT*11/13),(5/13*WIDTH, HEIGHT*10/13), "arc", "left"))
+#     roads.append(Segment((7/13*WIDTH, HEIGHT*2/13),(8/13*WIDTH, HEIGHT*3/13), "arc", "left"))#top
+#     roads.append(Segment((6/13*WIDTH, HEIGHT*2/13),(5/13*WIDTH, HEIGHT*3/13), "arc", "right"))
+#     roads.append(Segment((7/13*WIDTH, HEIGHT*11/13),(8/13*WIDTH, HEIGHT*10/13), "arc", "right"))#bottom
+#     roads.append(Segment((6/13*WIDTH, HEIGHT*11/13),(5/13*WIDTH, HEIGHT*10/13), "arc", "left"))
 #     #Horrizontal
-#     roads.append(Road((WIDTH*2/13, HEIGHT*7/13),(WIDTH*3/13, HEIGHT*8/13), "arc", "right"))#left
-#     roads.append(Road((WIDTH*2/13, HEIGHT*6/13),(WIDTH*3/13, HEIGHT*5/13), "arc", "left"))
-#     roads.append(Road((WIDTH*11/13, HEIGHT*7/13),(WIDTH*10/13, HEIGHT*8/13), "arc", "left"))#right
-#     roads.append(Road((WIDTH*11/13, HEIGHT*6/13),(WIDTH*10/13, HEIGHT*5/13), "arc", "right"))
+#     roads.append(Segment((WIDTH*2/13, HEIGHT*7/13),(WIDTH*3/13, HEIGHT*8/13), "arc", "right"))#left
+#     roads.append(Segment((WIDTH*2/13, HEIGHT*6/13),(WIDTH*3/13, HEIGHT*5/13), "arc", "left"))
+#     roads.append(Segment((WIDTH*11/13, HEIGHT*7/13),(WIDTH*10/13, HEIGHT*8/13), "arc", "left"))#right
+#     roads.append(Segment((WIDTH*11/13, HEIGHT*6/13),(WIDTH*10/13, HEIGHT*5/13), "arc", "right"))
     
 #     #####Roundobout
 #     #Straight
-#     roads.append(Road((8/13*WIDTH, HEIGHT*3/13),(5/13*WIDTH, HEIGHT*3/13), "straight"))
-#     roads.append(Road((5/13*WIDTH, HEIGHT*10/13),(8/13*WIDTH, HEIGHT*10/13), "straight"))
-#     roads.append(Road((WIDTH*3/13, HEIGHT*5/13),(WIDTH*3/13, HEIGHT*8/13), "straight"))
-#     roads.append(Road((WIDTH*10/13, HEIGHT*8/13),(WIDTH*10/13, HEIGHT*5/13), "straight"))
+#     roads.append(Segment((8/13*WIDTH, HEIGHT*3/13),(5/13*WIDTH, HEIGHT*3/13), "straight"))
+#     roads.append(Segment((5/13*WIDTH, HEIGHT*10/13),(8/13*WIDTH, HEIGHT*10/13), "straight"))
+#     roads.append(Segment((WIDTH*3/13, HEIGHT*5/13),(WIDTH*3/13, HEIGHT*8/13), "straight"))
+#     roads.append(Segment((WIDTH*10/13, HEIGHT*8/13),(WIDTH*10/13, HEIGHT*5/13), "straight"))
 #     #Arc
-#     roads.append(Road((5/13*WIDTH, HEIGHT*3/13),(WIDTH*3/13, HEIGHT*5/13), "arc", "left"))
-#     roads.append(Road((WIDTH*3/13, HEIGHT*8/13),(5/13*WIDTH, HEIGHT*10/13), "arc", "left"))
-#     roads.append(Road((8/13*WIDTH, HEIGHT*10/13),(WIDTH*10/13, HEIGHT*8/13), "arc", "left"))
-#     roads.append(Road((WIDTH*10/13, HEIGHT*5/13),(8/13*WIDTH, HEIGHT*3/13), "arc", "left"))
+#     roads.append(Segment((5/13*WIDTH, HEIGHT*3/13),(WIDTH*3/13, HEIGHT*5/13), "arc", "left"))
+#     roads.append(Segment((WIDTH*3/13, HEIGHT*8/13),(5/13*WIDTH, HEIGHT*10/13), "arc", "left"))
+#     roads.append(Segment((8/13*WIDTH, HEIGHT*10/13),(WIDTH*10/13, HEIGHT*8/13), "arc", "left"))
+#     roads.append(Segment((WIDTH*10/13, HEIGHT*5/13),(8/13*WIDTH, HEIGHT*3/13), "arc", "left"))
 #     return Map(roads)   

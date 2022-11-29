@@ -106,32 +106,34 @@ def save_to_csv(optimization_algorithm, type_, num_of_light_cycles = 4):
         
 if __name__=='__main__':
     
-    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization = run_gui()
-    acceleration_exponent = 4
-    app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
+    values = run_gui()
+    if values != None:
+        light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, Elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization  = values
+        acceleration_exponent = 4
+        app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
 
 
-    if mode == "visualisation":
-        Flow, Collisions, stopped, iteration= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
-        
-    if mode =="simulated annealing"  :  
-        app.set_traffic_lights(light_cycles)
-        sa = SimulatedAnnealing(number_of_iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate) 
-        sa.optimise(app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles})
-        save_to_csv(sa, mode)
-        
-    if mode == "genetic algorithm":
-        app.set_traffic_lights(light_cycles)
-        ga = GeneticAlgorithm(number_of_iterations, simulation_length, 
-                              speed_limit_optimization, traffic_light_optimization,
-                              elite_part=elite_part, 
-                              population_size=population_size, 
-                              traffic_lights=light_cycles, 
-                              speed_limit=speed_limit, 
-                              crossover_probability=crossover_probability, 
-                              mutation_probability=mutation_probability, 
-                              population_number=population_number,
-                              migration_part=migration_part) 
-        ga.optimise(app)
-        save_to_csv(ga, mode)
+        if mode == "visualisation":
+            Flow, Collisions, stopped, iteration= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
+            
+        if mode =="simulated annealing"  :  
+            app.set_traffic_lights(light_cycles)
+            sa = SimulatedAnnealing(number_of_iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate) 
+            sa.optimise(app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles})
+            save_to_csv(sa, mode)
+            
+        if mode == "genetic algorithm":
+            app.set_traffic_lights(light_cycles)
+            ga = GeneticAlgorithm(number_of_iterations, simulation_length, 
+                                speed_limit_optimization, traffic_light_optimization,
+                                elite_part=Elite_part, 
+                                population_size=population_size, 
+                                traffic_lights=light_cycles, 
+                                speed_limit=speed_limit, 
+                                crossover_probability=crossover_probability, 
+                                mutation_probability=mutation_probability, 
+                                population_number=population_number,
+                                migration_part=migration_part) 
+            ga.optimise(app)
+            save_to_csv(ga, mode)
 

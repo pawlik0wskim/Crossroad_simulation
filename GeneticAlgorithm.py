@@ -165,4 +165,4 @@ class GeneticAlgorithm(OptimisationAlgorithm):
 
 
 if __name__ == '__main__':
-    pass
+ pass

@@ -170,4 +170,6 @@ def test():  #rotation around the center of vehicle
         pygame.display.update()
         clock.tick(60)
         car.update_acceleration(car, 5)
-#test()
+        
+if __name__=="__main__":
+    test()

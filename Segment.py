@@ -6,14 +6,14 @@ from utilities import ROAD_COLOR, NODE_COLOR, images_dir
 
 eps = 10**(-5)
 light_color_dict = {3:"yellow",2:"red", 1:"yellow", 0:"green"}
-class Road:
+class Segment:
     def __init__(self, start_node, end_node, type, curve = None, light = False, light_cycle = [0.25, 0.4, 0.85, 0.9]):
         self.start_node = start_node
         self.end_node = end_node
         start_node.exiting_roads.append(self)
         end_node.entering_roads.append(self)
         if type not in ["arc", "straight"]: #two lines of code that will help with possible missspells during development 
-            print("Road can only be an arc or a straight line")
+            print("Segment can only be an arc or a straight line")
             return None
         
         if type == "arc":
@@ -189,40 +189,42 @@ def test():
                     pygame.quit()
                     exit()
         #right turn test
-        test_road = Road(Node((30,30)),Node((0,0)), "arc", "right")
+        test_road = Segment(Node((30,30)),Node((0,0)), "arc", "right")
         test_road.draw_path(win)
-        test_road2 = Road(Node((30,30)),Node((60,0)), "arc", "right")
+        test_road2 = Segment(Node((30,30)),Node((60,0)), "arc", "right")
         test_road2.draw_path(win)
-        test_road3 = Road(Node((30,30)),Node((60,60)), "arc", "right")
+        test_road3 = Segment(Node((30,30)),Node((60,60)), "arc", "right")
         test_road3.draw_path(win)
-        test_road4 = Road(Node((30,30)),Node((0,60)), "arc", "right")
+        test_road4 = Segment(Node((30,30)),Node((0,60)), "arc", "right")
         test_road4.draw_path(win)
         #left turn test
-        test_road5 = Road(Node((130,130)),Node((100,100)), "arc", "left")
+        test_road5 = Segment(Node((130,130)),Node((100,100)), "arc", "left")
         test_road5.draw_path(win)
-        test_road6 = Road(Node((130,130)),Node((160,100)), "arc", "left")
+        test_road6 = Segment(Node((130,130)),Node((160,100)), "arc", "left")
         test_road6.draw_path(win)
-        test_road7 = Road(Node((130,130)),Node((160,160)), "arc", "left")
+        test_road7 = Segment(Node((130,130)),Node((160,160)), "arc", "left")
         test_road7.draw_path(win)
-        test_road8 = Road(Node((130,130)),Node((100,160)), "arc", "left")
+        test_road8 = Segment(Node((130,130)),Node((100,160)), "arc", "left")
         test_road8.draw_path(win)
         #radius test
-        test_road6 = Road(Node((230,230)),Node((200,200)), "arc", "left")
+        test_road6 = Segment(Node((230,230)),Node((200,200)), "arc", "left")
         test_road6.draw_path(win)
-        test_road7 = Road(Node((230,230)),Node((210,210)), "arc", "left")
+        test_road7 = Segment(Node((230,230)),Node((210,210)), "arc", "left")
         test_road7.draw_path(win)
-        test_road8 = Road(Node((230,230)),Node((220,220)), "arc", "left")
+        test_road8 = Segment(Node((230,230)),Node((220,220)), "arc", "left")
         test_road8.draw_path(win)
         #straight road
-        test_road6 = Road(Node((300,230)),Node((300,200)), "straight", light = True)
+        test_road6 = Segment(Node((300,230)),Node((300,200)), "straight", light = True)
         test_road6.draw_path(win)
-        test_road7 = Road(Node((330,210)),Node((330,240)), "straight", light = True)
+        test_road7 = Segment(Node((330,210)),Node((330,240)), "straight", light = True)
         test_road7.draw_path(win)
-        test_road8 = Road(Node((330,200)),Node((360,200)), "straight", light = True)
+        test_road8 = Segment(Node((330,200)),Node((360,200)), "straight", light = True)
         test_road8.draw_path(win)
         test_road6.draw_traffic_light(win)
         test_road7.draw_traffic_light(win)
         test_road8.draw_traffic_light(win)
         pygame.display.update()
         clock.tick(60)
-#test()
+        
+if __name__=="__main__":
+    test()
