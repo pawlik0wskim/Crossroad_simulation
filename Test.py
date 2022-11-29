@@ -156,19 +156,19 @@ class Test(unittest.TestCase):
     #Test if crossover mechanism works correctly  
     def test_07_crossover(self):
         np.random.seed(123)
-        ga = GeneticAlgorithm(10, 1000, speed_limit_optimization=True, traffic_light_optimization=True, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
+        ga = GeneticAlgorithm(10, 1000, speed_limit_optimization=True, traffic_light_optimization=True, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2, speed_limit=10, crossover_probability=0.2, migration_part=0.1)
         parent1 = {'s': 10, 'tl': [[0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5]]}
         parent2 = {'s': 25, 'tl': [[0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9]]}
         child = ga.crossover(parent1, parent2)
         
         self.assertEqual(child['s'], 25)
-        expected_tl = [[0.0, 0.7, 0.3, 0.9], [0.2, 0.1, 0.8, 0.5], [0.0, 0.7, 0.3, 0.9], [0.2, 0.1, 0.8, 0.5]]
+        expected_tl = [[0.2, 0.1, 0.8, 0.5], [0.0, 0.7, 0.3, 0.9], [0.2, 0.1, 0.8, 0.5], [0.0, 0.7, 0.3, 0.9]]
         for i in range(4):
             self.assertEqual(child['tl'][i], expected_tl[i])
     
     #Test if elite number(number of organisms, which will be taken through selection without any changes) is calculated correctly
     def test_08_elite_num(self):
-        ga = GeneticAlgorithm(10, 1000, speed_limit_optimization=True, traffic_light_optimization=True, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2)
+        ga = GeneticAlgorithm(10, 1000, speed_limit_optimization=True, traffic_light_optimization=True, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2, speed_limit=10, crossover_probability=0.2, migration_part=0.1)
         self.assertEqual(ga.elite_num, int(0.3*10))
         
     #Test if mutation changes parameters
