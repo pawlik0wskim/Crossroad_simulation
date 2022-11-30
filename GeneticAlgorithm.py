@@ -3,6 +3,7 @@ import numpy as np
 from utilities import pixels_to_kmh
 import copy
 import json
+from csv import writer
 
 class GeneticAlgorithm(OptimisationAlgorithm):
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, **kwargs):
@@ -24,12 +25,15 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                     self.populations[i][j]['tl'] = copy.deepcopy(kwargs['traffic_lights'])
                 
                 if self.speed_limit_optimization:
-                    self.populations[i][j]['s'] = np.random.uniform(0.5, 1.5) * kwargs['speed_limit']
+                    self.populations[i][j]['s'] = np.random.uniform(0.8, 1.2) * kwargs['speed_limit']
                 else:
                     self.populations[i][j]['s'] = kwargs['speed_limit']
 
         self.mutation_prob = kwargs['mutation_probability']
         self.crossover_prob = kwargs['crossover_probability']
+
+        # number of simulation repetitions
+        self.simulation_repetitions = 3
 
         # how many top units pass selection unchaged
         self.elite_num = int(self.pop_size*kwargs['elite_part'])
@@ -47,10 +51,22 @@ class GeneticAlgorithm(OptimisationAlgorithm):
     
     def optimise(self, simulation):
 
+        cols = ["Main index", "Population", "Unit", "Small index", "Speed limit(km/h)"]
+        for i in range(len(self.populations[0][0]['tl'])):
+            for j in range(4):
+                cols+=[f"Traffic light {i}_{j}"]
+        cols +=["Flow", "Collisions", "Stopped", "Iterations"]
+        self.stats = [cols]
+        self.__save_stats()
+        self.stats = []
+
         for i in range(1, self.iterations+1):
 
             # calculate fitness of organisms in current populations
             costs = self.calculate_cost(simulation, i)
+
+            self.__save_stats()
+            self.stats = []
 
             # update champions
             self.__update_champions()
@@ -91,6 +107,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         
         for i in range(len(self.champions)):
             self.champions[i]['stats'] = self.champions_stats[i]
+            self.champions[i]['s'] = pixels_to_kmh(self.champions[i]['s'])
         with open('champions.json', 'w') as fp:
             json.dump(self.champions, fp)
             fp.close()
@@ -108,15 +125,17 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             for u, unit in enumerate(population):
                 Flow, Collisions = 0, 0
 
-                for j in range(3):
-                    f, c, iter, stopped = simulation.simulate(unit['s'], unit['tl'], sim=j, sim_max=3, it=iteration, iter_max=self.iterations )
+                for j in range(self.simulation_repetitions):
+                    f, c, stopped, iter = simulation.simulate(unit['s'], unit['tl'], 
+                                                              sim=j, sim_max=self.simulation_repetitions, 
+                                                              it=iteration, iter_max=self.iterations)
                     self.__append_stats(iteration, p, u, j, f, c, unit['s'], unit['tl'], stopped, iter)
                     simulation.reset_map()
                     Flow += f
                     Collisions += c
 
-                Flow /= 3
-                Collisions /= 3
+                Flow /= self.simulation_repetitions
+                Collisions /= self.simulation_repetitions
                 pop_stats.append([Flow, -Collisions])
                 self.__append_stats(iteration, p, u, None, Flow, Collisions, unit['s'], unit['tl'], None, None)
             
@@ -252,6 +271,14 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             stat += light
         stat += [ Flow, Collisions, stopped, iter_num]
         self.stats.append(stat)
+    
+    # saves statistics from self.stats to log file
+    def __save_stats(self):
+        with open('stats.csv', 'a') as f:
+            writer_object = writer(f, lineterminator='\n')
+            writer_object.writerows(self.stats)
+        
+            f.close()
 
 
 

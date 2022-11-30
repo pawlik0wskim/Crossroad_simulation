@@ -133,5 +133,4 @@ if __name__=='__main__':
                               population_number=population_number,
                               migration_part=migration_part) 
         ga.optimise(app)
-        save_to_csv(ga, mode)
 
