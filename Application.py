@@ -7,7 +7,10 @@ from GeneticAlgorithm import GeneticAlgorithm
 import pandas as pd
 from datetime import datetime
 import time
-
+from tkinter import END, NORMAL, DISABLED, messagebox
+from threading import Thread
+import sys
+from tkinter.ttk import Progressbar
 
 class Application:   
     def __init__(self, max_iter, frames_per_car, light_cycle_time, acceleration_exponent):
@@ -17,6 +20,7 @@ class Application:
         self.frames_per_car = frames_per_car
         self.light_cycle_time = light_cycle_time
         self.acceleration_exponent = acceleration_exponent
+        self.right_prob, self.left_prob = 0.3, 0.3
     
     #Method clears the intersection    
     def reset_map(self):
@@ -28,7 +32,7 @@ class Application:
             self.map.roads_with_lights[i].light_cycle = light_cycles[i]
     
     #Main method responsible for simulation        
-    def simulate(self, speed_limit, light_cycles, visualise = False, debug = False, sim=0,sim_max = 0, it=0, iter_max=0): 
+    def simulate(self, speed_limit, light_cycles, text=None, loading_bar=None, visualise = False, debug = False, sim=0,sim_max = 0, it=0, iter_max=0): 
         self.set_traffic_lights( light_cycles)
 
         Collisions = 0
@@ -48,8 +52,9 @@ class Application:
         FPS_counter = 0
         
         while(True):
-            bar="-"*int(40*i/self.max_iter)+"_"*int(40*(self.max_iter-i)/self.max_iter)
-            print(f'_____Iteration: [{it}/{iter_max}]_______Simulation: {sim}/{sim_max}_______[{bar}]_{int(100*i/self.max_iter)}%__', end='\r')
+            # bar="-"*int(40*i/self.max_iter)+"_"*int(40*(self.max_iter-i)/self.max_iter)
+            # print(f'_____Iteration: [{it}/{iter_max}]_______Simulation: {sim}/{sim_max}_______[{bar}]_{int(100*i/self.max_iter)}%__', end='\r')
+            loading_bar['value'] = int(100*i/self.max_iter)
             iter_start_time = time.time()
             i+=1
             
@@ -62,11 +67,11 @@ class Application:
                     car.update_vision(road.direction, road.type, road.curve)
                     self.map.process_car_neighborhood(car, road)
 
-            if i%frames_per_car == 0:
+            if i%self.frames_per_car == 0:
                 self.map.spawn_car(speed_limit, self.acceleration_exponent)
             
-            self.map.update_traffic_lights(i, light_cycle_time)
-            Flow+=self.map.move_cars( right_prob, left_prob)
+            self.map.update_traffic_lights(i, self.light_cycle_time)
+            Flow+=self.map.move_cars( self.right_prob, self.left_prob)
             Collisions+=self.map.check_for_car_collision()
             if visualise:
                 pygame.display.update()
@@ -77,7 +82,7 @@ class Application:
             if i%600*FPS == 0:
                 if (iter_start_time-time.time())!=0:
                     FPS_counter = -1/(iter_start_time-time.time())
-                # print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions, i)}, FPS: {-1/(iter_start_time-time.time())}")
+                # print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions, i)}, FPS: {-1/(iter_start_time-time.time())}")    
                 if Flow == prev_flow:
                     stopped = True
                     iteration = i
@@ -88,7 +93,10 @@ class Application:
                 break
             iteration = i
             
-        print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions, i, stopped)}, FPS: {FPS_counter}, Stopped: {stopped}")    
+        # print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions, i, stopped)}, FPS: {FPS_counter}, Stopped: {stopped}")    
+        text.configure(state=NORMAL)
+        text.insert(END, f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions, i, stopped)}, FPS: {FPS_counter}, Stopped: {stopped}\n")
+        text.configure(state=DISABLED)
         return Flow, Collisions, stopped, iteration
 
 #Saves data from optimization algorithm to csv file
@@ -102,6 +110,32 @@ def save_to_csv(optimization_algorithm, type_, num_of_light_cycles = 4):
     df.columns = cols
     time_ = datetime.now().strftime("%H-%M-%S")
     df.to_csv(f"{time_}.csv", index=False)
+
+def run_progress_gui(oa, app):
+    def on_closing():
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            root.destroy()
+            sys.exit()
+
+    root = Tk()
+    # root.geometry("1000x400")
+    sim_progress = Progressbar(root, orient=HORIZONTAL, length=100, mode='determinate')
+    opt_progress = Progressbar(root, orient=HORIZONTAL, length=100, mode='determinate')
+    text = Text(root)
+    text.configure(state=DISABLED)
+    scrollbar = Scrollbar(root, orient='vertical', command=text.yview)
+    text['yscrollcommand'] = scrollbar.set
+
+
+    opt_progress.pack()
+    sim_progress.pack()
+    thread = Thread(target=oa.optimise, args=[app, text, opt_progress, sim_progress])
+    thread.daemon = True
+    root.after_idle(thread.start)
+    scrollbar.pack(side=RIGHT, fill=Y)
+    text.pack()
+    root.protocol("WM_DELETE_WINDOW", on_closing)
+    root.mainloop()
 
         
 if __name__=='__main__':
@@ -121,7 +155,6 @@ if __name__=='__main__':
         save_to_csv(sa, mode)
         
     if mode == "genetic algorithm":
-        app.set_traffic_lights(light_cycles)
         ga = GeneticAlgorithm(number_of_iterations, simulation_length, 
                               speed_limit_optimization, traffic_light_optimization,
                               elite_part=elite_part, 
@@ -132,5 +165,5 @@ if __name__=='__main__':
                               mutation_probability=mutation_probability, 
                               population_number=population_number,
                               migration_part=migration_part) 
-        ga.optimise(app)
+        run_progress_gui(ga, app)
 

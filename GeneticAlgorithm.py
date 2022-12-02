@@ -4,6 +4,7 @@ from utilities import pixels_to_kmh
 import copy
 import json
 from csv import writer
+from tkinter import NORMAL, DISABLED, END
 
 class GeneticAlgorithm(OptimisationAlgorithm):
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, **kwargs):
@@ -49,7 +50,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         # list of statistics(Flow, Collisions) of not dominated units
         self.champions_stats = []
     
-    def optimise(self, simulation):
+    def optimise(self, simulation, text=None, opt_progress=None, sim_progress=None):
 
         cols = ["Main index", "Population", "Unit", "Small index", "Speed limit(km/h)"]
         for i in range(len(self.populations[0][0]['tl'])):
@@ -63,19 +64,21 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         for i in range(1, self.iterations+1):
 
             # calculate fitness of organisms in current populations
-            costs = self.calculate_cost(simulation, i)
+            costs = self.calculate_cost(simulation, i, text, sim_progress)
 
             self.__save_stats()
             self.stats = []
 
             # update champions
             self.__update_champions()
-            print('------------------------------------')
-            print('Champions:')
+            text.configure(state=NORMAL)
+            text.insert(END, '------------------------------------\n')
+            text.insert(END, 'Champions:\n')
             for champ, stat in zip(self.champions, self.champions_stats):
-                print(champ)
-                print(stat)
-            print('------------------------------------')
+                text.insert(END, str(champ) + '\n')
+                text.insert(END, str(stat) + '\n')
+            text.insert(END, '------------------------------------\n')
+            text.configure(state=DISABLED)
 
             # sort organisms and their costs by values of costs
             for j in range(len(self.populations)):
@@ -104,6 +107,8 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             for pop, pop_costs in zip(self.populations, costs):
                 new_populations.append(self.generate_new_population(pop, pop_costs))
             self.populations = new_populations
+
+            opt_progress['value'] = int(100*i/self.iterations)
         
         for i in range(len(self.champions)):
             self.champions[i]['stats'] = self.champions_stats[i]
@@ -116,7 +121,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
     # calculates values of cost function for all units in all populations
     # returns 2d list, which has same dimensions as self.populations,
     # but contains costs of corresponding units
-    def calculate_cost(self, simulation, iteration):
+    def calculate_cost(self, simulation, iteration, text=None, sim_progress=None):
         costs = []
 
         for p, population in enumerate(self.populations):
@@ -128,7 +133,8 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 for j in range(self.simulation_repetitions):
                     f, c, stopped, iter = simulation.simulate(unit['s'], unit['tl'], 
                                                               sim=j, sim_max=self.simulation_repetitions, 
-                                                              it=iteration, iter_max=self.iterations)
+                                                              it=iteration, iter_max=self.iterations,
+                                                              text=text, loading_bar=sim_progress)
                     self.__append_stats(iteration, p, u, j, f, c, unit['s'], unit['tl'], stopped, iter)
                     simulation.reset_map()
                     Flow += f
@@ -183,7 +189,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
 
     # filters dominated champions out and leaves only not dominated ones and their statistics
     def __update_champions(self):
-        print(self.champions_stats)
+        # print(self.champions_stats)
         new_champions = []
         new_champions_stats = []
         for i in range(len(self.champions)):
