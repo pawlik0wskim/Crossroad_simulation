@@ -4,7 +4,8 @@ from  utilities import unit
 import customtkinter
 from RangeSlider import RangeSliderH 
 import tkinter as tk
-import tkinter
+import sys
+from tkinter import messagebox
 
 BG_COLOR = "#212325" 
 
@@ -231,13 +232,12 @@ def add_empty_line(row):
     l0 = tk.Label(root, bg=BG_COLOR)
     l0.grid(column=0, row=row, columnspan=21)
 
-    
-
-
+#function, which handles window closing
+def on_closing():
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            root.destroy()
+            sys.exit()
  
-
-   
-  
  #Main gui method    
 def run_gui():
     
@@ -250,6 +250,8 @@ def run_gui():
     Width =180
     # Adjust size
     root.geometry("1072x603")
+    # Add handling of window closing
+    root.protocol("WM_DELETE_WINDOW", on_closing)
     #Adding few empty rodes to improve visual effect of GUI
     add_empty_line(0)
     add_empty_line(3)

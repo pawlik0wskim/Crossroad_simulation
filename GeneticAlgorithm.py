@@ -25,7 +25,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                     self.populations[i][j]['tl'] = copy.deepcopy(kwargs['traffic_lights'])
                 
                 if self.speed_limit_optimization:
-                    self.populations[i][j]['s'] = np.random.uniform(0.8, 1.2) * kwargs['speed_limit']
+                    self.populations[i][j]['s'] = np.random.uniform(0.6, 1.4) * kwargs['speed_limit']
                 else:
                     self.populations[i][j]['s'] = kwargs['speed_limit']
 
