@@ -11,11 +11,12 @@ class SimulatedAnnealing(oa):
     
     
     
-    def optimise(self, simulation, initial_parameters):
+    def optimise(self, simulation, text, opt_progress, sim_progress, initial_parameters):
         start_time = time.time()
         speed_limit, light_cycles = initial_parameters["speed_limit"], initial_parameters["light_cycles"]
         print(f"Speed:  {pixels_to_kmh(speed_limit)} km/h / {speed_limit} pix")
-        Flow, Collisions, stopped, iteration = simulation.simulate(speed_limit, light_cycles) 
+        Flow, Collisions, stopped, iteration = simulation.simulate(speed_limit, light_cycles,
+                                                                   text=text, loading_bar=sim_progress) 
         simulation.reset_map()
         stat = [-1,0,pixels_to_kmh(speed_limit)]
         for light in light_cycles:
@@ -28,7 +29,10 @@ class SimulatedAnnealing(oa):
             Flow_mean, Collisions_mean = 0, 0
             print(f"Speed:  {pixels_to_kmh(new_speed_limit)} km/h / {new_speed_limit} pix")
             for j in range(3):
-                Flow, Collisions, stopped, iteration = simulation.simulate(new_speed_limit, new_light_cycles, sim = j, sim_max = 3, it=i, iter_max = self.iterations) 
+                Flow, Collisions, stopped, iteration = simulation.simulate(new_speed_limit, new_light_cycles, 
+                                                                           sim = j, sim_max = 3, 
+                                                                           it=i, iter_max = self.iterations,
+                                                                           text=text, loading_bar=sim_progress) 
                 simulation.reset_map()
                 Flow_mean, Collisions_mean = Flow_mean + Flow/3, Collisions_mean + Collisions/3
                 stat = [i,j,pixels_to_kmh(new_speed_limit)]
@@ -50,6 +54,7 @@ class SimulatedAnnealing(oa):
                 speed_limit, light_cycles = new_speed_limit, new_light_cycles 
                 print("______________________better______________________")
             self.temp *= self.cooling_rate
+            opt_progress['value'] = int(100*(i+1)/self.iterations)
         
         print(f"Best speed:  {pixels_to_kmh(speed_limit)} km/h / {speed_limit} pix")
         print(f"Best light cycles:  {light_cycles} ")

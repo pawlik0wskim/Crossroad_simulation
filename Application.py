@@ -13,14 +13,14 @@ import sys
 from tkinter.ttk import Progressbar
 
 class Application:   
-    def __init__(self, max_iter, frames_per_car, light_cycle_time, acceleration_exponent):
+    def __init__(self, max_iter, frames_per_car, light_cycle_time, acceleration_exponent, right_prob, left_prob):
         
         self.map = generate_crossroad(WIDTH, HEIGHT)
         self.max_iter = max_iter 
         self.frames_per_car = frames_per_car
         self.light_cycle_time = light_cycle_time
         self.acceleration_exponent = acceleration_exponent
-        self.right_prob, self.left_prob = 0.3, 0.3
+        self.right_prob, self.left_prob = right_prob, left_prob
     
     #Method clears the intersection    
     def reset_map(self):
@@ -52,9 +52,8 @@ class Application:
         FPS_counter = 0
         
         while(True):
-            # bar="-"*int(40*i/self.max_iter)+"_"*int(40*(self.max_iter-i)/self.max_iter)
-            # print(f'_____Iteration: [{it}/{iter_max}]_______Simulation: {sim}/{sim_max}_______[{bar}]_{int(100*i/self.max_iter)}%__', end='\r')
-            loading_bar['value'] = int(100*i/self.max_iter)
+            if loading_bar is not None:
+                loading_bar['value'] = int(100*i/self.max_iter)
             iter_start_time = time.time()
             i+=1
             
@@ -93,10 +92,11 @@ class Application:
                 break
             iteration = i
             
-        # print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions, i, stopped)}, FPS: {FPS_counter}, Stopped: {stopped}")    
-        text.configure(state=NORMAL)
-        text.insert(END, f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions, i, stopped)}, FPS: {FPS_counter}, Stopped: {stopped}\n")
-        text.configure(state=DISABLED)
+        if text is not None:
+            text.configure(state=NORMAL)
+            text.insert(END, f"Flow: {Flow}, Collisions: {Collisions}, Time: {(round(elapsed_time, 2))}, Cost: {round(cost_function(Flow, Collisions, i, stopped), 2)}, FPS: {round(FPS_counter, 2)}, Stopped: {stopped}\n")
+            text.configure(state=DISABLED)
+
         return Flow, Collisions, stopped, iteration
 
 #Saves data from optimization algorithm to csv file
@@ -111,29 +111,33 @@ def save_to_csv(optimization_algorithm, type_, num_of_light_cycles = 4):
     time_ = datetime.now().strftime("%H-%M-%S")
     df.to_csv(f"{time_}.csv", index=False)
 
-def run_progress_gui(oa, app):
+def run_progress_gui(oa, app, init_params=None):
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             root.destroy()
             sys.exit()
 
-    root = Tk()
-    # root.geometry("1000x400")
+    root = customtkinter.CTk()
+    root.geometry("1000x500")
     sim_progress = Progressbar(root, orient=HORIZONTAL, length=100, mode='determinate')
     opt_progress = Progressbar(root, orient=HORIZONTAL, length=100, mode='determinate')
-    text = Text(root)
+    text = Text(root, bg='#212325', fg='white')
     text.configure(state=DISABLED)
     scrollbar = Scrollbar(root, orient='vertical', command=text.yview)
+    scrollbar.place(relx=0.86, rely=0.2, relheight=0.71, anchor='ne')
     text['yscrollcommand'] = scrollbar.set
+    text.place(relx=0.2, rely=0.2)
 
 
-    opt_progress.pack()
-    sim_progress.pack()
-    thread = Thread(target=oa.optimise, args=[app, text, opt_progress, sim_progress])
+    opt_progress.place(relx=0.5, rely=0.05)
+    customtkinter.CTkLabel(text="Optimalisation progress: ").place(relx=0.35, rely=0.04)
+
+    sim_progress.place(relx=0.5, rely=0.1)
+    customtkinter.CTkLabel(text="Current simulation: ").place(relx=0.35, rely=0.09)
+
+    thread = Thread(target=oa.optimise, args=[app, text, opt_progress, sim_progress, init_params])
     thread.daemon = True
     root.after_idle(thread.start)
-    scrollbar.pack(side=RIGHT, fill=Y)
-    text.pack()
     root.protocol("WM_DELETE_WINDOW", on_closing)
     root.mainloop()
 
@@ -142,7 +146,7 @@ if __name__=='__main__':
     
     light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization = run_gui()
     acceleration_exponent = 4
-    app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent)
+    app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent, right_prob, left_prob)
 
 
     if mode == "visualisation":
@@ -151,7 +155,8 @@ if __name__=='__main__':
     if mode =="simulated annealing"  :  
         app.set_traffic_lights(light_cycles)
         sa = SimulatedAnnealing(number_of_iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate) 
-        sa.optimise(app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles})
+        # sa.optimise(app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles}, None, None, None)
+        run_progress_gui(sa, app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles})
         save_to_csv(sa, mode)
         
     if mode == "genetic algorithm":

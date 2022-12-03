@@ -50,7 +50,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         # list of statistics(Flow, Collisions) of not dominated units
         self.champions_stats = []
     
-    def optimise(self, simulation, text=None, opt_progress=None, sim_progress=None):
+    def optimise(self, simulation, text, opt_progress, sim_progress, init_params=None):
 
         cols = ["Main index", "Population", "Unit", "Small index", "Speed limit(km/h)"]
         for i in range(len(self.populations[0][0]['tl'])):
