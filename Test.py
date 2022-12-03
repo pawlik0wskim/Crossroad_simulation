@@ -169,13 +169,9 @@ class Test(unittest.TestCase):
         for i in range(4):
             self.assertEqual(child['tl'][i], expected_tl[i])
     
-    #Test if elite number(number of organisms, which will be taken through selection without any changes) is calculated correctly
-    def test_08_elite_num(self):
-        ga = GeneticAlgorithm(10, 1000, speed_limit_optimization=True, traffic_light_optimization=True, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2, speed_limit=10, crossover_probability=0.2, migration_part=0.1)
-        self.assertEqual(ga.elite_num, int(0.3*10))
-        
+
     #Test if mutation changes parameters
-    def test_09_mutation(self):
+    def test_08_mutation(self):
         #Test if mutation changes random parameter
         oa = OptimizationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=True, traffic_light_optimization=True)
         speed_limit, light_cycles = (5,[[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]])
@@ -189,7 +185,7 @@ class Test(unittest.TestCase):
         self.assertNotEqual(variables, variables_new)#we want parameters changed
         
     #Test if mutation changes correct parameters   
-    def test_10_mutation2(self):
+    def test_09_mutation2(self):
         #Test if mutation changes speed limit
         oa = OptimizationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=True, traffic_light_optimization=False)
         speed_limit, light_cycles = (5,[[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]])
