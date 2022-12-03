@@ -99,18 +99,6 @@ class Application:
 
         return Flow, Collisions, stopped, iteration
 
-#Saves data from optimization algorithm to csv file
-def save_to_csv(optimization_algorithm, type_, num_of_light_cycles = 4):
-    df = pd.DataFrame(optimization_algorithm.stats)
-    cols = ["Main index", "Small index", "Speed limit(km/h)"] if type_=="simulated annealing" else ["Main index", "Population", "Unit", "Small index", "Speed limit(km/h)"]
-    for i in range(num_of_light_cycles):
-        for j in range(4):
-            cols+=[f"Traffic light {i}_{j}"]
-    cols +=["Flow", "Collisions", "Stopped", "Iterations"]
-    df.columns = cols
-    time_ = datetime.now().strftime("%H-%M-%S")
-    df.to_csv(f"{time_}.csv", index=False)
-
 def run_progress_gui(oa, app, init_params=None):
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
@@ -157,7 +145,6 @@ if __name__=='__main__':
         sa = SimulatedAnnealing(number_of_iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate) 
         # sa.optimise(app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles}, None, None, None)
         run_progress_gui(sa, app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles})
-        save_to_csv(sa, mode)
         
     if mode == "genetic algorithm":
         ga = GeneticAlgorithm(number_of_iterations, simulation_length, 

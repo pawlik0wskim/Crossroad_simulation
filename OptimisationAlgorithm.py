@@ -1,5 +1,6 @@
 import numpy as np
 from copy import deepcopy
+from csv import writer
 
 class OptimisationAlgorithm:
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization):
@@ -8,10 +9,13 @@ class OptimisationAlgorithm:
         self.stats = []
         self.speed_limit_optimization = speed_limit_optimization
         self.traffic_light_optimization = traffic_light_optimization
+    
     def visualise_learning(self):
         pass
+    
     def optimise(self, simulation):
         pass
+    
     #Returns randomly changed input parameters
     def mutate(self, speed_limit, light_cycles):
         new_speed_limit, new_light_cycles = speed_limit, deepcopy(light_cycles)
@@ -30,3 +34,11 @@ class OptimisationAlgorithm:
                 break
                 
         return new_speed_limit, new_light_cycles
+    
+    # saves statistics from self.stats to log file
+    def save_stats(self):
+        with open('stats.csv', 'a') as f:
+            writer_object = writer(f, lineterminator='\n')
+            writer_object.writerows(self.stats)
+        
+            f.close()

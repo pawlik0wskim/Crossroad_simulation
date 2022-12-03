@@ -160,8 +160,8 @@ class GUI:
     #Generates entry fields common for all optimization modes  
     def generate_common_optimization_modules(self):
         iterations_variable = EntryVariable(14,1,"Number of iterations: ","100")
-        speed_check_variable = EntryVariable(14,7,"Speed limit optimization: ","0.2", float, "check_box", command=self.__toggle_checkboxes)
-        light_check_variable = EntryVariable(14,13,"Traffic light optimization: ","0.2", float, "check_box", command=self.__toggle_checkboxes)
+        speed_check_variable = EntryVariable(14,7,"Speed limit optimization: ","0.2", float, "check_box", command=self.toggle_checkboxes)
+        light_check_variable = EntryVariable(14,13,"Traffic light optimization: ","0.2", float, "check_box", command=self.toggle_checkboxes)
         common_modules = [iterations_variable, speed_check_variable, light_check_variable]
         return common_modules
 
@@ -214,7 +214,7 @@ class GUI:
         if all(self.values):
             root.destroy()
     
-    def __toggle_checkboxes(self):
+    def toggle_checkboxes(self):
         if self.common_optimization_modules[1].entry.get():
             self.common_optimization_modules[2].entry.configure(state=NORMAL)
         else:

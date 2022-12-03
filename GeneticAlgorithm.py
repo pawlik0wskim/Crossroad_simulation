@@ -58,7 +58,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 cols+=[f"Traffic light {i}_{j}"]
         cols +=["Flow", "Collisions", "Stopped", "Iterations"]
         self.stats = [cols]
-        self.__save_stats()
+        self.save_stats()
         self.stats = []
 
         for i in range(1, self.iterations+1):
@@ -66,31 +66,36 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             # calculate fitness of organisms in current populations
             costs = self.calculate_cost(simulation, i, text, sim_progress)
 
-            self.__save_stats()
+            self.save_stats()
             self.stats = []
 
             # update champions
-            self.__update_champions()
+            self.update_champions()
             text.configure(state=NORMAL)
             text.insert(END, '------------------------------------\n')
-            text.insert(END, 'Champions:\n')
+            text.insert(END, 'Champions: \n')
+            c = 1
             for champ, stat in zip(self.champions, self.champions_stats):
-                text.insert(END, str(champ) + '\n')
-                text.insert(END, str(stat) + '\n')
+                text.insert(END, f'Champion {c} \n')
+                if self.traffic_light_optimization:
+                    text.insert(END, f'Traffic lights: {champ["tl"]} \n')
+                if self.speed_limit_optimization:
+                    text.insert(END, f'Speed limit: {champ["s"]} \n')
+                text.insert(END, f'Stats: {stat} \n')
+                c += 1
             text.insert(END, '------------------------------------\n')
             text.configure(state=DISABLED)
 
             # sort organisms and their costs by values of costs
             for j in range(len(self.populations)):
                 ind = np.argsort(costs[j])
-                self.populations[j] = self.__permute(self.populations[j], ind)
-                costs[j] = self.__permute(costs[j], ind)
+                self.populations[j] = self.permute(self.populations[j], ind)
+                costs[j] = self.permute(costs[j], ind)
 
             # migration of top units to next population
             # perform migration only if there is more than one population
             # migration frequency is defined with self.migration_freq
             if len(self.populations) > 1 and i % self.migration_freq == 0:
-                print('Migration!')
                 for j in range(len(self.populations)):
                     if j < len(self.populations) - 1:
                         outgoing_pop, ingoing_pop = j, j+1
@@ -135,7 +140,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                                                               sim=j, sim_max=self.simulation_repetitions, 
                                                               it=iteration, iter_max=self.iterations,
                                                               text=text, loading_bar=sim_progress)
-                    self.__append_stats(iteration, p, u, j, f, c, unit['s'], unit['tl'], stopped, iter)
+                    self.append_stats(iteration, p, u, j, f, c, unit['s'], unit['tl'], stopped, iter)
                     simulation.reset_map()
                     Flow += f
                     Collisions += c
@@ -143,9 +148,9 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 Flow /= self.simulation_repetitions
                 Collisions /= self.simulation_repetitions
                 pop_stats.append([Flow, -Collisions])
-                self.__append_stats(iteration, p, u, None, Flow, Collisions, unit['s'], unit['tl'], None, None)
+                self.append_stats(iteration, p, u, None, Flow, Collisions, unit['s'], unit['tl'], None, None)
             
-            costs.append(self.__get_pareto_scores(pop_stats, p))
+            costs.append(self.get_pareto_scores(pop_stats, p))
         
         return costs
     
@@ -153,12 +158,12 @@ class GeneticAlgorithm(OptimisationAlgorithm):
     # units, which are not dominated, receive Pareto score equal to 1
     # pop_stats - list of unit statistics, which are Flow and Collisions
     # pop_num - population number, used to save not dominated unit for futher processing as potential champions
-    def __get_pareto_scores(self, pop_stats, pop_num):
+    def get_pareto_scores(self, pop_stats, pop_num):
         pop_costs = [1] * self.pop_size
 
         for i in range(len(pop_stats)):
             for j in range(i+1, len(pop_stats)):
-                domination = self.__pareto_compare(pop_stats[i], pop_stats[j])
+                domination = self.pareto_compare(pop_stats[i], pop_stats[j])
                 if domination == 1:
                     pop_costs[j] += 1
                 if domination == 2:
@@ -173,7 +178,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         return pop_costs
                 
     # compares units statistics in Pareto sense
-    def __pareto_compare(self, stats1, stats2):
+    def pareto_compare(self, stats1, stats2):
         # if none of units dominates, return 0
         if (stats1[0] > stats2[0] and stats1[1] < stats2[1]) or (stats1[0] < stats2[0] and stats1[1] > stats2[1]):
             return 0
@@ -188,7 +193,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         return 2
 
     # filters dominated champions out and leaves only not dominated ones and their statistics
-    def __update_champions(self):
+    def update_champions(self):
         # print(self.champions_stats)
         new_champions = []
         new_champions_stats = []
@@ -197,7 +202,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             for j in range(len(self.champions)):
                 # if currently processed unit is dominated by some other unit,
                 # current unit has to be filtered out of champions list
-                if self.__pareto_compare(self.champions_stats[i], self.champions_stats[j]) == 2:
+                if self.pareto_compare(self.champions_stats[i], self.champions_stats[j]) == 2:
                     dominated = True
                     break
             if not dominated:
@@ -220,7 +225,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
 
         # sort to choose top organisms without changes
         ind = np.argsort(pop_costs)
-        population = self.__permute(population, ind)
+        population = self.permute(population, ind)
         pop_costs = pop_costs[ind]
 
         # add the best units without any changes
@@ -266,25 +271,17 @@ class GeneticAlgorithm(OptimisationAlgorithm):
     
     # help function
     # returns permutation of list ls based on index list ind
-    def __permute(self, ls, ind):
+    def permute(self, ls, ind):
         return [ls[ind[i]] for i in range(len(ls))]
     
     # help function
     # appends simulation statistics to self.stats field
-    def __append_stats(self, main_index, population_num, unit_num, small_index, Flow, Collisions, speed_limit, light_cycles, stopped, iter_num):
+    def append_stats(self, main_index, population_num, unit_num, small_index, Flow, Collisions, speed_limit, light_cycles, stopped, iter_num):
         stat = [main_index, population_num, unit_num, small_index, pixels_to_kmh(speed_limit)]
         for light in light_cycles:
             stat += light
         stat += [ Flow, Collisions, stopped, iter_num]
         self.stats.append(stat)
-    
-    # saves statistics from self.stats to log file
-    def __save_stats(self):
-        with open('stats.csv', 'a') as f:
-            writer_object = writer(f, lineterminator='\n')
-            writer_object.writerows(self.stats)
-        
-            f.close()
 
 
 

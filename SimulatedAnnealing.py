@@ -14,7 +14,17 @@ class SimulatedAnnealing(oa):
     def optimise(self, simulation, text, opt_progress, sim_progress, initial_parameters):
         start_time = time.time()
         speed_limit, light_cycles = initial_parameters["speed_limit"], initial_parameters["light_cycles"]
-        print(f"Speed:  {pixels_to_kmh(speed_limit)} km/h / {speed_limit} pix")
+        # print(f"Speed:  {pixels_to_kmh(speed_limit)} km/h / {speed_limit} pix")
+        
+        cols = ["Main index", "Small index", "Speed limit(km/h)"]
+        for i in range(len(light_cycles)):
+            for j in range(4):
+                cols+=[f"Traffic light {i}_{j}"]
+        cols +=["Flow", "Collisions", "Stopped", "Iterations"]
+        self.stats = [cols]
+        self.save_stats()
+        self.stats = []
+        
         Flow, Collisions, stopped, iteration = simulation.simulate(speed_limit, light_cycles,
                                                                    text=text, loading_bar=sim_progress) 
         simulation.reset_map()
@@ -27,7 +37,7 @@ class SimulatedAnnealing(oa):
         for i in range(int(self.iterations)):
             new_speed_limit, new_light_cycles = self.mutate(speed_limit, light_cycles)
             Flow_mean, Collisions_mean = 0, 0
-            print(f"Speed:  {pixels_to_kmh(new_speed_limit)} km/h / {new_speed_limit} pix")
+            # print(f"Speed:  {pixels_to_kmh(new_speed_limit)} km/h / {new_speed_limit} pix")
             for j in range(3):
                 Flow, Collisions, stopped, iteration = simulation.simulate(new_speed_limit, new_light_cycles, 
                                                                            sim = j, sim_max = 3, 
@@ -47,18 +57,17 @@ class SimulatedAnnealing(oa):
                 stat+=light
             stat += [ Flow_mean, Collisions_mean, None, None]
             self.stats.append(stat)
-            print(f"Loss value: :  {loss_value_new}")
+            # print(f"Loss value: :  {loss_value_new}")
             diff = loss_value_new - loss_value
             if diff<0  or np.random.rand()<np.exp(-diff/self.temp): 
                 loss_value = loss_value_new
                 speed_limit, light_cycles = new_speed_limit, new_light_cycles 
-                print("______________________better______________________")
+                # print("______________________better______________________")
             self.temp *= self.cooling_rate
             opt_progress['value'] = int(100*(i+1)/self.iterations)
         
-        print(f"Best speed:  {pixels_to_kmh(speed_limit)} km/h / {speed_limit} pix")
-        print(f"Best light cycles:  {light_cycles} ")
+        # print(f"Best speed:  {pixels_to_kmh(speed_limit)} km/h / {speed_limit} pix")
+        # print(f"Best light cycles:  {light_cycles} ")
         time_final = time.time()-start_time
-        print(f'Total time: {int(time_final//3600)}:{int((time_final-time_final//3600*3600)//60)}:{(time_final-(time_final-time_final//3600)//60*60)}')
-        
-a = 1  
+        # print(f'Total time: {int(time_final//3600)}:{int((time_final-time_final//3600*3600)//60)}:{(time_final-(time_final-time_final//3600)//60*60)}')
+        self.save_stats()  

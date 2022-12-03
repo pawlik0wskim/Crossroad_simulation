@@ -232,11 +232,11 @@ class Test(unittest.TestCase):
         # vector1 dominates vector2 iff one statistic from vector1 is > than same statistic of vector2 
         # and other statistic of vector1 is not less than the corresponding statistic of vector2
         # if it is less, than none of vectors is dominating, same applies if vectors have equal statistics
-        self.assertEqual(ga._GeneticAlgorithm__pareto_compare([1, -1], [1, -1]), 0)
-        self.assertEqual(ga._GeneticAlgorithm__pareto_compare([2, -2], [1, -1]), 0)
-        self.assertEqual(ga._GeneticAlgorithm__pareto_compare([1, 0], [1, -1]), 1)
-        self.assertEqual(ga._GeneticAlgorithm__pareto_compare([2, -1], [1, -1]), 1)
-        self.assertEqual(ga._GeneticAlgorithm__pareto_compare([1, -1], [1, 0]), 2)
+        self.assertEqual(ga.pareto_compare([1, -1], [1, -1]), 0)
+        self.assertEqual(ga.pareto_compare([2, -2], [1, -1]), 0)
+        self.assertEqual(ga.pareto_compare([1, 0], [1, -1]), 1)
+        self.assertEqual(ga.pareto_compare([2, -1], [1, -1]), 1)
+        self.assertEqual(ga.pareto_compare([1, -1], [1, 0]), 2)
     
     # Test if champions list in genetic algorithm is updated correctly
     def test_12_champions_update(self):
@@ -271,7 +271,7 @@ class Test(unittest.TestCase):
                            [400, -2.33]] # stats of candidate 4
         ga.champions_stats = deepcopy(champions_stats)
         
-        ga._GeneticAlgorithm__update_champions()
+        ga.update_champions()
 
         # only candidate with index 0 should be filtered out as he is dominated by candidate with index 1
         self.assertEqual(len(ga.champions), 3)
