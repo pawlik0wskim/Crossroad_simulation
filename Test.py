@@ -15,7 +15,7 @@ class Test(unittest.TestCase):
         if visualise:
             win = pygame.display.set_mode((WIDTH, HEIGHT))   
             clock=pygame.time.Clock()
-            test_map.img = pygame.transform.scale(pygame.image.load(r"map_crossroad.png"),(WIDTH,HEIGHT)).convert()
+            test_map.img = pygame.transform.scale(pygame.image.load(r"images/black.jpg"),(WIDTH,HEIGHT)).convert()
             test_map.rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
         Collisions = 0
         Flow = 0
@@ -46,7 +46,9 @@ class Test(unittest.TestCase):
         car = test_map.spawn_car(4,4)
         
         _ , Flow = self.main_loop(test_map, visualise, max_iter = 300)
-                
+        
+        for road in test_map.roads:
+            self.assertEqual(len(road.cars), 0)
         self.assertEqual(Flow, 1) #Car has to leave intersection
     
     #Test of collision mechanisms
@@ -59,7 +61,8 @@ class Test(unittest.TestCase):
         car2.maximum_deceleration = zero
         
         Collisions , _ = self.main_loop(test_map, visualise, max_iter = 100)
-                
+        for road in test_map.roads:
+            self.assertEqual(len(road.cars), 0)       
         self.assertEqual(Collisions, 1) #Cars have to collide
         
     #Test if cars will stop on red light
@@ -91,7 +94,7 @@ class Test(unittest.TestCase):
         self.assertGreaterEqual(car.rect.center[1], car2.rect.center[1]+car2.minimum_dist) #Car has to leave some space before vehicles
      
     #Test if car will slow down if positioned behined slower vehicle   
-    def test_04_adjustting_velocity(self):
+    def test_04_adjusting_velocity(self):
         test_map = generate_test_map(1000,1000, False)
         
         car = test_map.spawn_car(4,4)
@@ -218,7 +221,7 @@ class Test(unittest.TestCase):
         
 if __name__ == '__main__':
     global visualise
-    visualise = False
+    visualise = True
     unittest.main(exit = False)
     # for i in range(100):
     #     unittest.main(exit = False)
