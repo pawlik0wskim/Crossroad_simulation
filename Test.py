@@ -185,7 +185,7 @@ class Test(unittest.TestCase):
         self.assertNotEqual(variables, variables_new)#we want parameters changed
         
     #Test if mutation changes correct parameters   
-    def test_09_mutation2(self):
+    def test_09_mutation_specific(self):
         #Test if mutation changes speed limit
         oa = OptimizationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=True, traffic_light_optimization=False)
         speed_limit, light_cycles = (5,[[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]])
