@@ -1,6 +1,6 @@
 from OptimisationAlgorithm import OptimisationAlgorithm
 import numpy as np
-from utilities import pixels_to_kmh
+from utilities import pixels_to_kmh, seconds_to_dhm
 import copy
 import json
 from csv import writer
@@ -49,8 +49,11 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         self.champions = []
         # list of statistics(Flow, Collisions) of not dominated units
         self.champions_stats = []
+
+        # number of simulations left till the end of optimisation
+        self.simulations_number = self.pop_size * len(self.populations) * self.simulation_repetitions * self.iterations
     
-    def optimise(self, simulation, text, opt_progress, sim_progress, init_params=None):
+    def optimise(self, simulation, text, opt_progress, sim_progress, duration_label, init_params=None):
 
         cols = ["Main index", "Population", "Unit", "Small index", "Speed limit(km/h)"]
         for i in range(len(self.populations[0][0]['tl'])):
@@ -64,7 +67,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
         for i in range(1, self.iterations+1):
 
             # calculate fitness of organisms in current populations
-            costs = self.calculate_cost(simulation, i, text, sim_progress)
+            costs = self.calculate_cost(simulation, i, text, sim_progress, duration_label)
 
             self.save_stats()
             self.stats = []
@@ -126,7 +129,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
     # calculates values of cost function for all units in all populations
     # returns 2d list, which has same dimensions as self.populations,
     # but contains costs of corresponding units
-    def calculate_cost(self, simulation, iteration, text=None, sim_progress=None):
+    def calculate_cost(self, simulation, iteration, text, sim_progress, duration_label):
         costs = []
 
         for p, population in enumerate(self.populations):
@@ -136,7 +139,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 Flow, Collisions = 0, 0
 
                 for j in range(self.simulation_repetitions):
-                    f, c, stopped, iter = simulation.simulate(unit['s'], unit['tl'], 
+                    f, c, stopped, iter, elapsed_time = simulation.simulate(unit['s'], unit['tl'], 
                                                               sim=j, sim_max=self.simulation_repetitions, 
                                                               it=iteration, iter_max=self.iterations,
                                                               text=text, loading_bar=sim_progress)
@@ -144,6 +147,18 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                     simulation.reset_map()
                     Flow += f
                     Collisions += c
+                    self.elapsed_time += elapsed_time
+
+                    self.simulations_conducted += 1
+                    mean_sim_time = self.elapsed_time/(self.simulations_conducted)
+                    estimated_duration = mean_sim_time * (self.simulations_number - self.simulations_conducted)
+                    dhm = seconds_to_dhm(estimated_duration)
+                    tmp = [' days ', ' hours ', ' minutes ']
+                    duration_text = 'Estimated duration: '
+                    for i in range(3):
+                        if dhm[i] != 0:
+                            duration_text += str(dhm[i]) + tmp[i]
+                    duration_label.configure(text=duration_text)
 
                 Flow /= self.simulation_repetitions
                 Collisions /= self.simulation_repetitions

@@ -49,7 +49,6 @@ class Application:
         prev_flow = -1
         
         stopped = False
-        FPS_counter = 0
         
         while(True):
             if loading_bar is not None:
@@ -75,29 +74,26 @@ class Application:
             if visualise:
                 pygame.display.update()
                 clock.tick(FPS)
-
-            elapsed_time = time.time() - start_time
             
-            if i%600*FPS == 0:
-                if (iter_start_time-time.time())!=0:
-                    FPS_counter = -1/(iter_start_time-time.time())
-                # print(f"Flow: {Flow}, Collisions: {Collisions}, Time: {(elapsed_time)}, Cost: {cost_function(Flow, Collisions, i)}, FPS: {-1/(iter_start_time-time.time())}")    
+            if i%600*FPS == 0: 
+                #Ends simulation if the crossroad got stuck
                 if Flow == prev_flow:
                     stopped = True
                     iteration = i
                     break
                 prev_flow = Flow
-            #Ends simulation if enough time has passed or if the crossroad got stuck
+            #Ends simulation if enough time has passed
             if i >= self.max_iter:
                 break
             iteration = i
-            
+        
+        elapsed_time = time.time() - start_time
         if text is not None:
             text.configure(state=NORMAL)
-            text.insert(END, f"Flow: {Flow}, Collisions: {Collisions}, Time: {(round(elapsed_time, 2))}, Cost: {round(cost_function(Flow, Collisions, i, stopped), 2)}, FPS: {round(FPS_counter, 2)}, Stopped: {stopped}\n")
+            text.insert(END, f"Flow: {Flow}, Collisions: {Collisions}, Time: {(round(elapsed_time, 3))}, Cost: {round(cost_function(Flow, Collisions, i, stopped), 3)}, Stopped: {stopped}\n")
             text.configure(state=DISABLED)
 
-        return Flow, Collisions, stopped, iteration
+        return Flow, Collisions, stopped, iteration, elapsed_time
 
 def run_progress_gui(oa, app, init_params=None):
     def on_closing():
@@ -107,12 +103,19 @@ def run_progress_gui(oa, app, init_params=None):
 
     root = customtkinter.CTk()
     root.geometry("1000x500")
+
+    duration_label = customtkinter.CTkLabel(root, text='Estimated duration: ')
+    duration_label.place(relx=0.6, rely=0.04)
+
     sim_progress = Progressbar(root, orient=HORIZONTAL, length=100, mode='determinate')
     opt_progress = Progressbar(root, orient=HORIZONTAL, length=100, mode='determinate')
+
     text = Text(root, bg='#212325', fg='white')
     text.configure(state=DISABLED)
+
     scrollbar = Scrollbar(root, orient='vertical', command=text.yview)
     scrollbar.place(relx=0.86, rely=0.2, relheight=0.71, anchor='ne')
+
     text['yscrollcommand'] = scrollbar.set
     text.place(relx=0.2, rely=0.2)
 
@@ -123,7 +126,7 @@ def run_progress_gui(oa, app, init_params=None):
     sim_progress.place(relx=0.5, rely=0.1)
     customtkinter.CTkLabel(text="Current simulation: ").place(relx=0.35, rely=0.09)
 
-    thread = Thread(target=oa.optimise, args=[app, text, opt_progress, sim_progress, init_params])
+    thread = Thread(target=oa.optimise, args=[app, text, opt_progress, sim_progress, duration_label, init_params])
     thread.daemon = True
     root.after_idle(thread.start)
     root.protocol("WM_DELETE_WINDOW", on_closing)

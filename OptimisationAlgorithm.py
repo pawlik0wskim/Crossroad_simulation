@@ -9,6 +9,8 @@ class OptimisationAlgorithm:
         self.stats = []
         self.speed_limit_optimization = speed_limit_optimization
         self.traffic_light_optimization = traffic_light_optimization
+        self.elapsed_time = 0
+        self.simulations_conducted = 0
     
     def visualise_learning(self):
         pass
