@@ -52,7 +52,8 @@ class GeneticAlgorithm(OptimisationAlgorithm):
 
         # number of simulations left till the end of optimisation
         self.simulations_number = self.pop_size * len(self.populations) * self.simulation_repetitions * self.iterations
-    
+        self.simulations_conducted = 0
+
     def optimise(self, simulation, text, opt_progress, sim_progress, duration_label, init_params=None):
 
         cols = ["Main index", "Population", "Unit", "Small index", "Speed limit(km/h)"]
@@ -152,13 +153,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                     self.simulations_conducted += 1
                     mean_sim_time = self.elapsed_time/(self.simulations_conducted)
                     estimated_duration = mean_sim_time * (self.simulations_number - self.simulations_conducted)
-                    dhm = seconds_to_dhm(estimated_duration)
-                    tmp = [' days ', ' hours ', ' minutes ']
-                    duration_text = 'Estimated duration: '
-                    for i in range(3):
-                        if dhm[i] != 0:
-                            duration_text += str(dhm[i]) + tmp[i]
-                    duration_label.configure(text=duration_text)
+                    self.update_estimated_duration(duration_label, estimated_duration)
 
                 Flow /= self.simulation_repetitions
                 Collisions /= self.simulation_repetitions

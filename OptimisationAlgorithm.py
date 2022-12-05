@@ -1,6 +1,7 @@
 import numpy as np
 from copy import deepcopy
 from csv import writer
+from utilities import seconds_to_dhm
 
 class OptimisationAlgorithm:
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization):
@@ -10,7 +11,6 @@ class OptimisationAlgorithm:
         self.speed_limit_optimization = speed_limit_optimization
         self.traffic_light_optimization = traffic_light_optimization
         self.elapsed_time = 0
-        self.simulations_conducted = 0
     
     def visualise_learning(self):
         pass
@@ -44,3 +44,12 @@ class OptimisationAlgorithm:
             writer_object.writerows(self.stats)
         
             f.close()
+    
+    def update_estimated_duration(self, duration_label, estimated_duration):
+        dhm = seconds_to_dhm(estimated_duration)
+        tmp = [' days ', ' hours ', ' minutes ']
+        duration_text = 'Estimated duration: '
+        for k in range(3):
+            if dhm[k] != 0:
+                duration_text += str(dhm[k]) + tmp[k]
+        duration_label.configure(text=duration_text)
