@@ -191,14 +191,14 @@ def generate_crossroad(WIDTH, HEIGHT):
 
 #Method generates map used for testing
 def generate_one_straight_one_left_turn(WIDTH, HEIGHT):
-    node1 = Node((7/24*WIDTH, 0))
-    node2 = Node((9/24*WIDTH, 0))
-    node3 = Node((7/24*WIDTH, HEIGHT/3))
-    node4 = Node((9/24*WIDTH, 1/3*HEIGHT))
-    node6 = Node((9/24*WIDTH, 2/3*HEIGHT))
-    node8 = Node((9/24*WIDTH, HEIGHT))
-    node10 = Node((WIDTH*12/24, HEIGHT*13/24))
-    node14 = Node((WIDTH*20/24, HEIGHT*13/24))    
+    node1 = Node((11/24*WIDTH, 0))
+    node2 = Node((13/24*WIDTH, 0))
+    node3 = Node((11/24*WIDTH, HEIGHT/3))
+    node4 = Node((13/24*WIDTH, 1/3*HEIGHT))
+    node14 = Node((WIDTH, HEIGHT*13/24))
+    node10 = Node((WIDTH*2/3, HEIGHT*13/24))
+    node8 = Node((13/24*WIDTH, HEIGHT))
+    node6 = Node((13/24*WIDTH, 2/3*HEIGHT)) 
 
     roads = []
     roads.append(Segment(node1, node3, "straight"))
