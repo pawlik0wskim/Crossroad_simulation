@@ -101,9 +101,9 @@ class Segment:
         if self.light:
             ans = True if self.light_color in [1,2,3] else False
             p=np.random.rand()
-            if p<1/3 and self.light_color==1:
+            if p<1/100 and self.light_color==1:
                 ans = False
-            elif p<2/3 and self.light_color==3:
+            elif p<1/30 and self.light_color==3:
                 ans = False
             return ans
         return False
@@ -164,7 +164,7 @@ class Segment:
             new_pos = (self.radius*np.cos((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[0],self.radius*np.sin((new_angle+90*(1-self.direction[0]*self.direction[1]))/180*np.pi)+self.center[1])
             
             # update driven distance of the car
-            car.dist_driven = ((90 - (new_angle)%90)/90)-0.2
+            car.dist_driven = ((90 - (new_angle)%90)/90)-0.23
             
             if np.abs(new_angle)%90 < np.abs(angle) - eps:
                 next_road = self.get_next_road(right_prob, left_prob)

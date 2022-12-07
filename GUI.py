@@ -205,7 +205,7 @@ class GUI:
 
     #Generates entry fields common for all modes  
     def generate_main_modules(self):
-        speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","25")
+        speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","35")
         maximum_iter_variable = EntryVariable(9,7,"Length of simulation: ","10000")
         frames_per_car_variable = EntryVariable(9,13,"Frames per car: ","10")
         left_prob_variable = EntryVariable(11,1,"Left turn probability: ","0.1", float)
