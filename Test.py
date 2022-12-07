@@ -285,7 +285,6 @@ class Test(unittest.TestCase):
         n = 1000
         x_range = np.array(range(n))
         y_range = [0 for i in range((n))]
-        from Car import Car
         WIDTH, HEIGHT = 1000, 1000
         position, angle, speed_limit = (100, 0), 180, 15
         car = Car(position, angle, WIDTH, HEIGHT, speed_limit)
