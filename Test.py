@@ -293,5 +293,5 @@ class Test(unittest.TestCase):
 if __name__ == '__main__':
     global visualise
     visualise = False
-    for i in range(1):
+    for i in range(100):
         unittest.main(exit = False)

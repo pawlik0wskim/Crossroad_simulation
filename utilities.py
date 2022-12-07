@@ -59,4 +59,3 @@ def seconds_to_dhm(seconds):
     res[2] = int(seconds // 60)
 
     return res
-    
