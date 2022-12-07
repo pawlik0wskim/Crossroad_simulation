@@ -119,6 +119,8 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
             opt_progress['value'] = int(100*i/self.iterations)
         
+        duration_label.configure(text='Finished')
+        
         for i in range(len(self.champions)):
             self.champions[i]['flow'] = self.champions_stats[i][0]
             self.champions[i]['collisions'] = -self.champions_stats[i][1]

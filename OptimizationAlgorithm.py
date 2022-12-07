@@ -46,10 +46,15 @@ class OptimizationAlgorithm:
             f.close()
     
     def update_estimated_duration(self, duration_label, estimated_duration):
+        print(estimated_duration)
         dhm = seconds_to_dhm(estimated_duration)
-        tmp = [' days ', ' hours ', ' minutes ']
+        unit = [[' day ', ' days '], [' hour ', ' hours '], [' minute ', ' minutes ']]
         duration_text = 'Estimated duration: '
+        all_zero = True
         for k in range(3):
             if dhm[k] != 0:
-                duration_text += str(dhm[k]) + tmp[k]
+                duration_text += str(dhm[k]) + unit[k][int(dhm[k] > 1)]
+                all_zero = False
+        if all_zero:
+            duration_text += 'less than 1 minute'
         duration_label.configure(text=duration_text)

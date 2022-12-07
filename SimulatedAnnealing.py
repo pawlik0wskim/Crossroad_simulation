@@ -53,7 +53,8 @@ class SimulatedAnnealing(oa):
             
             #Test them running 3 simulations and average the results
             for j in range(3):
-                estimated_duration = (self.iterations - i - 1) * self.elapsed_time/(i + 1)
+                iter_conducted = 3*i + j + 1
+                estimated_duration = (3*self.iterations - iter_conducted) * self.elapsed_time/iter_conducted
                 self.update_estimated_duration(duration_label, estimated_duration)
                 Flow, Collisions, stopped, iteration, elapsed_time = simulation.simulate(new_speed_limit, new_light_cycles, 
                                                                            sim = j, sim_max = 3, 
@@ -90,6 +91,8 @@ class SimulatedAnnealing(oa):
             #Update the temperature
             self.temp *= self.cooling_rate
             opt_progress['value'] = int(100*(i+1)/self.iterations)
+        
+        duration_label.configure(text='Finished')
         #Save stats and best set of parameters
         self.save_stats()  
         with open('champions.json', 'w') as fp:
