@@ -1,10 +1,11 @@
 
 from tkinter import *
-from  utilities import unit
+from  utilities import kilometers_per_hour_to_pixels
 import customtkinter
 from RangeSlider import RangeSliderH 
 import tkinter as tk
-import tkinter
+import sys
+from tkinter import messagebox
 
 BG_COLOR = "#212325" 
 
@@ -12,7 +13,6 @@ class TraficLigthsWidget:
     def __init__(self, x, y, width = 180, starting_light = "Red", starting_row = 4):
         self.x, self.y = x, y
         self.width = width
-        self.starting_light = starting_light
         self.starting_row = starting_row
         self.generate_lights_sliders(starting_light=starting_light)
         
@@ -46,7 +46,7 @@ class TraficLigthsWidget:
             #sliders[i].place(x=self.x+self.width*(i+1.4),y=self.y)
             sliders[i].grid(row = self.starting_row + (self.y-30)//150, column = 13+i*4, columnspan = 4)
         self.sliders = sliders
-        
+    
     #Function validating inputs provided by the user   
     def validate_function(self, val, col):
         if len(val)>1:
@@ -64,12 +64,11 @@ class TraficLigthsWidget:
             except ValueError:
                 return False
         return False
-        
+    
     #Method creating entry field in selected column with determined placeholder value
     def generate_entry(self, place_holder, col) :
         vcmd  = (root.register(lambda val: self.validate_function(val,col)),"%P")
         entry = customtkinter.CTkEntry(width=self.width/4.5,placeholder_text=place_holder, validatecommand=vcmd, validate = "key")
-        
         entry.grid(row = self.starting_row + (self.y-30)//150, column = col)
         return entry
            
@@ -140,6 +139,8 @@ class EntryVariable:
     #Function validating inputs provided by the user   
     def validate_function(self, val):
         try:
+            if self.type==int and len(val)==0:
+                return True
             fl = self.type(val)
             if (fl>1 or fl<0) and self.type == float:
                 self.entry.placeholder_text = "<0,1>"
@@ -153,8 +154,6 @@ class EntryVariable:
 class GUI:
     def __init__(self):
         self.lights = [TraficLigthsWidget(30,30+150*i, starting_light = "Red") if i>1 else TraficLigthsWidget(30,30+150*i, starting_light = "Green") for i in range(4)]
-        self.traffic_lights_optimisation = IntVar()
-        self.speed_limit_optimisation = IntVar()
         self.main_modules =  self.generate_main_modules()     
         self.annealing_modules = self.generate_annealing_modules() 
         self.genetic_modules = self.generate_genetic_modules()
@@ -199,9 +198,9 @@ class GUI:
     #Generates entry fields common for all optimization modes  
     def generate_common_optimization_modules(self):
         iterations_variable = EntryVariable(14,1,"Number of iterations: ","100")
-        speed_check_variale = EntryVariable(14,7,"Speed limit optimization: ","0.2", float, "check_box", command=self.__toggle_checkboxes, variable=self.speed_limit_optimisation)
-        light_check_variale = EntryVariable(14,13,"Traffic light optimization: ","0.2", float, "check_box", command=self.__toggle_checkboxes, variable=self.traffic_lights_optimisation)
-        common_modules = [iterations_variable, speed_check_variale, light_check_variale]
+        speed_check_variable = EntryVariable(14,7,"Speed limit optimization: ","0.2", float, "check_box", command=self.toggle_checkboxes)
+        light_check_variable = EntryVariable(14,13,"Traffic light optimization: ","0.2", float, "check_box", command=self.toggle_checkboxes)
+        common_modules = [iterations_variable, speed_check_variable, light_check_variable]
         return common_modules
 
     #Generates entry fields common for all modes  
@@ -252,29 +251,32 @@ class GUI:
             print(module.get_values())
         if all(self.values):
             root.destroy()
-            
-            
-    def __toggle_checkboxes(self):
-        if not self.speed_limit_optimisation.get():
-         self.common_optimization_modules[2].entry.configure(state=DISABLED)
-        if self.speed_limit_optimisation.get():
+    
+    def toggle_checkboxes(self):
+        if self.common_optimization_modules[1].entry.get():
             self.common_optimization_modules[2].entry.configure(state=NORMAL)
-        if not self.traffic_lights_optimisation.get():
+        else:
+            self.common_optimization_modules[2].entry.configure(state=DISABLED)
+        
+        if self.common_optimization_modules[2].entry.get():
+            self.common_optimization_modules[1].entry.configure(state=NORMAL)
+        else:
             self.common_optimization_modules[1].entry.configure(state=DISABLED)
-        if self.traffic_lights_optimisation.get():
-            self.common_optimization_modules[1].entry.configure(state=NORMAL)  
+            
+            
+ 
+        
 #Function addinng empty line to GUI(used to improve visual layer of the application)
 def add_empty_line(row):
     l0 = tk.Label(root, bg=BG_COLOR)
     l0.grid(column=0, row=row, columnspan=21)
 
-    
-
-
+#function, which handles window closing
+def on_closing():
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            root.destroy()
+            sys.exit()
  
-
-   
-  
  #Main gui method    
 def run_gui():
     
@@ -287,6 +289,8 @@ def run_gui():
     Width =180
     # Adjust size
     root.geometry("1072x603")
+    # Add handling of window closing
+    root.protocol("WM_DELETE_WINDOW", on_closing)
     #Adding few empty rodes to improve visual effect of GUI
     for line in [0, 3, 8, 10, 12, 13, 15, 17, 20]:
         add_empty_line(line)
@@ -301,10 +305,10 @@ def run_gui():
         light_cycles = [values[i]for i in range(4)]
         speed_limit_optimization-=1
         traffic_light_optimization-=1
-        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
+        return light_cycles, kilometers_per_hour_to_pixels(speed_limit) , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
     return None
     
-
-#run_gui()
+if __name__=="__main__":
+    run_gui()
 
 

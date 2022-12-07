@@ -4,7 +4,7 @@ from utilities import *
 import cv2
 
 class Car:
-    def __init__(self, position, angle, WIDTH, HEIGHT, speed_limit, acceleration_exponent):
+    def __init__(self, position, angle, WIDTH, HEIGHT, speed_limit):
         global unit
         w, h = WIDTH//30, HEIGHT//11
         rand = np.random.rand()
@@ -34,7 +34,7 @@ class Car:
         self.vision = pygame.Rect(self.rect.center, [10, 10])
         self.acceleration = unit
         self.speed_limit = speed_limit
-        self.acceleration_exponent = acceleration_exponent
+        self.acceleration_exponent = 4
         
         self.reaction_time = 30/20+np.random.rand()
         self.minimum_dist = np.max([self.rect.h,self.rect.w])*5/3+np.random.normal()
@@ -170,6 +170,4 @@ def test():  #rotation around the center of vehicle
         pygame.display.update()
         clock.tick(60)
         car.update_acceleration(car, 5)
-        
-if __name__=="__main__":
-    test()
+#test()

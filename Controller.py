@@ -42,7 +42,7 @@ class Controller:
                 car.draw(win)
     
     # Adds car on random spawning position        
-    def spawn_car(self, speed_limit, acceleration_exponent):
+    def spawn_car(self, speed_limit):
         rand = np.random.randint(0, len(self.starting_nodes))
         rand1 = rand+1
         node = self.starting_nodes[rand]
@@ -63,7 +63,7 @@ class Controller:
             angle = 90
         else:
             angle = 270
-        car = Car(node.pos, angle, WIDTH, HEIGHT, speed_limit, acceleration_exponent)
+        car = Car(node.pos, angle, WIDTH, HEIGHT, speed_limit)
         node.exiting_roads[0].cars.append(car)
         return car
         

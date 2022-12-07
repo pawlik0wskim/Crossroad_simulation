@@ -45,5 +45,18 @@ def cross_product(x, y):
 def cross_product(x, y):
     return (x[0]*y[0] + x[1]*y[1])
 
-def cost_function(flow, collisions, iter, stopped):
+def cost_function(flow, collisions):
     return (collisions*np.log(collisions + 1) - flow)
+
+# returns list of 3 values: days, hours and minutes
+# which represent equal amount of time to provided seconds argument rounded to number of minutes
+def seconds_to_dhm(seconds):
+    res = [0]*4
+    res[0] = int(seconds // (24 * 60**2))
+    seconds -= res[0] * (24 * 60**2)
+    res[1] = int(seconds // 60**2)
+    seconds -= res[1] * 60**2
+    res[2] = int(seconds // 60)
+
+    return res
+    

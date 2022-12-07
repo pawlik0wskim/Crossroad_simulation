@@ -1,5 +1,7 @@
 import numpy as np
 from copy import deepcopy
+from csv import writer
+from utilities import seconds_to_dhm
 
 class OptimizationAlgorithm:
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization):
@@ -8,13 +10,17 @@ class OptimizationAlgorithm:
         self.stats = []
         self.speed_limit_optimization = speed_limit_optimization
         self.traffic_light_optimization = traffic_light_optimization
+        self.elapsed_time = 0
+    
     def visualise_learning(self):
         pass
+    
     def optimise(self, simulation):
         pass
+    
     #Returns randomly changed input parameters
     def mutate(self, speed_limit, light_cycles):
-        new_speed_limit, new_light_cycles = deepcopy(speed_limit), deepcopy(light_cycles)
+        new_speed_limit, new_light_cycles = speed_limit, deepcopy(light_cycles)
         p = np.random.rand()
         parameter_number = len(light_cycles[0])*len(light_cycles)+1
         if ( p<1/parameter_number or 1-self.traffic_light_optimization) and self.speed_limit_optimization:
@@ -30,3 +36,20 @@ class OptimizationAlgorithm:
                 break
                 
         return new_speed_limit, new_light_cycles
+    
+    # saves statistics from self.stats to log file
+    def save_stats(self):
+        with open('stats.csv', 'a') as f:
+            writer_object = writer(f, lineterminator='\n')
+            writer_object.writerows(self.stats)
+        
+            f.close()
+    
+    def update_estimated_duration(self, duration_label, estimated_duration):
+        dhm = seconds_to_dhm(estimated_duration)
+        tmp = [' days ', ' hours ', ' minutes ']
+        duration_text = 'Estimated duration: '
+        for k in range(3):
+            if dhm[k] != 0:
+                duration_text += str(dhm[k]) + tmp[k]
+        duration_label.configure(text=duration_text)

@@ -1,53 +1,105 @@
 from OptimizationAlgorithm import OptimizationAlgorithm
 import numpy as np
-from utilities import cost_function, pixels_to_kmh
+from utilities import pixels_to_kmh, seconds_to_dhm
 import copy
-from utilities import pixels_to_kmh
+import json
+from csv import writer
+from tkinter import NORMAL, DISABLED, END
 
 class GeneticAlgorithm(OptimizationAlgorithm):
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, **kwargs):
         super().__init__(iterations, simulation_length, speed_limit_optimization, traffic_light_optimization)
-        # self.populations = [[{'tl' : kwargs['traffic_lights'] if kwargs['traffic_lights'] is not None else np.random.uniform(0, 1, (4, 4)), 
-        #                       's': kwargs['speed_limit'] if kwargs['speed_limit'] is not None else np.random.randint(20, 100)}
-        #                     for j in range(kwargs['population_size'])] for i in range(kwargs['population_number'])]
+
         self.pop_size = int(kwargs['population_size'])
-        self.populations = [[{'tl' : np.random.uniform(0, 1, (4, 4)).tolist(), 
-                              's': np.random.randint(kwargs['speed_limit']*0.75, kwargs['speed_limit']*1.15)}
-                            for j in range(self.pop_size)] 
-                            for i in range(int(kwargs['population_number']))]
+        self.populations = [[{"light_cycles" : None, 
+                              "speed_limit": None}
+                              for j in range(self.pop_size)] 
+                              for i in range(int(kwargs['population_number']))]
+
+        # initialize populations
+        for i in range(len(self.populations)):
+            for j in range(self.pop_size):
+
+                if self.traffic_light_optimization:
+                    self.populations[i][j]["light_cycles"] = np.random.uniform(0, 1, (4, 4)).tolist()
+                else:
+                    self.populations[i][j]["light_cycles"] = copy.deepcopy(kwargs['traffic_lights'])
+                
+                if self.speed_limit_optimization:
+                    self.populations[i][j]["speed_limit"] = np.random.uniform(0.6, 1.4) * kwargs['speed_limit']
+                else:
+                    self.populations[i][j]["speed_limit"] = kwargs['speed_limit']
+
         self.mutation_prob = kwargs['mutation_probability']
         self.crossover_prob = kwargs['crossover_probability']
+
+        # number of simulation repetitions
+        self.simulation_repetitions = 3
+
+        # how many top units pass selection unchaged
         self.elite_num = int(self.pop_size*kwargs['elite_part'])
+
+        # how many top units will migrate
         self.migration_num = int(self.pop_size*kwargs['migration_part'])
-        self.champ = None
-        # global best unit score
-        self.champ_cost = np.Inf
-    
-    def optimise(self, simulation):
+
+        # how often(in iterations) does migration happen
+        self.migration_freq = 10
+
+        # list of not dominated(in Pareto sense) units
+        self.champions = []
+        # list of statistics(Flow, Collisions) of not dominated units
+        self.champions_stats = []
+
+        # number of simulations left till the end of optimisation
+        self.simulations_number = self.pop_size * len(self.populations) * self.simulation_repetitions * self.iterations
+        self.simulations_conducted = 0
+
+    def optimise(self, simulation, text, opt_progress, sim_progress, duration_label, init_params=None):
+
+        cols = ["Main index", "Population", "Unit", "Small index", "Speed limit(km/h)"]
+        for i in range(len(self.populations[0][0]["light_cycles"])):
+            for j in range(4):
+                cols+=[f"Traffic light {i}_{j}"]
+        cols +=["Flow", "Collisions", "Stopped", "Iterations"]
+        self.stats = [cols]
+        self.save_stats()
+        self.stats = []
 
         for i in range(1, self.iterations+1):
 
             # calculate fitness of organisms in current populations
-            costs = self.calculate_cost(simulation, i)
+            costs = self.calculate_cost(simulation, i, text, sim_progress, duration_label)
+
+            self.save_stats()
+            self.stats = []
+
+            # update champions
+            self.update_champions()
+            text.configure(state=NORMAL)
+            text.insert(END, '------------------------------------\n')
+            text.insert(END, 'Champions: \n')
+            c = 1
+            for champ, stat in zip(self.champions, self.champions_stats):
+                text.insert(END, f'Champion {c} \n')
+                if self.traffic_light_optimization:
+                    text.insert(END, f'Traffic lights: {champ["light_cycles"]} \n')
+                if self.speed_limit_optimization:
+                    text.insert(END, f'Speed limit: {champ["light_cycles"]} \n')
+                text.insert(END, f'Stats: {stat} \n')
+                c += 1
+            text.insert(END, '------------------------------------\n')
+            text.configure(state=DISABLED)
 
             # sort organisms and their costs by values of costs
             for j in range(len(self.populations)):
                 ind = np.argsort(costs[j])
-                self.populations[j] = self.__permute(self.populations[j], ind)
-                costs[j] = self.__permute(costs[j], ind)
-
-
-            # update champion
-            tmp = self.champ_cost
-            self.update_champ(costs)
-            if tmp > self.champ_cost:
-                print('---------------------------------')
-                print(f'Champion updated! New Champion cost {self.champ_cost}')
-                print(self.champ)
-                print('---------------------------------')
+                self.populations[j] = self.permute(self.populations[j], ind)
+                costs[j] = self.permute(costs[j], ind)
 
             # migration of top units to next population
-            if len(self.populations) > 1:
+            # perform migration only if there is more than one population
+            # migration frequency is defined with self.migration_freq
+            if len(self.populations) > 1 and i % self.migration_freq == 0:
                 for j in range(len(self.populations)):
                     if j < len(self.populations) - 1:
                         outgoing_pop, ingoing_pop = j, j+1
@@ -65,34 +117,112 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                 new_populations.append(self.generate_new_population(pop, pop_costs))
             self.populations = new_populations
 
+            opt_progress['value'] = int(100*i/self.iterations)
+        
+        for i in range(len(self.champions)):
+            self.champions[i]['flow'] = self.champions_stats[i][0]
+            self.champions[i]['collisions'] = -self.champions_stats[i][1]
+            self.champions[i]['speed_limit'] = pixels_to_kmh(self.champions[i]["speed_limit"])
+        with open('champions.json', 'w') as fp:
+            json.dump(self.champions, fp)
+            fp.close()
+
+
     # calculates values of cost function for all units in all populations
     # returns 2d list, which has same dimensions as self.populations,
     # but contains costs of corresponding units
-    def calculate_cost(self, simulation, iteration):
+    def calculate_cost(self, simulation, iteration, text, sim_progress, duration_label):
         costs = []
 
         for p, population in enumerate(self.populations):
-            pop_costs = []
+            pop_stats = []
 
             for u, unit in enumerate(population):
                 Flow, Collisions = 0, 0
 
-                for j in range(3):
-                    f, c, iter, stopped = simulation.simulate(unit['s'], unit['tl'], sim=j, sim_max=3, it=iteration, iter_max=self.iterations )
-                    self.__append_stats(iteration, p, u, j, f, c, unit['s'], unit['tl'], stopped, iter)
+                for j in range(self.simulation_repetitions):
+                    f, c, stopped, iter, elapsed_time = simulation.simulate(unit["speed_limit"], unit["light_cycles"], 
+                                                              sim=j, sim_max=self.simulation_repetitions, 
+                                                              it=iteration, iter_max=self.iterations,
+                                                              text=text, loading_bar=sim_progress)
+                    self.append_stats(iteration, p, u, j, f, c, unit["speed_limit"], unit["light_cycles"], stopped, iter)
                     simulation.reset_map()
                     Flow += f
                     Collisions += c
+                    self.elapsed_time += elapsed_time
 
-                Flow /= 3
-                Collisions /= 3
-                pop_costs.append(cost_function(Flow, Collisions, iter, stopped))
-                self.__append_stats(iteration, p, u, None, Flow, Collisions, unit['s'], unit['tl'], None, None)
+                    self.simulations_conducted += 1
+                    mean_sim_time = self.elapsed_time/(self.simulations_conducted)
+                    estimated_duration = mean_sim_time * (self.simulations_number - self.simulations_conducted)
+                    self.update_estimated_duration(duration_label, estimated_duration)
+
+                Flow /= self.simulation_repetitions
+                Collisions /= self.simulation_repetitions
+                pop_stats.append([Flow, -Collisions])
+                self.append_stats(iteration, p, u, None, Flow, Collisions, unit["speed_limit"], unit["light_cycles"], None, None)
             
-            costs.append(pop_costs)
+            costs.append(self.get_pareto_scores(pop_stats, p))
         
         return costs
     
+    # returns list of Pareto scores - number of units, which dominate concrete unit + 1
+    # units, which are not dominated, receive Pareto score equal to 1
+    # pop_stats - list of unit statistics, which are Flow and Collisions
+    # pop_num - population number, used to save not dominated unit for futher processing as potential champions
+    def get_pareto_scores(self, pop_stats, pop_num):
+        pop_costs = [1] * self.pop_size
+
+        for i in range(len(pop_stats)):
+            for j in range(i+1, len(pop_stats)):
+                domination = self.pareto_compare(pop_stats[i], pop_stats[j])
+                if domination == 1:
+                    pop_costs[j] += 1
+                if domination == 2:
+                    pop_costs[i] += 1
+            
+            # if unit is not dominated, it may be a potential champion
+            # real champions will be distinguished later
+            if pop_costs[i] == 1:
+                self.champions.append(copy.deepcopy(self.populations[pop_num][i]))
+                self.champions_stats.append(pop_stats[i].copy())
+        
+        return pop_costs
+                
+    # compares units statistics in Pareto sense
+    def pareto_compare(self, stats1, stats2):
+        # if none of units dominates, return 0
+        if (stats1[0] > stats2[0] and stats1[1] < stats2[1]) or (stats1[0] < stats2[0] and stats1[1] > stats2[1]):
+            return 0
+        if stats1[0] == stats2[0] and stats1[1] == stats2[1]:
+            return 0
+        
+        # if unit1 dominates return 1
+        if stats1[0] > stats2[0] or stats1[1] > stats2[1]:
+            return 1
+        
+        # if unit2 dominates return 2
+        return 2
+
+    # filters dominated champions out and leaves only not dominated ones and their statistics
+    def update_champions(self):
+        # print(self.champions_stats)
+        new_champions = []
+        new_champions_stats = []
+        for i in range(len(self.champions)):
+            dominated = False
+            for j in range(len(self.champions)):
+                # if currently processed unit is dominated by some other unit,
+                # current unit has to be filtered out of champions list
+                if self.pareto_compare(self.champions_stats[i], self.champions_stats[j]) == 2:
+                    dominated = True
+                    break
+            if not dominated:
+                new_champions.append(self.champions[i])
+                new_champions_stats.append(self.champions_stats[i])
+        
+        self.champions, self.champions_stats = new_champions, new_champions_stats
+
+
     # returns list of units, obtained with elitism, mutation and crossover from provided population,
     # order of pop_costs must match the order of units in population
     def generate_new_population(self, population, pop_costs):
@@ -106,7 +236,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
         # sort to choose top organisms without changes
         ind = np.argsort(pop_costs)
-        population = self.__permute(population, ind)
+        population = self.permute(population, ind)
         pop_costs = pop_costs[ind]
 
         # add the best units without any changes
@@ -121,7 +251,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                 unit = np.random.choice(population, 1, p=pop_costs)[0]
 
             if np.random.uniform(0, 1) < self.mutation_prob:
-                unit['s'], unit['tl'] = self.mutate(unit['s'], unit['tl'])
+                unit["speed_limit"], unit["light_cycles"] = self.mutate(unit["speed_limit"], unit["light_cycles"])
             
             new_population.append(unit)
         
@@ -129,30 +259,35 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
     # returns child unit, which inherits parameters from its two parents
     # each parameter has equal probability of being inherited from parent1 or parent2
-    def crossover(self, parent1, parent2, speed_limit_optimization=True, traffic_light_optimization=True):
+    def crossover(self, parent1, parent2):
         child = {}
-        child['s'] = parent1['s'] if np.random.uniform(0, 1) < 0.5 else parent2['s']
-        child_tl = []
-        for i in range(len(parent1['tl'])):
-            child_tl.append(parent1['tl'][i].copy() if np.random.uniform(0, 1) < 0.5 else parent2['tl'][i].copy())
-        child['tl'] = child_tl
-        return child
 
-    # updates champion(global best unit)
-    # assumes, that provided costs and self.populations are sorted
-    def update_champ(self, costs):
-        for population, pop_costs in zip(self.populations, costs):
-            if pop_costs[0] < self.champ_cost:
-                self.champ, self.champ_cost = copy.deepcopy(population[0]), pop_costs[0]
+        # if speed limit is not optimised, child will always have same speed limit as all other units
+        # if it is optimised, one of the parents values is chosen with equal probability
+        child["speed_limit"] = parent1["speed_limit"] if np.random.uniform(0, 1) < 0.5 else parent2["speed_limit"]
+
+        if self.traffic_light_optimization:
+            # if traffic light cycles are optimised, take parameters for each traffic light
+            # from the corresponding traffic light of randomy chosen parent 
+            child_tl = []
+            for i in range(len(parent1["light_cycles"])):
+                child_tl.append(parent1["light_cycles"][i].copy() if np.random.uniform(0, 1) < 0.5 else parent2["light_cycles"][i].copy())
+            child["light_cycles"] = child_tl
+        else:
+            # if traffic light cycles are not optimised, 
+            # just copy traffic light parameters from one of the parents to speed up the crossover
+            child["light_cycles"] = copy.deepcopy(parent1["light_cycles"])
+
+        return child
     
     # help function
     # returns permutation of list ls based on index list ind
-    def __permute(self, ls, ind):
+    def permute(self, ls, ind):
         return [ls[ind[i]] for i in range(len(ls))]
     
     # help function
     # appends simulation statistics to self.stats field
-    def __append_stats(self, main_index, population_num, unit_num, small_index, Flow, Collisions, speed_limit, light_cycles, stopped, iter_num):
+    def append_stats(self, main_index, population_num, unit_num, small_index, Flow, Collisions, speed_limit, light_cycles, stopped, iter_num):
         stat = [main_index, population_num, unit_num, small_index, pixels_to_kmh(speed_limit)]
         for light in light_cycles:
             stat += light
@@ -165,4 +300,4 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
 
 if __name__ == '__main__':
- pass
+    pass
