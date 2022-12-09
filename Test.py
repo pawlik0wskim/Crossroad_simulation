@@ -173,7 +173,7 @@ class Test(unittest.TestCase):
     #Test if mutation changes parameters
     def test_08_mutation(self):
         #Test if mutation changes random parameter
-        oa = OptimisationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=True, traffic_light_optimization=True)
+        oa = OptimizationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=True, traffic_light_optimization=True)
         speed_limit, light_cycles = (5,[[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]])
         
         new_speed_limit, new_light_cycles = oa.mutate(copy(speed_limit),copy(light_cycles))
@@ -187,7 +187,7 @@ class Test(unittest.TestCase):
     #Test if mutation changes correct parameters   
     def test_09_mutation_specific(self):
         #Test if mutation changes speed limit
-        oa = OptimisationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=True, traffic_light_optimization=False)
+        oa = OptimizationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=True, traffic_light_optimization=False)
         speed_limit, light_cycles = (5,[[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]])
         new_speed_limit, new_light_cycles = oa.mutate(copy(speed_limit),copy(light_cycles))
         
@@ -195,7 +195,7 @@ class Test(unittest.TestCase):
         self.assertEqual(light_cycles, new_light_cycles)#we want light cycles unchanged
         
         #Test if mutation changes light cycles
-        oa = OptimisationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=False, traffic_light_optimization=True)
+        oa = OptimizationAlgorithm(iterations=1, simulation_length=1, speed_limit_optimization=False, traffic_light_optimization=True)
         speed_limit, light_cycles = (5,[[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7],[0.1,0.2,0.6,0.7]])
         new_speed_limit, new_light_cycles = oa.mutate(speed_limit,light_cycles)
         

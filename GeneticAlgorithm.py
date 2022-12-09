@@ -11,13 +11,8 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         super().__init__(iterations, simulation_length, speed_limit_optimization, traffic_light_optimization)
 
         self.pop_size = int(kwargs['population_size'])
-<<<<<<< HEAD
-        self.populations = [[{'tl' : None, 
-                              's': None}
-=======
         self.populations = [[{"light_cycles" : None, 
                               "speed_limit": None}
->>>>>>> main
                               for j in range(self.pop_size)] 
                               for i in range(int(kwargs['population_number']))]
 
@@ -26,16 +21,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             for j in range(self.pop_size):
 
                 if self.traffic_light_optimization:
-<<<<<<< HEAD
-                    self.populations[i][j]['tl'] = np.random.uniform(0, 1, (4, 4)).tolist()
-                else:
-                    self.populations[i][j]['tl'] = copy.deepcopy(kwargs['traffic_lights'])
-                
-                if self.speed_limit_optimization:
-                    self.populations[i][j]['s'] = np.random.uniform(0.6, 1.4) * kwargs['speed_limit']
-                else:
-                    self.populations[i][j]['s'] = kwargs['speed_limit']
-=======
                     self.populations[i][j]["light_cycles"] = np.random.uniform(0, 1, (4, 4)).tolist()
                 else:
                     self.populations[i][j]["light_cycles"] = copy.deepcopy(kwargs['traffic_lights'])
@@ -44,7 +29,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                     self.populations[i][j]["speed_limit"] = np.random.uniform(0.6, 1.4) * kwargs['speed_limit']
                 else:
                     self.populations[i][j]["speed_limit"] = kwargs['speed_limit']
->>>>>>> main
 
         self.mutation_prob = kwargs['mutation_probability']
         self.crossover_prob = kwargs['crossover_probability']
@@ -73,11 +57,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     def optimise(self, simulation, text, opt_progress, sim_progress, duration_label, init_params=None):
 
         cols = ["Main index", "Population", "Unit", "Small index", "Speed limit(km/h)"]
-<<<<<<< HEAD
-        for i in range(len(self.populations[0][0]['tl'])):
-=======
         for i in range(len(self.populations[0][0]["light_cycles"])):
->>>>>>> main
             for j in range(4):
                 cols+=[f"Traffic light {i}_{j}"]
         cols +=["Flow", "Collisions", "Stopped", "Iterations"]
@@ -102,15 +82,9 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             for champ, stat in zip(self.champions, self.champions_stats):
                 text.insert(END, f'Champion {c} \n')
                 if self.traffic_light_optimization:
-<<<<<<< HEAD
-                    text.insert(END, f'Traffic lights: {champ["tl"]} \n')
-                if self.speed_limit_optimization:
-                    text.insert(END, f'Speed limit: {champ["s"]} \n')
-=======
                     text.insert(END, f'Traffic lights: {champ["light_cycles"]} \n')
                 if self.speed_limit_optimization:
                     text.insert(END, f'Speed limit: {champ["light_cycles"]} \n')
->>>>>>> main
                 text.insert(END, f'Stats: {stat} \n')
                 c += 1
             text.insert(END, '------------------------------------\n')
@@ -145,24 +119,18 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
             opt_progress['value'] = int(100*i/self.iterations)
         
-<<<<<<< HEAD
-        for i in range(len(self.champions)):
-            self.champions[i]['stats'] = self.champions_stats[i]
-            self.champions[i]['s'] = pixels_to_kmh(self.champions[i]['s'])
-=======
         duration_label.configure(text='Finished')
         
         for i in range(len(self.champions)):
             self.champions[i]['flow'] = self.champions_stats[i][0]
             self.champions[i]['collisions'] = -self.champions_stats[i][1]
             self.champions[i]['speed_limit'] = pixels_to_kmh(self.champions[i]["speed_limit"])
->>>>>>> main
         with open('champions.json', 'w') as fp:
             json.dump(self.champions, fp)
             fp.close()
 
 
-    # calculates values of cost function for all units in all populations
+    # calculates costs for all units in all populations
     # returns 2d list, which has same dimensions as self.populations,
     # but contains costs of corresponding units
     def calculate_cost(self, simulation, iteration, text, sim_progress, duration_label):
@@ -175,19 +143,11 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                 Flow, Collisions = 0, 0
 
                 for j in range(self.simulation_repetitions):
-<<<<<<< HEAD
-                    f, c, stopped, iter, elapsed_time = simulation.simulate(unit['s'], unit['tl'], 
-                                                              sim=j, sim_max=self.simulation_repetitions, 
-                                                              it=iteration, iter_max=self.iterations,
-                                                              text=text, loading_bar=sim_progress)
-                    self.append_stats(iteration, p, u, j, f, c, unit['s'], unit['tl'], stopped, iter)
-=======
                     f, c, stopped, iter, elapsed_time = simulation.simulate(unit["speed_limit"], unit["light_cycles"], 
                                                               sim=j, sim_max=self.simulation_repetitions, 
                                                               it=iteration, iter_max=self.iterations,
                                                               text=text, loading_bar=sim_progress)
                     self.append_stats(iteration, p, u, j, f, c, unit["speed_limit"], unit["light_cycles"], stopped, iter)
->>>>>>> main
                     simulation.reset_map()
                     Flow += f
                     Collisions += c
@@ -201,11 +161,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                 Flow /= self.simulation_repetitions
                 Collisions /= self.simulation_repetitions
                 pop_stats.append([Flow, -Collisions])
-<<<<<<< HEAD
-                self.append_stats(iteration, p, u, None, Flow, Collisions, unit['s'], unit['tl'], None, None)
-=======
                 self.append_stats(iteration, p, u, None, Flow, Collisions, unit["speed_limit"], unit["light_cycles"], None, None)
->>>>>>> main
             
             costs.append(self.get_pareto_scores(pop_stats, p))
         
@@ -221,10 +177,8 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         for i in range(len(pop_stats)):
             for j in range(i+1, len(pop_stats)):
                 domination = self.pareto_compare(pop_stats[i], pop_stats[j])
-                if domination == 1:
-                    pop_costs[j] += 1
-                if domination == 2:
-                    pop_costs[i] += 1
+                pop_costs[j] += int(domination == 1)
+                pop_costs[i] += int(domination == 2)
             
             # if unit is not dominated, it may be a potential champion
             # real champions will be distinguished later
@@ -251,18 +205,29 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
     # filters dominated champions out and leaves only not dominated ones and their statistics
     def update_champions(self):
-        # print(self.champions_stats)
+        if len(self.champions) == 1:
+            return
+
         new_champions = []
         new_champions_stats = []
+        is_dominated = [0] * len(self.champions)
+
         for i in range(len(self.champions)):
-            dominated = False
-            for j in range(len(self.champions)):
-                # if currently processed unit is dominated by some other unit,
-                # current unit has to be filtered out of champions list
-                if self.pareto_compare(self.champions_stats[i], self.champions_stats[j]) == 2:
-                    dominated = True
+            # if current unit was dominated by some prior unit, no need to check futher
+            if is_dominated[i] == 1:
+                continue
+
+            for j in range(i+1, len(self.champions)):
+                domination = self.pareto_compare(self.champions_stats[i], self.champions_stats[j])
+                # if current unit dominates, save that information
+                if domination == 1:
+                    is_dominated[j] = 1
+                # if current unit is dominated, no need to check futher
+                if domination == 2:
+                    is_dominated[i] = 1
                     break
-            if not dominated:
+            # if no dominating units found, current unit is one of true champions
+            if is_dominated[i] == 0:
                 new_champions.append(self.champions[i])
                 new_champions_stats.append(self.champions_stats[i])
         
@@ -274,16 +239,16 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     def generate_new_population(self, population, pop_costs):
         new_population = []
 
-        # rescale costs to probabilities of being chosen for selection
-        # so that units with smallest cost have the highest probability
         pop_costs = np.array(pop_costs)
-        pop_costs = np.max(pop_costs) - pop_costs + 1
-        pop_costs = pop_costs/np.sum(pop_costs)
-
         # sort to choose top organisms without changes
         ind = np.argsort(pop_costs)
         population = self.permute(population, ind)
         pop_costs = pop_costs[ind]
+
+        # rescale costs to probabilities of being chosen for selection
+        # so that units with smallest cost have the highest probability
+        pop_costs = np.max(pop_costs) - pop_costs + 1
+        pop_costs = pop_costs/np.sum(pop_costs)
 
         # add the best units without any changes
         new_population += population[0:self.elite_num]
@@ -307,32 +272,15 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     # each parameter has equal probability of being inherited from parent1 or parent2
     def crossover(self, parent1, parent2):
         child = {}
-<<<<<<< HEAD
-
-        # if speed limit is not optimised, child will always have same speed limit as all other units
-        # if it is optimised, one of the parents values is chosen with equal probability
-        child['s'] = parent1['s'] if np.random.uniform(0, 1) < 0.5 else parent2['s']
-
-=======
 
         # if speed limit is not optimised, child will always have same speed limit as all other units
         # if it is optimised, one of the parents values is chosen with equal probability
         child["speed_limit"] = parent1["speed_limit"] if np.random.uniform(0, 1) < 0.5 else parent2["speed_limit"]
 
->>>>>>> main
         if self.traffic_light_optimization:
             # if traffic light cycles are optimised, take parameters for each traffic light
             # from the corresponding traffic light of randomy chosen parent 
             child_tl = []
-<<<<<<< HEAD
-            for i in range(len(parent1['tl'])):
-                child_tl.append(parent1['tl'][i].copy() if np.random.uniform(0, 1) < 0.5 else parent2['tl'][i].copy())
-            child['tl'] = child_tl
-        else:
-            # if traffic light cycles are not optimised, 
-            # just copy traffic light parameters from one of the parents to speed up the crossover
-            child['tl'] = copy.deepcopy(parent1['tl'])
-=======
             for i in range(len(parent1["light_cycles"])):
                 child_tl.append(parent1["light_cycles"][i].copy() if np.random.uniform(0, 1) < 0.5 else parent2["light_cycles"][i].copy())
             child["light_cycles"] = child_tl
@@ -340,7 +288,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             # if traffic light cycles are not optimised, 
             # just copy traffic light parameters from one of the parents to speed up the crossover
             child["light_cycles"] = copy.deepcopy(parent1["light_cycles"])
->>>>>>> main
 
         return child
     

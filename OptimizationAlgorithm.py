@@ -46,7 +46,6 @@ class OptimizationAlgorithm:
             f.close()
     
     def update_estimated_duration(self, duration_label, estimated_duration):
-        print(estimated_duration)
         dhm = seconds_to_dhm(estimated_duration)
         unit = [[' day ', ' days '], [' hour ', ' hours '], [' minute ', ' minutes ']]
         duration_text = 'Estimated duration: '
