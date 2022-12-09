@@ -1,4 +1,4 @@
-from OptimisationAlgorithm import OptimisationAlgorithm
+from OptimizationAlgorithm import OptimizationAlgorithm
 import numpy as np
 from utilities import pixels_to_kmh, seconds_to_dhm
 import copy
@@ -6,13 +6,18 @@ import json
 from csv import writer
 from tkinter import NORMAL, DISABLED, END
 
-class GeneticAlgorithm(OptimisationAlgorithm):
+class GeneticAlgorithm(OptimizationAlgorithm):
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, **kwargs):
         super().__init__(iterations, simulation_length, speed_limit_optimization, traffic_light_optimization)
 
         self.pop_size = int(kwargs['population_size'])
+<<<<<<< HEAD
         self.populations = [[{'tl' : None, 
                               's': None}
+=======
+        self.populations = [[{"light_cycles" : None, 
+                              "speed_limit": None}
+>>>>>>> main
                               for j in range(self.pop_size)] 
                               for i in range(int(kwargs['population_number']))]
 
@@ -21,6 +26,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             for j in range(self.pop_size):
 
                 if self.traffic_light_optimization:
+<<<<<<< HEAD
                     self.populations[i][j]['tl'] = np.random.uniform(0, 1, (4, 4)).tolist()
                 else:
                     self.populations[i][j]['tl'] = copy.deepcopy(kwargs['traffic_lights'])
@@ -29,6 +35,16 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                     self.populations[i][j]['s'] = np.random.uniform(0.6, 1.4) * kwargs['speed_limit']
                 else:
                     self.populations[i][j]['s'] = kwargs['speed_limit']
+=======
+                    self.populations[i][j]["light_cycles"] = np.random.uniform(0, 1, (4, 4)).tolist()
+                else:
+                    self.populations[i][j]["light_cycles"] = copy.deepcopy(kwargs['traffic_lights'])
+                
+                if self.speed_limit_optimization:
+                    self.populations[i][j]["speed_limit"] = np.random.uniform(0.6, 1.4) * kwargs['speed_limit']
+                else:
+                    self.populations[i][j]["speed_limit"] = kwargs['speed_limit']
+>>>>>>> main
 
         self.mutation_prob = kwargs['mutation_probability']
         self.crossover_prob = kwargs['crossover_probability']
@@ -57,7 +73,11 @@ class GeneticAlgorithm(OptimisationAlgorithm):
     def optimise(self, simulation, text, opt_progress, sim_progress, duration_label, init_params=None):
 
         cols = ["Main index", "Population", "Unit", "Small index", "Speed limit(km/h)"]
+<<<<<<< HEAD
         for i in range(len(self.populations[0][0]['tl'])):
+=======
+        for i in range(len(self.populations[0][0]["light_cycles"])):
+>>>>>>> main
             for j in range(4):
                 cols+=[f"Traffic light {i}_{j}"]
         cols +=["Flow", "Collisions", "Stopped", "Iterations"]
@@ -82,9 +102,15 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             for champ, stat in zip(self.champions, self.champions_stats):
                 text.insert(END, f'Champion {c} \n')
                 if self.traffic_light_optimization:
+<<<<<<< HEAD
                     text.insert(END, f'Traffic lights: {champ["tl"]} \n')
                 if self.speed_limit_optimization:
                     text.insert(END, f'Speed limit: {champ["s"]} \n')
+=======
+                    text.insert(END, f'Traffic lights: {champ["light_cycles"]} \n')
+                if self.speed_limit_optimization:
+                    text.insert(END, f'Speed limit: {champ["light_cycles"]} \n')
+>>>>>>> main
                 text.insert(END, f'Stats: {stat} \n')
                 c += 1
             text.insert(END, '------------------------------------\n')
@@ -119,9 +145,18 @@ class GeneticAlgorithm(OptimisationAlgorithm):
 
             opt_progress['value'] = int(100*i/self.iterations)
         
+<<<<<<< HEAD
         for i in range(len(self.champions)):
             self.champions[i]['stats'] = self.champions_stats[i]
             self.champions[i]['s'] = pixels_to_kmh(self.champions[i]['s'])
+=======
+        duration_label.configure(text='Finished')
+        
+        for i in range(len(self.champions)):
+            self.champions[i]['flow'] = self.champions_stats[i][0]
+            self.champions[i]['collisions'] = -self.champions_stats[i][1]
+            self.champions[i]['speed_limit'] = pixels_to_kmh(self.champions[i]["speed_limit"])
+>>>>>>> main
         with open('champions.json', 'w') as fp:
             json.dump(self.champions, fp)
             fp.close()
@@ -140,11 +175,19 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 Flow, Collisions = 0, 0
 
                 for j in range(self.simulation_repetitions):
+<<<<<<< HEAD
                     f, c, stopped, iter, elapsed_time = simulation.simulate(unit['s'], unit['tl'], 
                                                               sim=j, sim_max=self.simulation_repetitions, 
                                                               it=iteration, iter_max=self.iterations,
                                                               text=text, loading_bar=sim_progress)
                     self.append_stats(iteration, p, u, j, f, c, unit['s'], unit['tl'], stopped, iter)
+=======
+                    f, c, stopped, iter, elapsed_time = simulation.simulate(unit["speed_limit"], unit["light_cycles"], 
+                                                              sim=j, sim_max=self.simulation_repetitions, 
+                                                              it=iteration, iter_max=self.iterations,
+                                                              text=text, loading_bar=sim_progress)
+                    self.append_stats(iteration, p, u, j, f, c, unit["speed_limit"], unit["light_cycles"], stopped, iter)
+>>>>>>> main
                     simulation.reset_map()
                     Flow += f
                     Collisions += c
@@ -158,7 +201,11 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 Flow /= self.simulation_repetitions
                 Collisions /= self.simulation_repetitions
                 pop_stats.append([Flow, -Collisions])
+<<<<<<< HEAD
                 self.append_stats(iteration, p, u, None, Flow, Collisions, unit['s'], unit['tl'], None, None)
+=======
+                self.append_stats(iteration, p, u, None, Flow, Collisions, unit["speed_limit"], unit["light_cycles"], None, None)
+>>>>>>> main
             
             costs.append(self.get_pareto_scores(pop_stats, p))
         
@@ -250,7 +297,7 @@ class GeneticAlgorithm(OptimisationAlgorithm):
                 unit = np.random.choice(population, 1, p=pop_costs)[0]
 
             if np.random.uniform(0, 1) < self.mutation_prob:
-                unit['s'], unit['tl'] = self.mutate(unit['s'], unit['tl'])
+                unit["speed_limit"], unit["light_cycles"] = self.mutate(unit["speed_limit"], unit["light_cycles"])
             
             new_population.append(unit)
         
@@ -260,15 +307,24 @@ class GeneticAlgorithm(OptimisationAlgorithm):
     # each parameter has equal probability of being inherited from parent1 or parent2
     def crossover(self, parent1, parent2):
         child = {}
+<<<<<<< HEAD
 
         # if speed limit is not optimised, child will always have same speed limit as all other units
         # if it is optimised, one of the parents values is chosen with equal probability
         child['s'] = parent1['s'] if np.random.uniform(0, 1) < 0.5 else parent2['s']
 
+=======
+
+        # if speed limit is not optimised, child will always have same speed limit as all other units
+        # if it is optimised, one of the parents values is chosen with equal probability
+        child["speed_limit"] = parent1["speed_limit"] if np.random.uniform(0, 1) < 0.5 else parent2["speed_limit"]
+
+>>>>>>> main
         if self.traffic_light_optimization:
             # if traffic light cycles are optimised, take parameters for each traffic light
             # from the corresponding traffic light of randomy chosen parent 
             child_tl = []
+<<<<<<< HEAD
             for i in range(len(parent1['tl'])):
                 child_tl.append(parent1['tl'][i].copy() if np.random.uniform(0, 1) < 0.5 else parent2['tl'][i].copy())
             child['tl'] = child_tl
@@ -276,6 +332,15 @@ class GeneticAlgorithm(OptimisationAlgorithm):
             # if traffic light cycles are not optimised, 
             # just copy traffic light parameters from one of the parents to speed up the crossover
             child['tl'] = copy.deepcopy(parent1['tl'])
+=======
+            for i in range(len(parent1["light_cycles"])):
+                child_tl.append(parent1["light_cycles"][i].copy() if np.random.uniform(0, 1) < 0.5 else parent2["light_cycles"][i].copy())
+            child["light_cycles"] = child_tl
+        else:
+            # if traffic light cycles are not optimised, 
+            # just copy traffic light parameters from one of the parents to speed up the crossover
+            child["light_cycles"] = copy.deepcopy(parent1["light_cycles"])
+>>>>>>> main
 
         return child
     

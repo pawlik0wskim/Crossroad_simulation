@@ -13,13 +13,12 @@ import sys
 from tkinter.ttk import Progressbar
 
 class Application:   
-    def __init__(self, max_iter, frames_per_car, light_cycle_time, acceleration_exponent, right_prob, left_prob):
+    def __init__(self, max_iter, frames_per_car, light_cycle_time, right_prob, left_prob):
         
         self.map = generate_crossroad(WIDTH, HEIGHT)
         self.max_iter = max_iter 
         self.frames_per_car = frames_per_car
         self.light_cycle_time = light_cycle_time
-        self.acceleration_exponent = acceleration_exponent
         self.right_prob, self.left_prob = right_prob, left_prob
     
     #Method clears the intersection    
@@ -53,7 +52,6 @@ class Application:
         while(True):
             if loading_bar is not None:
                 loading_bar['value'] = int(100*i/self.max_iter)
-            iter_start_time = time.time()
             i+=1
             
             if visualise:
@@ -66,7 +64,7 @@ class Application:
                     self.map.process_car_neighborhood(car, road)
 
             if i%self.frames_per_car == 0:
-                self.map.spawn_car(speed_limit, self.acceleration_exponent)
+                self.map.spawn_car(speed_limit)
             
             self.map.update_traffic_lights(i, self.light_cycle_time)
             Flow+=self.map.move_cars( self.right_prob, self.left_prob)
@@ -75,22 +73,23 @@ class Application:
                 pygame.display.update()
                 clock.tick(FPS)
             
-            if i%600*FPS == 0: 
+            if i%(30*FPS) == 0: 
                 #Ends simulation if the crossroad got stuck
                 if Flow == prev_flow:
                     stopped = True
                     iteration = i
                     break
                 prev_flow = Flow
+            iteration = i
             #Ends simulation if enough time has passed
             if i >= self.max_iter:
                 break
-            iteration = i
+            
         
         elapsed_time = time.time() - start_time
         if text is not None:
             text.configure(state=NORMAL)
-            text.insert(END, f"Flow: {Flow}, Collisions: {Collisions}, Time: {(round(elapsed_time, 3))}, Cost: {round(cost_function(Flow, Collisions, i, stopped), 3)}, Stopped: {stopped}\n")
+            text.insert(END, f"Flow: {Flow}, Collisions: {Collisions}, Time: {(round(elapsed_time, 3))}, Cost: {round(cost_function(Flow, Collisions), 3)}, Stopped: {stopped}\n")
             text.configure(state=DISABLED)
 
         return Flow, Collisions, stopped, iteration, elapsed_time
@@ -136,18 +135,17 @@ def run_progress_gui(oa, app, init_params=None):
 if __name__=='__main__':
     
     light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization = run_gui()
-    acceleration_exponent = 4
-    app = Application(simulation_length, frames_per_car, light_cycle_time, acceleration_exponent, right_prob, left_prob)
+    
+    app = Application(simulation_length, frames_per_car, light_cycle_time, right_prob, left_prob)
 
 
     if mode == "visualisation":
-        Flow, Collisions, stopped, iteration= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
+        Flow, Collisions, stopped, iteration, elapsed_time= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
         
     if mode =="simulated annealing"  :  
         app.set_traffic_lights(light_cycles)
         sa = SimulatedAnnealing(number_of_iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate) 
-        # sa.optimise(app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles}, None, None, None)
-        run_progress_gui(sa, app, {"speed_limit": kilometers_per_hour_to_pixels(speed_limit), "light_cycles": light_cycles})
+        run_progress_gui(sa, app, {"speed_limit": speed_limit, "light_cycles": light_cycles})
         
     if mode == "genetic algorithm":
         ga = GeneticAlgorithm(number_of_iterations, simulation_length, 

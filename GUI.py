@@ -1,6 +1,6 @@
 
 from tkinter import *
-from  utilities import unit
+from  utilities import kilometers_per_hour_to_pixels
 import customtkinter
 from RangeSlider import RangeSliderH 
 import tkinter as tk
@@ -16,6 +16,7 @@ class TraficLigthsWidget:
         self.starting_row = starting_row
         self.generate_lights_sliders(starting_light=starting_light)
         
+        self.entries = False
         #Add and place text entry widgets
         self.entries = [self.generate_entry(int(self.sliders[i//2].getValues()[i-i//2*2]*100)/100, i+6) for i in range(4)]
             
@@ -46,9 +47,28 @@ class TraficLigthsWidget:
             sliders[i].grid(row = self.starting_row + (self.y-30)//150, column = 13+i*4, columnspan = 4)
         self.sliders = sliders
     
+    #Function validating inputs provided by the user   
+    def validate_function(self, val, col):
+        if len(val)>1:
+            i=col-6
+            try:
+                fl = float(val)
+                if self.entries:
+                    if fl>1/2*(1+(col-6)//2):
+                        self.entries[i].placeholder_text = f"<{1/2*(1+i//2)}"
+                        self.entries[i].delete(0,END)
+                    elif fl<1/2*((col-6)//2) and (len(val)>2 or col==6):
+                        self.entries[i].placeholder_text = f">{1/2*(i//2)}"
+                        self.entries[i].delete(0,END)  
+                return True
+            except ValueError:
+                return False
+        return False
+    
     #Method creating entry field in selected column with determined placeholder value
     def generate_entry(self, place_holder, col) :
-        entry = customtkinter.CTkEntry(width=self.width/4.5,placeholder_text=place_holder)
+        vcmd  = (root.register(lambda val: self.validate_function(val,col)),"%P")
+        entry = customtkinter.CTkEntry(width=self.width/4.5,placeholder_text=place_holder, validatecommand=vcmd, validate = "key")
         entry.grid(row = self.starting_row + (self.y-30)//150, column = col)
         return entry
            
@@ -63,10 +83,12 @@ class TraficLigthsWidget:
                 elif fl<1/2*(i//2):
                     self.entries[i] = self.generate_entry(f">{1/2*(i//2)}", i+6)
                 elif i ==len(self.entries)-1:
-                    self.generate_lights_sliders( values = [float(self.entries[0].entry.get()), float(self.entries[1].entry.get())], values2 = [float(self.entries[2].entry.get()), float(self.entries[3].entry.get())])
+                    color = self.starting_light
+                    self.generate_lights_sliders( values = [float(self.entries[0].entry.get()), float(self.entries[1].entry.get())], values2 = [float(self.entries[2].entry.get()), float(self.entries[3].entry.get())], starting_light=color)
             except ValueError:
                 if i!=3 or 1-isinstance(fl, float):
-                    self.entries[i] = self.generate_entry("float", i+6)
+                    self.entries[i].placeholder_text = self.sliders[i//2].getValues()[i%2]
+                    self.entries[i].delete(0,END)
                     
     #Returns light cycle of traffic light        
     def get_values(self):
@@ -79,18 +101,20 @@ class TraficLigthsWidget:
 
 #Class representing entry field and label for all variables that are singular int, float value
 class EntryVariable:
-    def __init__(self, row, col, text, value = "placeholder", type =int, entry_type="entry", command=None):
+    def __init__(self, row, col, text, value = "placeholder", type =int, entry_type="entry", command=None, variable=None):
         self.label = customtkinter.CTkLabel(root, text=text)
         self.label.grid(column=col, row= row, columnspan = 4)
         self.entry_type = entry_type
+        self.type = type
         if entry_type == "entry":
-            self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=value)
+            vcmd  = (root.register(lambda val: self.validate_function(val)),"%P")
+            self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=value, validatecommand=vcmd, validate = "key")
             self.entry.grid(column=col+4, row= row, columnspan = 1)
         elif entry_type=="check_box":
-            self.entry = customtkinter.CTkCheckBox(width=Width/3, text="", command=command)
+            self.entry = customtkinter.CTkCheckBox(width=Width/3, text="", command=command, variable=variable)
             self.entry.grid(column=col+4, row= row, columnspan = 1)
             self.entry.select()
-        self.type = type
+        
         self.row = row
         self.col = col
         self.type_name = "int" if type == int else "float"
@@ -111,6 +135,20 @@ class EntryVariable:
             self.entry.grid(column=self.col+4, row= self.row, columnspan = 1)
             fl = False
         return fl
+    
+    #Function validating inputs provided by the user   
+    def validate_function(self, val):
+        try:
+            if self.type==int and len(val)==0:
+                return True
+            fl = self.type(val)
+            if (fl>1 or fl<0) and self.type == float:
+                self.entry.placeholder_text = "<0,1>"
+                self.entry.delete(0,END)
+                
+            return True
+        except ValueError:
+            return False
     
 #Main class of Graphical User Interface        
 class GUI:
@@ -224,6 +262,9 @@ class GUI:
             self.common_optimization_modules[1].entry.configure(state=NORMAL)
         else:
             self.common_optimization_modules[1].entry.configure(state=DISABLED)
+            
+            
+ 
         
 #Function addinng empty line to GUI(used to improve visual layer of the application)
 def add_empty_line(row):
@@ -251,15 +292,8 @@ def run_gui():
     # Add handling of window closing
     root.protocol("WM_DELETE_WINDOW", on_closing)
     #Adding few empty rodes to improve visual effect of GUI
-    add_empty_line(0)
-    add_empty_line(3)
-    add_empty_line(8)
-    add_empty_line(10)
-    add_empty_line(12)
-    add_empty_line(13)
-    add_empty_line(15)
-    add_empty_line(17)
-    add_empty_line(20)
+    for line in [0, 3, 8, 10, 12, 13, 15, 17, 20]:
+        add_empty_line(line)
     
     
     gui = GUI()
@@ -271,10 +305,10 @@ def run_gui():
         light_cycles = [values[i]for i in range(4)]
         speed_limit_optimization-=1
         traffic_light_optimization-=1
-        return light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
+        return light_cycles, kilometers_per_hour_to_pixels(speed_limit) , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
     return None
     
-
-#run_gui()
+if __name__=="__main__":
+    run_gui()
 
 
