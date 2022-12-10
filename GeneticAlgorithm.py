@@ -1,9 +1,8 @@
 from OptimizationAlgorithm import OptimizationAlgorithm
 import numpy as np
-from utilities import pixels_to_kmh, seconds_to_dhm
+from utilities import pixels_to_kmh
 import copy
 import json
-from csv import writer
 from tkinter import NORMAL, DISABLED, END
 
 class GeneticAlgorithm(OptimizationAlgorithm):
@@ -53,6 +52,8 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         # number of simulations left till the end of optimisation
         self.simulations_number = self.pop_size * len(self.populations) * self.simulation_repetitions * self.iterations
         self.simulations_conducted = 0
+        self.stats_file = 'genetic_' + self.stats_file
+        self.champions_file = 'genetic_' + self.champions_file
 
     def optimise(self, simulation, text, opt_progress, sim_progress, duration_label, init_params=None):
 
@@ -84,7 +85,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                 if self.traffic_light_optimization:
                     text.insert(END, f'Traffic lights: {champ["light_cycles"]} \n')
                 if self.speed_limit_optimization:
-                    text.insert(END, f'Speed limit: {champ["light_cycles"]} \n')
+                    text.insert(END, f'Speed limit: {champ["speed_limit"]} \n')
                 text.insert(END, f'Stats: {stat} \n')
                 c += 1
             text.insert(END, '------------------------------------\n')
@@ -125,7 +126,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             self.champions[i]['flow'] = self.champions_stats[i][0]
             self.champions[i]['collisions'] = -self.champions_stats[i][1]
             self.champions[i]['speed_limit'] = pixels_to_kmh(self.champions[i]["speed_limit"])
-        with open('champions.json', 'w') as fp:
+        with open(self.champions_file, 'w') as fp:
             json.dump(self.champions, fp)
             fp.close()
 

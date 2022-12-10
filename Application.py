@@ -97,11 +97,14 @@ class Application:
 def run_progress_gui(oa, app, init_params=None):
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            if len(oa.stats) > 0:
+                oa.save_stats()
             root.destroy()
             sys.exit()
 
     root = customtkinter.CTk()
     root.geometry("1000x500")
+    root.resizable(False, False)
 
     duration_label = customtkinter.CTkLabel(root, text='Estimated duration: Will appear after first simulation')
     duration_label.place(relx=0.6, rely=0.04)

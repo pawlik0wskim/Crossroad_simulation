@@ -2,12 +2,16 @@ import numpy as np
 from copy import deepcopy
 from csv import writer
 from utilities import seconds_to_dhm
+from datetime import datetime
 
 class OptimizationAlgorithm:
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization):
         self.iterations = int(iterations)
         self.simulation_length = int(simulation_length)
         self.stats = []
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        self.stats_file = 'stats_' + timestamp + '.csv'
+        self.champions_file = 'champions_' + timestamp + '.json'
         self.speed_limit_optimization = speed_limit_optimization
         self.traffic_light_optimization = traffic_light_optimization
         self.elapsed_time = 0
@@ -39,7 +43,7 @@ class OptimizationAlgorithm:
     
     # saves statistics from self.stats to log file
     def save_stats(self):
-        with open('stats.csv', 'a') as f:
+        with open(self.stats_file, 'a') as f:
             writer_object = writer(f, lineterminator='\n')
             writer_object.writerows(self.stats)
         

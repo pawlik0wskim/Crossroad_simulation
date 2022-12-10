@@ -10,6 +10,8 @@ class SimulatedAnnealing(oa):
         self.temp = initial_temp
         self.cooling_rate = cooling_rate #rate of temperature decrease
         super().__init__(iterations, simulation_length, speed_limit_optimization, traffic_light_optimization)
+        self.stats_file = 'annealing_' + self.stats_file
+        self.champions_file = 'annealing_' + self.champions_file
     
     
     #main optimization method
@@ -95,6 +97,6 @@ class SimulatedAnnealing(oa):
         duration_label.configure(text='Finished')
         #Save stats and best set of parameters
         self.save_stats()  
-        with open('champions.json', 'w') as fp:
+        with open(self.champions_file, 'w') as fp:
             json.dump([{ "light_cycles":light_cycles_best, "speed_limit":pixels_to_kmh(speed_limit_best), "flow":best_stats[0],  "collisions":best_stats[1]}], fp)
             fp.close()
