@@ -3,24 +3,45 @@ from copy import deepcopy
 from csv import writer
 from utilities import seconds_to_dhm
 from datetime import datetime
+from utilities import pixels_to_kmh
+import json
 
 class OptimizationAlgorithm:
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization):
+        # number of iterations of optimization algorithm
         self.iterations = int(iterations)
         self.simulation_length = int(simulation_length)
         self.stats = []
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        # name of file, where stats will be saved
         self.stats_file = 'stats_' + timestamp + '.csv'
+        # name of file, where champions will be saved
         self.champions_file = 'champions_' + timestamp + '.json'
+        # boolean flag which shows if speed limit is optimised
         self.speed_limit_optimization = speed_limit_optimization
+        # boolean flag which shows if traffic lights are optimised
         self.traffic_light_optimization = traffic_light_optimization
+        # time elapsed since beginning of simulation
         self.elapsed_time = 0
+        # list of not dominated(in Pareto sense) units
+        self.champions = []
+        # list of statistics(Flow, Collisions) of not dominated units
+        self.champions_stats = []
     
     def visualise_learning(self):
         pass
     
     def optimise(self, simulation):
         pass
+
+    def save_champions(self):
+        for i in range(len(self.champions)):
+            self.champions[i]["flow"] = self.champions_stats[i][0]
+            self.champions[i]["collisions"] = -self.champions_stats[i][1]
+            self.champions[i]["speed_limit"] = pixels_to_kmh(self.champions[i]["speed_limit"])
+        with open(self.champions_file, "w") as fp:
+            json.dump(self.champions, fp)
+            fp.close()
     
     #Returns randomly changed input parameters
     def mutate(self, speed_limit, light_cycles):

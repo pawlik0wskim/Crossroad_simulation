@@ -99,6 +99,10 @@ def run_progress_gui(oa, app, init_params=None):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             if len(oa.stats) > 0:
                 oa.save_stats()
+            if isinstance(oa, GeneticAlgorithm):
+                oa.update_champions()
+            oa.save_champions()
+            
             root.destroy()
             sys.exit()
 

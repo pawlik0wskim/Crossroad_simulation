@@ -44,11 +44,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         # how often(in iterations) does migration happen
         self.migration_freq = 10
 
-        # list of not dominated(in Pareto sense) units
-        self.champions = []
-        # list of statistics(Flow, Collisions) of not dominated units
-        self.champions_stats = []
-
         # number of simulations left till the end of optimisation
         self.simulations_number = self.pop_size * len(self.populations) * self.simulation_repetitions * self.iterations
         self.simulations_conducted = 0
@@ -122,15 +117,8 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         
         duration_label.configure(text='Finished')
         
-        for i in range(len(self.champions)):
-            self.champions[i]['flow'] = self.champions_stats[i][0]
-            self.champions[i]['collisions'] = -self.champions_stats[i][1]
-            self.champions[i]['speed_limit'] = pixels_to_kmh(self.champions[i]["speed_limit"])
-        with open(self.champions_file, 'w') as fp:
-            json.dump(self.champions, fp)
-            fp.close()
-
-
+        self.save_champions()
+    
     # calculates costs for all units in all populations
     # returns 2d list, which has same dimensions as self.populations,
     # but contains costs of corresponding units
