@@ -71,11 +71,14 @@ class Controller:
     #Moves each car forward
     def move_cars(self, right_prob, left_prob):
         curr_flow = 0
+        curr_red_lights = 0
         for road in self.roads:
             for car in road.cars:
-                curr_flow+=road.calculate_car_next_pos(car, right_prob, left_prob)
+                flow, red_lights = road.calculate_car_next_pos(car, right_prob, left_prob)
+                curr_flow += flow
+                curr_red_lights += red_lights
                 car.mask = pygame.mask.from_surface(Car.get_img_as_surface(car.rotate_image()))
-        return curr_flow
+        return curr_flow, curr_red_lights
     
 
     #Removes cars that collided with each other            

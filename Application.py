@@ -67,8 +67,9 @@ class Application:
                 self.map.spawn_car(speed_limit)
             
             self.map.update_traffic_lights(i, self.light_cycle_time)
-            Flow+=self.map.move_cars( self.right_prob, self.left_prob)
-            Collisions+=self.map.check_for_car_collision()
+            curr_flow, red_lights = self.map.move_cars( self.right_prob, self.left_prob)
+            Flow+=curr_flow
+            Collisions+=self.map.check_for_car_collision() + red_lights/4
             if visualise:
                 pygame.display.update()
                 clock.tick(FPS)

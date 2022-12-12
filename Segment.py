@@ -110,6 +110,8 @@ class Segment:
         
     #Moves car to next position
     def calculate_car_next_pos(self, car, right_prob, left_prob, dist = None):
+        red_lights = 0
+
         car.update_acceleration( nearest_node = self.end_node, first = self.cars[0]==car)
             
         if dist == None:
@@ -148,12 +150,14 @@ class Segment:
                 next_road = self.get_next_road(right_prob, left_prob)
                 self.cars.remove(car)
                 if next_road!=None:
+                    if self.light and self.light_color == 2:
+                        red_lights = 1
                     car.rect = car.get_img_rect(center=next_road.start_node.pos) 
                     next_road.cars.append(car)
                     next_road.calculate_car_next_pos(car, right_prob, left_prob, dist_from_start[0] - length[0] + dist_from_start[1] - length[1])
                 else:
                     del car  
-                    return 1
+                    return 1, red_lights
             else:
                 car.rect = car.get_img_rect(center=new_pos)
         else:
@@ -170,18 +174,20 @@ class Segment:
                 next_road = self.get_next_road(right_prob, left_prob)
                 self.cars.remove(car)
                 if next_road!=None:
+                    if self.light and self.light_color == 2:
+                        red_lights = 1
                     car.rect = car.get_img_rect(center=next_road.start_node.pos) 
                     next_road.cars.append(car)
                     remaining_distance = np.abs(new_angle)%90/180*np.pi*self.radius
                     next_road.calculate_car_next_pos(car, right_prob, left_prob, remaining_distance)
                 else:
                     del car
-                    return 1  
+                    return 1, red_lights  
             else:
                 car.angle = new_angle
                 car.visable_angle -= angle*(int(self.curve=="right")-1/2)*2
                 car.rect = car.get_img_rect(center=new_pos)
-        return 0
+        return 0, red_lights
 
 #Draws set of roads checking if all angles, traffic lights and roaad lengths are drawn properly
 def test():
