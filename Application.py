@@ -4,8 +4,6 @@ from utilities import *
 from GUI import *
 from SimulatedAnnealing import SimulatedAnnealing
 from GeneticAlgorithm import GeneticAlgorithm
-import pandas as pd
-from datetime import datetime
 import time
 from tkinter import END, NORMAL, DISABLED, messagebox
 from threading import Thread
@@ -146,7 +144,6 @@ if __name__=='__main__':
     
     app = Application(simulation_length, frames_per_car, light_cycle_time, right_prob, left_prob)
 
-
     if mode == "visualisation":
         Flow, Collisions, stopped, iteration, elapsed_time= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
         
@@ -161,7 +158,7 @@ if __name__=='__main__':
                               elite_part=elite_part, 
                               population_size=population_size, 
                               traffic_lights=light_cycles, 
-                              speed_limit=kilometers_per_hour_to_pixels(speed_limit), 
+                              speed_limit=speed_limit, 
                               crossover_probability=crossover_probability, 
                               mutation_probability=mutation_probability, 
                               population_number=population_number,

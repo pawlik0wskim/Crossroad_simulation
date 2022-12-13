@@ -2,7 +2,6 @@ from OptimizationAlgorithm import OptimizationAlgorithm
 import numpy as np
 from utilities import pixels_to_kmh
 import copy
-import json
 from tkinter import NORMAL, DISABLED, END
 
 class GeneticAlgorithm(OptimizationAlgorithm):
@@ -80,11 +79,14 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                 if self.traffic_light_optimization:
                     text.insert(END, f'Traffic lights: {champ["light_cycles"]} \n')
                 if self.speed_limit_optimization:
-                    text.insert(END, f'Speed limit: {champ["speed_limit"]} \n')
+                    text.insert(END, f'Speed limit: {pixels_to_kmh(champ["speed_limit"])} \n')
                 text.insert(END, f'Stats: {stat} \n')
                 c += 1
             text.insert(END, '------------------------------------\n')
             text.configure(state=DISABLED)
+
+            if i == self.iterations:
+                break
 
             # sort organisms and their costs by values of costs
             for j in range(len(self.populations)):
