@@ -97,5 +97,6 @@ class SimulatedAnnealing(oa):
         
         duration_label.configure(text='Finished')
         #Save stats and champion
-        self.save_stats() 
+        self.save_stats()
+        self.stats = [] 
         self.save_champions() 
