@@ -66,7 +66,7 @@ class Application:
             
             self.map.update_traffic_lights(i, self.light_cycle_time)
             curr_flow, red_lights = self.map.move_cars( self.right_prob, self.left_prob)
-            Flow+=curr_flow
+            Flow+=curr_flow - 2*red_lights
             Collisions+=self.map.check_for_car_collision() + red_lights/4
             if visualise:
                 pygame.display.update()
