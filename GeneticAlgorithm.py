@@ -19,26 +19,25 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             for j in range(self.pop_size):
 
                 if self.traffic_light_optimization:
-                    self.populations[i][j]["light_cycles"] = np.random.uniform(0, 1, (4, 4)).tolist()
+                    self.populations[i][j]["light_cycles"] = np.around(np.random.uniform(0, 1, (4, 4)), 2).tolist()
                 else:
-                    self.populations[i][j]["light_cycles"] = copy.deepcopy(kwargs['traffic_lights'])
+                    self.populations[i][j]["light_cycles"] = copy.deepcopy(np.around(kwargs["traffic_lights"], 2).tolist())
                 
                 if self.speed_limit_optimization:
-                    self.populations[i][j]["speed_limit"] = np.random.uniform(0.6, 1.4) * kwargs['speed_limit']
+                    self.populations[i][j]["speed_limit"] = round(np.random.uniform(0.85, 1.15) * kwargs["speed_limit"])
                 else:
-                    self.populations[i][j]["speed_limit"] = kwargs['speed_limit']
+                    self.populations[i][j]["speed_limit"] = round(kwargs["speed_limit"])
 
         self.mutation_prob = kwargs['mutation_probability']
-        self.crossover_prob = kwargs['crossover_probability']
 
         # number of simulation repetitions
         self.simulation_repetitions = 3
 
         # how many top units pass selection unchaged
-        self.elite_num = int(self.pop_size*kwargs['elite_part'])
+        self.elite_num = int(self.pop_size*kwargs["elite_part"])
 
         # how many top units will migrate
-        self.migration_num = int(self.pop_size*kwargs['migration_part'])
+        self.migration_num = int(self.pop_size*kwargs["migration_part"])
 
         # how often(in iterations) does migration happen
         self.migration_freq = 10
@@ -247,10 +246,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         # fill remaining units in population by mutated or crossovered units from original population
         while len(new_population) < self.pop_size:
 
-            if np.random.uniform(0, 1) < self.crossover_prob:
-                unit = self.crossover(*np.random.choice(population, 2, p=pop_costs, replace=False))
-            else:
-                unit = np.random.choice(population, 1, p=pop_costs)[0]
+            unit = self.crossover(*np.random.choice(population, 2, p=pop_costs, replace=False))
 
             if np.random.uniform(0, 1) < self.mutation_prob:
                 unit["speed_limit"], unit["light_cycles"] = self.mutate(unit["speed_limit"], unit["light_cycles"])
@@ -286,6 +282,13 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     # returns permutation of list ls based on index list ind
     def permute(self, ls, ind):
         return [ls[ind[i]] for i in range(len(ls))]
+    
+    # help function
+    # compares two units
+    def compare_units(self, unit1, unit2):
+        if unit1["speed_limit"] != unit2["speed_limit"]:
+            return False
+        return unit1["light_cycles"] == unit2["light_cycles"]
     
     # help function
     # appends simulation statistics to self.stats field

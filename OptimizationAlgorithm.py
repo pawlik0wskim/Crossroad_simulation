@@ -55,7 +55,7 @@ class OptimizationAlgorithm:
             parameter_number-=1
         new_light_cycles = self.mutate_parameter(p, parameter_number, light_cycles) if np.random.uniform(0, 1) < 0.5 else self.mutate_shift(light_cycles)
                 
-        return new_speed_limit, new_light_cycles
+        return round(new_speed_limit), np.around(new_light_cycles, 2).tolist()
     
     def mutate_parameter(self, p, parameter_number, light_cycles):
         new_light_cycles = deepcopy(light_cycles)

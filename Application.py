@@ -147,7 +147,7 @@ if __name__=='__main__':
     if mode == "visualisation":
         Flow, Collisions, stopped, iteration, elapsed_time= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
         
-    if mode =="simulated annealing"  :  
+    if mode =="simulated annealing":  
         app.set_traffic_lights(light_cycles)
         sa = SimulatedAnnealing(number_of_iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate) 
         run_progress_gui(sa, app, {"speed_limit": speed_limit, "light_cycles": light_cycles})
@@ -159,7 +159,6 @@ if __name__=='__main__':
                               population_size=population_size, 
                               traffic_lights=light_cycles, 
                               speed_limit=speed_limit, 
-                              crossover_probability=crossover_probability, 
                               mutation_probability=mutation_probability, 
                               population_number=population_number,
                               migration_part=migration_part) 
