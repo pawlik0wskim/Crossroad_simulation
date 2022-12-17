@@ -131,7 +131,7 @@ class Controller:
     def update_traffic_lights(self, i, light_cycle_time):
         for road in self.roads_with_lights:
             for cycle in road.light_cycle:
-                if i%light_cycle_time==cycle*light_cycle_time:
+                if i%light_cycle_time==np.round(cycle*light_cycle_time):
                     road.light_color = road.light_color + 1 if road.light_color<3 else 0
     
    
