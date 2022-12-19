@@ -38,8 +38,7 @@ class OptimizationAlgorithm:
         for i in range(len(self.champions)):
             self.champions[i]["flow"] = self.champions_stats[i][0]
             self.champions[i]["collisions"] = -self.champions_stats[i][1]
-            self.champions[i]["speed_limit"] = pixels_to_kmh( self.champions[i]["speed_limit"]) 
-            print("Flag")
+            self.champions[i]["speed_limit"] = round(pixels_to_kmh( self.champions[i]["speed_limit"])) 
         with open(self.champions_file, "w") as fp:
             json.dump(self.champions, fp)
             fp.close()

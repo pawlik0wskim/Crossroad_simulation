@@ -86,7 +86,6 @@ class SimulatedAnnealing(oa):
                 speed_limit, light_cycles = new_speed_limit, new_light_cycles 
                 if loss_value_new - loss_best<0:
                     loss_best=loss_value
-                    print(pixels_to_kmh(new_speed_limit) )
                     self.champions[0]["speed_limit"] = new_speed_limit
                     self.champions[0]["light_cycles"] = new_light_cycles 
                     self.champions_stats[0] = [Flow_mean, Collisions_mean]

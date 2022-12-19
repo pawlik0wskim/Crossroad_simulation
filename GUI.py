@@ -281,7 +281,6 @@ class GUI:
         modules = self.lights + self.main_modules + self.common_optimization_modules + self.annealing_modules + self.genetic_modules
         for module in modules:
             self.values.append(module.get_values())
-            print(module.get_values())
         if all(self.values):
             root.destroy()
     

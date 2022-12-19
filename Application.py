@@ -98,9 +98,10 @@ def run_progress_gui(oa, app, init_params=None):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             if len(oa.stats) > 0:
                 oa.save_stats()
-            if isinstance(oa, GeneticAlgorithm):
-                oa.update_champions()
-            oa.save_champions()
+            if len(oa.champions) > 0:
+                if isinstance(oa, GeneticAlgorithm):
+                    oa.update_champions()
+                oa.save_champions()
             
             root.destroy()
             sys.exit()
@@ -131,8 +132,9 @@ def run_progress_gui(oa, app, init_params=None):
     sim_progress.place(relx=0.5, rely=0.1)
     customtkinter.CTkLabel(text="Current simulation: ").place(relx=0.35, rely=0.09)
 
-    thread = Thread(target=oa.optimise, args=[app, text, opt_progress, sim_progress, duration_label, init_params])
-    thread.daemon = True
+    thread = Thread(target=oa.optimise, 
+                    args=[app, text, opt_progress, sim_progress, duration_label, init_params],
+                    daemon=True)
     root.after_idle(thread.start)
     root.protocol("WM_DELETE_WINDOW", on_closing)
     root.mainloop()
