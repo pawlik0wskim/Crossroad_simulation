@@ -140,7 +140,7 @@ def run_progress_gui(oa, app, init_params=None):
         
 if __name__=='__main__':
     
-    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization = run_gui()
+    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization = run_gui()
     
     app = Application(simulation_length, frames_per_car, light_cycle_time, right_prob, left_prob)
 

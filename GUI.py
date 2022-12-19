@@ -221,11 +221,10 @@ class GUI:
     def generate_genetic_modules(self):
         Elite_part_variable  = EntryVariable(18,1,"Elitism: ","0.3", float)
         mutation_probability_variable  = EntryVariable(16,7,"Mutation probability: ","0.2", float)
-        crossover_probability_variable = EntryVariable(16,13,"Crossover probability: ","0.2", float)
         population_size_variable = EntryVariable(16,1,"Population size: ","100")
         population_number_variable = EntryVariable(18,7,"Number of populations: ","10")
-        migration_part_variable = EntryVariable(18,13,"Chance of migrations: ","0.2", float)
-        genetic_modules = [Elite_part_variable, mutation_probability_variable, crossover_probability_variable, population_size_variable, population_number_variable, migration_part_variable]
+        migration_part_variable = EntryVariable(16,13,"Chance of migrations: ","0.2", float)
+        genetic_modules = [Elite_part_variable, mutation_probability_variable, population_size_variable, population_number_variable, migration_part_variable]
         return genetic_modules
 
     #Generates entry fields common for all optimization modes  
@@ -334,11 +333,11 @@ def run_gui():
     if gui.values!=None:
         values = gui.values[:4] + [float(value) for value in gui.values[4:]]
         mode = gui.drop_menu.current_value
-        speed_limit, simulation_length, frames_per_car, left_prob , right_prob, light_cycle_time, number_of_iterations, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part = values[4:]
+        speed_limit, simulation_length, frames_per_car, left_prob , right_prob, light_cycle_time, number_of_iterations, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part = values[4:]
         light_cycles = [values[i]for i in range(4)]
         speed_limit_optimization-=1
         traffic_light_optimization-=1
-        return light_cycles, kilometers_per_hour_to_pixels(speed_limit) , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, crossover_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
+        return light_cycles, kilometers_per_hour_to_pixels(speed_limit) , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
     return None
     
 if __name__=="__main__":
