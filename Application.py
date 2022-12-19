@@ -4,8 +4,6 @@ from utilities import *
 from GUI import *
 from SimulatedAnnealing import SimulatedAnnealing
 from GeneticAlgorithm import GeneticAlgorithm
-import pandas as pd
-from datetime import datetime
 import time
 from tkinter import END, NORMAL, DISABLED, messagebox
 from threading import Thread
@@ -67,8 +65,9 @@ class Application:
                 self.map.spawn_car(speed_limit)
             
             self.map.update_traffic_lights(i, self.light_cycle_time)
-            Flow+=self.map.move_cars( self.right_prob, self.left_prob)
-            Collisions+=self.map.check_for_car_collision()
+            curr_flow, red_lights = self.map.move_cars( self.right_prob, self.left_prob)
+            Flow+=curr_flow - 2*red_lights
+            Collisions+=self.map.check_for_car_collision() + red_lights/4
             if visualise:
                 pygame.display.update()
                 clock.tick(FPS)
@@ -97,11 +96,18 @@ class Application:
 def run_progress_gui(oa, app, init_params=None):
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            if len(oa.stats) > 0:
+                oa.save_stats()
+            if isinstance(oa, GeneticAlgorithm):
+                oa.update_champions()
+            oa.save_champions()
+            
             root.destroy()
             sys.exit()
 
     root = customtkinter.CTk()
     root.geometry("1000x500")
+    root.resizable(False, False)
 
     duration_label = customtkinter.CTkLabel(root, text='Estimated duration: Will appear after first simulation')
     duration_label.place(relx=0.6, rely=0.04)
@@ -138,11 +144,10 @@ if __name__=='__main__':
     
     app = Application(simulation_length, frames_per_car, light_cycle_time, right_prob, left_prob)
 
-
     if mode == "visualisation":
         Flow, Collisions, stopped, iteration, elapsed_time= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
         
-    if mode =="simulated annealing"  :  
+    if mode =="simulated annealing":  
         app.set_traffic_lights(light_cycles)
         sa = SimulatedAnnealing(number_of_iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate) 
         run_progress_gui(sa, app, {"speed_limit": speed_limit, "light_cycles": light_cycles})
@@ -154,7 +159,6 @@ if __name__=='__main__':
                               population_size=population_size, 
                               traffic_lights=light_cycles, 
                               speed_limit=speed_limit, 
-                              crossover_probability=crossover_probability, 
                               mutation_probability=mutation_probability, 
                               population_number=population_number,
                               migration_part=migration_part) 

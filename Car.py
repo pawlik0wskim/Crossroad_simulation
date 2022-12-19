@@ -138,7 +138,6 @@ class Car:
         rotated_img = self.rotate_image()
         self.rect = self.get_img_rect(center)
         self.rect.center = center
-        if self.rect.center!=center: print(f"{self.rect.center}, {center}")
         surface = pygame.image.frombuffer(rotated_img.tobytes(), rotated_img.shape[1::-1], "RGBA")
         win.blit(surface, self.rect)
         

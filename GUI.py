@@ -6,19 +6,53 @@ from RangeSlider import RangeSliderH
 import tkinter as tk
 import sys
 from tkinter import messagebox
+from copy import deepcopy
+from matplotlib.figure import Figure 
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  
+import numpy as np
 
 BG_COLOR = "#212325" 
 
+class PlotWidget:
+    def __init__(self, row, entries=[0.1, 0.2, 0.6, 0.7], starting_light="Red"):
+        self.entries = entries
+        self.starting_light = starting_light
+        self.row = row
+        
+    def plot(self):
+        plot_data = deepcopy(self.entries)
+        plot_data.append(1)
+        plot_data = np.sort(plot_data)
+        fig = Figure(figsize = (3,1/4))
+        plot1 = fig.add_subplot(111)
+        colors=["Limegreen","Gold","r","Gold"]
+        
+        for i in range(5):
+            if self.starting_light=="Red":
+                col=colors[i] if i<4 else colors[0] 
+            else:
+                col=colors[i+2] if i<2 else colors[i-2] 
+            plot1.barh([0],plot_data[-i-1],color=col, height=1/3)
+        plot1.axis('off')
+        fig.set_facecolor(BG_COLOR)
+        output = FigureCanvasTkAgg(fig, master = root)
+        output.draw()
+
+        # placing the canvas on the Tkinter window 
+        output.get_tk_widget().grid(row = self.row, column = 13, columnspan = 8)
+        
+    
 class TraficLigthsWidget:
     def __init__(self, x, y, width = 180, starting_light = "Red", starting_row = 4):
+        self.starting_light = starting_light
         self.x, self.y = x, y
         self.width = width
         self.starting_row = starting_row
-        self.generate_lights_sliders(starting_light=starting_light)
+        self.plot=PlotWidget(self.starting_row + (self.y-30)//150, starting_light=starting_light) 
         
         self.entries = False
         #Add and place text entry widgets
-        self.entries = [self.generate_entry(int(self.sliders[i//2].getValues()[i-i//2*2]*100)/100, i+6) for i in range(4)]
+        self.entries = [self.generate_entry(int(self.plot.entries[i]*100)/100, i+6) for i in range(4)]
             
         #Add and place refresh button   
         self.button = customtkinter.CTkButton(master=root, text="Refresh", command=self.button_replace_function, width=self.width/3)
@@ -35,17 +69,21 @@ class TraficLigthsWidget:
         #Add and place traffic light label
         label = customtkinter.CTkLabel(root, text=f'Traffic light {(self.y-30)//150}' )
         label.grid(column=0, row= starting_row + (self.y-30)//150, columnspan = 4)
+        self.plot.plot()
         
-    # Method creates double range sliders representing traffic light cycle   
-    def generate_lights_sliders(self, values=[0.1,0.2], values2=[0.6,0.7], starting_light = "Red"):
-        color1, color2 = ("Red", "Green") if starting_light == "Red" else ("Green", "Red")
-        sliders = []
-        sliders.append(RangeSliderH(root, [DoubleVar(), DoubleVar()], Width=self.width, Height=24, min_val=0, max_val=1/2, show_value= True, padX=11, bgColor=BG_COLOR, font_size =1, right_color=color1, left_color=color2, values = values))
-        sliders.append(RangeSliderH(root, [DoubleVar(), DoubleVar()], Width=self.width, Height=24, min_val=1/2, max_val=1, show_value= True, padX=11, bgColor=BG_COLOR, font_size =1, right_color=color2, left_color=color1, values = values2))
-        for i in range(2):
-            #sliders[i].place(x=self.x+self.width*(i+1.4),y=self.y)
-            sliders[i].grid(row = self.starting_row + (self.y-30)//150, column = 13+i*4, columnspan = 4)
-        self.sliders = sliders
+    
+
+        
+    # # Method creates double range sliders representing traffic light cycle   
+    # def generate_lights_sliders(self, values=[0.1,0.2], values2=[0.6,0.7], starting_light = "Red"):
+    #     color1, color2 = ("Red", "Green") if starting_light == "Red" else ("Green", "Red")
+    #     sliders = []
+    #     sliders.append(RangeSliderH(root, [DoubleVar(), DoubleVar()], Width=self.width, Height=24, min_val=0, max_val=1/2, show_value= True, padX=11, bgColor=BG_COLOR, font_size =1, right_color=color1, left_color=color2, values = values))
+    #     sliders.append(RangeSliderH(root, [DoubleVar(), DoubleVar()], Width=self.width, Height=24, min_val=1/2, max_val=1, show_value= True, padX=11, bgColor=BG_COLOR, font_size =1, right_color=color2, left_color=color1, values = values2))
+    #     for i in range(2):
+    #         #sliders[i].place(x=self.x+self.width*(i+1.4),y=self.y)
+    #         sliders[i].grid(row = self.starting_row + (self.y-30)//150, column = 13+i*4, columnspan = 4)
+    #     self.sliders = sliders
     
     #Function validating inputs provided by the user   
     def validate_function(self, val, col):
@@ -54,11 +92,11 @@ class TraficLigthsWidget:
             try:
                 fl = float(val)
                 if self.entries:
-                    if fl>1/2*(1+(col-6)//2):
-                        self.entries[i].placeholder_text = f"<{1/2*(1+i//2)}"
+                    if fl>1:
+                        self.entries[i].placeholder_text = "<1"
                         self.entries[i].delete(0,END)
-                    elif fl<1/2*((col-6)//2) and (len(val)>2 or col==6):
-                        self.entries[i].placeholder_text = f">{1/2*(i//2)}"
+                    elif fl<0 and (len(val)>2 or col==6):
+                        self.entries[i].placeholder_text = f">0"
                         self.entries[i].delete(0,END)  
                 return True
             except ValueError:
@@ -68,7 +106,7 @@ class TraficLigthsWidget:
     #Method creating entry field in selected column with determined placeholder value
     def generate_entry(self, place_holder, col) :
         vcmd  = (root.register(lambda val: self.validate_function(val,col)),"%P")
-        entry = customtkinter.CTkEntry(width=self.width/4.5,placeholder_text=place_holder, validatecommand=vcmd, validate = "key")
+        entry = customtkinter.CTkEntry(master=root, width=self.width/4.5,placeholder_text=place_holder, validatecommand=vcmd, validate = "key")
         entry.grid(row = self.starting_row + (self.y-30)//150, column = col)
         return entry
            
@@ -78,26 +116,21 @@ class TraficLigthsWidget:
             fl =None
             try:
                 fl = float(self.entries[i].entry.get())
-                if fl>1/2*(1+i//2):
-                    self.entries[i] = self.generate_entry(f"<{1/2*(1+i//2)}", i+6)
-                elif fl<1/2*(i//2):
-                    self.entries[i] = self.generate_entry(f">{1/2*(i//2)}", i+6)
+                if fl>1:
+                    self.entries[i] = self.generate_entry("<1", i+6)
+                elif fl<0:
+                    self.entries[i] = self.generate_entry(">0", i+6)
                 elif i ==len(self.entries)-1:
-                    color = self.starting_light
-                    self.generate_lights_sliders( values = [float(self.entries[0].entry.get()), float(self.entries[1].entry.get())], values2 = [float(self.entries[2].entry.get()), float(self.entries[3].entry.get())], starting_light=color)
+                    self.plot.entries=[np.round(float(self.entries[0].entry.get()),2), np.round(float(self.entries[1].entry.get()),2), np.round(float(self.entries[2].entry.get()),2), np.round(float(self.entries[3].entry.get()),2)]
+                    self.plot.plot()
             except ValueError:
                 if i!=3 or 1-isinstance(fl, float):
-                    self.entries[i].placeholder_text = self.sliders[i//2].getValues()[i%2]
+                    self.entries[i].placeholder_text = self.plot.entries[i]
                     self.entries[i].delete(0,END)
                     
     #Returns light cycle of traffic light        
     def get_values(self):
-        values = []
-        for i in range(2):
-            value = self.sliders[i].getValues()
-            values.append(value[0])
-            values.append(value[1])
-        return values
+        return self.plot.entries
 
 #Class representing entry field and label for all variables that are singular int, float value
 class EntryVariable:
@@ -108,10 +141,10 @@ class EntryVariable:
         self.type = type
         if entry_type == "entry":
             vcmd  = (root.register(lambda val: self.validate_function(val)),"%P")
-            self.entry = customtkinter.CTkEntry(width=Width/3,placeholder_text=value, validatecommand=vcmd, validate = "key")
+            self.entry = customtkinter.CTkEntry(master = root, width=Width/3,placeholder_text=value, validatecommand=vcmd, validate = "key")
             self.entry.grid(column=col+4, row= row, columnspan = 1)
         elif entry_type=="check_box":
-            self.entry = customtkinter.CTkCheckBox(width=Width/3, text="", command=command, variable=variable)
+            self.entry = customtkinter.CTkCheckBox(master=root, width=Width/3, text="", command=command, variable=variable)
             self.entry.grid(column=col+4, row= row, columnspan = 1)
             self.entry.select()
         

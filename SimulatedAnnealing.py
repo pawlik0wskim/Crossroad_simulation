@@ -10,6 +10,8 @@ class SimulatedAnnealing(oa):
         self.temp = initial_temp
         self.cooling_rate = cooling_rate #rate of temperature decrease
         super().__init__(iterations, simulation_length, speed_limit_optimization, traffic_light_optimization)
+        self.stats_file = 'annealing_' + self.stats_file
+        self.champions_file = 'annealing_' + self.champions_file
     
     
     #main optimization method
@@ -21,7 +23,7 @@ class SimulatedAnnealing(oa):
         for i in range(len(light_cycles)):
             for j in range(4):
                 cols+=[f"Traffic light {i}_{j}"]
-        cols +=["Flow", "Collisions", "Stopped", "Iterations"]
+        cols +=["Flow", "Collisions", "Stopped", "Iterations", "Step"]
         self.stats = [cols]
         self.save_stats()
         self.stats = []
@@ -30,7 +32,7 @@ class SimulatedAnnealing(oa):
         Flow, Collisions, stopped, iteration, elapsed_time = simulation.simulate(speed_limit, light_cycles,
                                                                    text=text, loading_bar=sim_progress) 
         
-        #Analyse results, save them to stats and prepare for another simulations
+        #Analyse results, save them to stats and prepare for next simulations
         self.elapsed_time = elapsed_time
         simulation.reset_map()
         stat = [-1,0,pixels_to_kmh(speed_limit)]
@@ -42,8 +44,8 @@ class SimulatedAnnealing(oa):
         
         #Create stats for the best set of parameters
         loss_best=loss_value
-        speed_limit_best, light_cycles_best = speed_limit, light_cycles 
-        best_stats=[Flow, Collisions]
+        self.champions.append({"light_cycles": light_cycles, "speed_limit": speed_limit})
+        self.champions_stats.append([Flow, Collisions])
         
         #Main loop
         for i in range(int(self.iterations)):
@@ -67,34 +69,40 @@ class SimulatedAnnealing(oa):
                 stat = [i,j,pixels_to_kmh(new_speed_limit)]
                 for light in light_cycles:
                     stat+=light
-                stat += [ Flow, Collisions, stopped, iteration]
+                stat += [ Flow, Collisions, stopped, iteration, None]
                 self.stats.append(stat)
                 self.elapsed_time += elapsed_time
                 
             #Analyse the results
             loss_value_new = cost_function(Flow_mean, Collisions_mean)
             simulation.reset_map()
-            stat = [i,None,pixels_to_kmh(new_speed_limit)]
-            for light in light_cycles:
-                stat+=light
-            stat += [ Flow_mean, Collisions_mean, None, None]
-            self.stats.append(stat)
+            
             diff = loss_value_new - loss_value
             #Make decision whether to make a step or not
+            better = 0
             if diff<0  or np.random.rand()<np.exp(-diff/self.temp): 
+                better = 1
                 loss_value = loss_value_new
                 speed_limit, light_cycles = new_speed_limit, new_light_cycles 
                 if loss_value_new - loss_best<0:
                     loss_best=loss_value
-                    speed_limit_best, light_cycles_best = new_speed_limit, new_light_cycles 
-                    best_stats=[Flow_mean, Collisions_mean]
+                    print(pixels_to_kmh(new_speed_limit) )
+                    self.champions[0]["speed_limit"] = new_speed_limit
+                    self.champions[0]["light_cycles"] = new_light_cycles 
+                    self.champions_stats[0] = [Flow_mean, Collisions_mean]
             #Update the temperature
             self.temp *= self.cooling_rate
             opt_progress['value'] = int(100*(i+1)/self.iterations)
+            
+            #save stats
+            stat = [i,None,pixels_to_kmh(new_speed_limit)]
+            for light in light_cycles:
+                stat+=light
+            stat += [ Flow_mean, Collisions_mean, None, None, better]
+            self.stats.append(stat)
         
         duration_label.configure(text='Finished')
-        #Save stats and best set of parameters
-        self.save_stats()  
-        with open('champions.json', 'w') as fp:
-            json.dump([{ "light_cycles":light_cycles_best, "speed_limit":pixels_to_kmh(speed_limit_best), "flow":best_stats[0],  "collisions":best_stats[1]}], fp)
-            fp.close()
+        #Save stats and champion
+        self.save_stats()
+        self.stats = [] 
+        self.save_champions() 
