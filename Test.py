@@ -29,7 +29,8 @@ class Test(unittest.TestCase):
                     car.update_vision(road.direction, road.type, road.curve)
                     test_map.process_car_neighborhood(car, road)
             test_map.update_traffic_lights(i, 300)
-            Flow+=test_map.move_cars( 0, 0)
+            f, _ =test_map.move_cars( 0, 0)
+            Flow += f
             Collisions+=test_map.check_for_car_collision()
             if i >= max_iter or(Flow and break_on_flow):
                 break
@@ -351,5 +352,5 @@ class Test(unittest.TestCase):
 if __name__ == '__main__':
     global visualise
     visualise = False
-    for i in range(20):
+    for i in range(1):
         unittest.main(exit = False)

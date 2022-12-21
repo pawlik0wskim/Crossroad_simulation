@@ -9,7 +9,7 @@ from utilities import *
 # Flow = 0
 
 class Controller:
-    def __init__(self, roads, starting_nodes, load_ratio, img=None, rect=None):
+    def __init__(self, roads, starting_nodes, load_ratio=None, img=None, rect=None):
         self.roads=roads
         self.starting_nodes = starting_nodes
         self.roads_with_lights = []
@@ -18,7 +18,10 @@ class Controller:
         for road in roads:
             if road.light:
                 self.roads_with_lights.append(road)
-        self.roads_distribution = np.array([1.0, 1.0, load_ratio, load_ratio])
+        if load_ratio is not None:
+            self.roads_distribution = np.array([1.0, 1.0, load_ratio, load_ratio])
+        else:
+            self.roads_distribution = np.ones(len(self.starting_nodes))
         self.roads_distribution /= np.sum(self.roads_distribution)
         
 
@@ -146,7 +149,7 @@ class Controller:
 
 
 #Method generates main crossroad map
-def generate_crossroad(WIDTH, HEIGHT, load_ratio):
+def generate_crossroad(WIDTH, HEIGHT, load_ratio=1):
     light_cycle = [0.25, 0.4, 0.85, 0.9]
     #nodes
     node1 = Node((11/24*WIDTH, 0))
