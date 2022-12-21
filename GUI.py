@@ -115,7 +115,6 @@ class TrafficLigthsWidget:
                     
     #Returns light cycle of traffic light        
     def get_values(self):
-        self.button_replace_function()
         return self.plot.entries
 
 #Class representing entry field and label for all variables that are singular int, float value
