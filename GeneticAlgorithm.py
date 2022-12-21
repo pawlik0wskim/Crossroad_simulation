@@ -84,11 +84,8 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             text.insert(END, '------------------------------------\n')
             text.configure(state=DISABLED)
 
-<<<<<<< HEAD
-=======
             opt_progress['value'] = int(100*i/self.iterations)
 
->>>>>>> main
             if i == self.iterations:
                 break
 
@@ -122,11 +119,8 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         duration_label.configure(text='Finished')
         
         self.save_champions()
-<<<<<<< HEAD
-=======
         self.champions = []
         self.champions_stats = []
->>>>>>> main
     
     # calculates costs for all units in all populations
     # returns 2d list, which has same dimensions as self.populations,
