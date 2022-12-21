@@ -23,7 +23,7 @@ class SimulatedAnnealing(oa):
         for i in range(len(light_cycles)):
             for j in range(4):
                 cols+=[f"Traffic light {i}_{j}"]
-        cols +=["Flow", "Collisions", "Stopped", "Iterations"]
+        cols +=["Flow", "Collisions", "Stopped", "Iterations", "Step"]
         self.stats = [cols]
         self.save_stats()
         self.stats = []
@@ -69,21 +69,19 @@ class SimulatedAnnealing(oa):
                 stat = [i,j,pixels_to_kmh(new_speed_limit)]
                 for light in light_cycles:
                     stat+=light
-                stat += [ Flow, Collisions, stopped, iteration]
+                stat += [ Flow, Collisions, stopped, iteration, None]
                 self.stats.append(stat)
                 self.elapsed_time += elapsed_time
                 
             #Analyse the results
             loss_value_new = cost_function(Flow_mean, Collisions_mean)
             simulation.reset_map()
-            stat = [i,None,pixels_to_kmh(new_speed_limit)]
-            for light in light_cycles:
-                stat+=light
-            stat += [ Flow_mean, Collisions_mean, None, None]
-            self.stats.append(stat)
+            
             diff = loss_value_new - loss_value
             #Make decision whether to make a step or not
+            better = 0
             if diff<0  or np.random.rand()<np.exp(-diff/self.temp): 
+                better = 1
                 loss_value = loss_value_new
                 speed_limit, light_cycles = new_speed_limit, new_light_cycles 
                 if loss_value_new - loss_best<0:
@@ -94,6 +92,13 @@ class SimulatedAnnealing(oa):
             #Update the temperature
             self.temp *= self.cooling_rate
             opt_progress['value'] = int(100*(i+1)/self.iterations)
+            
+            #save stats
+            stat = [i,None,pixels_to_kmh(new_speed_limit)]
+            for light in light_cycles:
+                stat+=light
+            stat += [ Flow_mean, Collisions_mean, None, None, better]
+            self.stats.append(stat)
         
         duration_label.configure(text='Finished')
         #Save stats and champion

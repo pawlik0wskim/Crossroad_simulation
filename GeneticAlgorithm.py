@@ -84,6 +84,11 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             text.insert(END, '------------------------------------\n')
             text.configure(state=DISABLED)
 
+<<<<<<< HEAD
+=======
+            opt_progress['value'] = int(100*i/self.iterations)
+
+>>>>>>> main
             if i == self.iterations:
                 break
 
@@ -113,12 +118,15 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             for pop, pop_costs in zip(self.populations, costs):
                 new_populations.append(self.generate_new_population(pop, pop_costs))
             self.populations = new_populations
-
-            opt_progress['value'] = int(100*i/self.iterations)
         
         duration_label.configure(text='Finished')
         
         self.save_champions()
+<<<<<<< HEAD
+=======
+        self.champions = []
+        self.champions_stats = []
+>>>>>>> main
     
     # calculates costs for all units in all populations
     # returns 2d list, which has same dimensions as self.populations,
@@ -293,7 +301,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     # help function
     # appends simulation statistics to self.stats field
     def append_stats(self, main_index, population_num, unit_num, small_index, Flow, Collisions, speed_limit, light_cycles, stopped, iter_num):
-        stat = [main_index, population_num, unit_num, small_index, pixels_to_kmh(speed_limit)]
+        stat = [main_index, population_num, unit_num, small_index, round(pixels_to_kmh(speed_limit))]
         for light in light_cycles:
             stat += light
         stat += [ Flow, Collisions, stopped, iter_num]

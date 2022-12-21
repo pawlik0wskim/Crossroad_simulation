@@ -38,7 +38,7 @@ class OptimizationAlgorithm:
         for i in range(len(self.champions)):
             self.champions[i]["flow"] = self.champions_stats[i][0]
             self.champions[i]["collisions"] = -self.champions_stats[i][1]
-            self.champions[i]["speed_limit"] = pixels_to_kmh(self.champions[i]["speed_limit"])
+            self.champions[i]["speed_limit"] = round(pixels_to_kmh( self.champions[i]["speed_limit"])) 
         with open(self.champions_file, "w") as fp:
             json.dump(self.champions, fp)
             fp.close()
@@ -49,7 +49,9 @@ class OptimizationAlgorithm:
         p = np.random.rand()
         parameter_number = len(light_cycles[0])*len(light_cycles)+1
         if ( p<1/parameter_number or 1-self.traffic_light_optimization) and self.speed_limit_optimization:
-            new_speed_limit+=np.random.normal(0,2)
+            new_speed_limit+=np.random.randint(-3,3)
+            if new_speed_limit<1:
+                new_speed_limit=np.random.uniform(1,speed_limit)
         
         if (1-self.speed_limit_optimization):
             parameter_number-=1
@@ -61,8 +63,7 @@ class OptimizationAlgorithm:
         new_light_cycles = deepcopy(light_cycles)
         for i in range(len(light_cycles[0])*len(light_cycles)):
             if p<1/parameter_number*(i+1) and p>=1/parameter_number*i and self.traffic_light_optimization:
-                prev_value = light_cycles[i//len(light_cycles)][i-i//len(light_cycles)*len(light_cycles)]
-                new_value = np.random.rand()/2+1/2 if prev_value>1/2 else np.random.rand()/2
+                new_value = np.random.rand()
                 new_light_cycles[i//len(new_light_cycles)][i-i//len(new_light_cycles)*len(new_light_cycles)]=new_value
                 break
         return new_light_cycles
