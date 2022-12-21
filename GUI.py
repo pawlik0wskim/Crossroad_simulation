@@ -2,7 +2,6 @@
 from tkinter import *
 from  utilities import kilometers_per_hour_to_pixels
 import customtkinter
-from RangeSlider import RangeSliderH 
 import tkinter as tk
 import sys
 from tkinter import messagebox
@@ -11,7 +10,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  
 import numpy as np
 
-BG_COLOR = "#212325" 
+BG_COLOR = "#ebebeb" 
 
 class PlotWidget:
     def __init__(self, row, entries=[0.1, 0.2, 0.6, 0.7], starting_light="Red"):
@@ -70,20 +69,6 @@ class TrafficLigthsWidget:
         label = customtkinter.CTkLabel(root, text=f'Traffic light {(self.y-30)//150}' )
         label.grid(column=0, row= starting_row + (self.y-30)//150, columnspan = 4)
         self.plot.plot()
-        
-    
-
-        
-    # # Method creates double range sliders representing traffic light cycle   
-    # def generate_lights_sliders(self, values=[0.1,0.2], values2=[0.6,0.7], starting_light = "Red"):
-    #     color1, color2 = ("Red", "Green") if starting_light == "Red" else ("Green", "Red")
-    #     sliders = []
-    #     sliders.append(RangeSliderH(root, [DoubleVar(), DoubleVar()], Width=self.width, Height=24, min_val=0, max_val=1/2, show_value= True, padX=11, bgColor=BG_COLOR, font_size =1, right_color=color1, left_color=color2, values = values))
-    #     sliders.append(RangeSliderH(root, [DoubleVar(), DoubleVar()], Width=self.width, Height=24, min_val=1/2, max_val=1, show_value= True, padX=11, bgColor=BG_COLOR, font_size =1, right_color=color2, left_color=color1, values = values2))
-    #     for i in range(2):
-    #         #sliders[i].place(x=self.x+self.width*(i+1.4),y=self.y)
-    #         sliders[i].grid(row = self.starting_row + (self.y-30)//150, column = 13+i*4, columnspan = 4)
-    #     self.sliders = sliders
     
     #Function validating inputs provided by the user   
     def validate_function(self, val, col):
@@ -130,6 +115,7 @@ class TrafficLigthsWidget:
                     
     #Returns light cycle of traffic light        
     def get_values(self):
+        self.button_replace_function()
         return self.plot.entries
 
 #Class representing entry field and label for all variables that are singular int, float value
@@ -239,7 +225,7 @@ class GUI:
     def generate_main_modules(self):
         speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","25")
         maximum_iter_variable = EntryVariable(9,7,"Length of simulation: ","10000")
-        frames_per_car_variable = EntryVariable(9,13,"Frames per car: ","10")
+        frames_per_car_variable = EntryVariable(9,13,"Car spawning interval: ","10")
         left_prob_variable = EntryVariable(11,1,"Left turn probability: ","0.1", float)
         right_prob_variable = EntryVariable(11,7,"Right turn probability: ","0.2", float)
         light_cycle_time = EntryVariable(11,13,"Length of light cycle: ","300")
@@ -315,8 +301,8 @@ def run_gui():
     global  Width
     global mode, speed_limit, root
     # Create object 
-    customtkinter.set_default_color_theme("blue")
-    customtkinter.set_appearance_mode("dark")
+    customtkinter.set_default_color_theme("green")
+    customtkinter.set_appearance_mode("light")
     root = customtkinter.CTk()
     Width =180
     # Adjust size

@@ -117,7 +117,7 @@ def run_progress_gui(oa, app, init_params=None):
     sim_progress = Progressbar(root, orient=HORIZONTAL, length=100, mode='determinate')
     opt_progress = Progressbar(root, orient=HORIZONTAL, length=100, mode='determinate')
 
-    text = Text(root, bg='#212325', fg='white')
+    text = Text(root, bg='#ebebeb', fg='black')
     text.configure(state=DISABLED)
 
     scrollbar = Scrollbar(root, orient='vertical', command=text.yview)
