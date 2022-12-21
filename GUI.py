@@ -42,7 +42,7 @@ class PlotWidget:
         output.get_tk_widget().grid(row = self.row, column = 13, columnspan = 8)
         
     
-class TraficLigthsWidget:
+class TrafficLigthsWidget:
     def __init__(self, x, y, width = 180, starting_light = "Red", starting_row = 4):
         self.starting_light = starting_light
         self.x, self.y = x, y
@@ -186,7 +186,7 @@ class EntryVariable:
 #Main class of Graphical User Interface        
 class GUI:
     def __init__(self):
-        self.lights = [TraficLigthsWidget(30,30+150*i, starting_light = "Red") if i>1 else TraficLigthsWidget(30,30+150*i, starting_light = "Green") for i in range(4)]
+        self.lights = [TrafficLigthsWidget(30,30+150*i, starting_light = "Red") if i>1 else TrafficLigthsWidget(30,30+150*i, starting_light = "Green") for i in range(4)]
         self.main_modules =  self.generate_main_modules()     
         self.annealing_modules = self.generate_annealing_modules() 
         self.genetic_modules = self.generate_genetic_modules()
@@ -243,7 +243,8 @@ class GUI:
         left_prob_variable = EntryVariable(11,1,"Left turn probability: ","0.1", float)
         right_prob_variable = EntryVariable(11,7,"Right turn probability: ","0.2", float)
         light_cycle_time = EntryVariable(11,13,"Length of light cycle: ","300")
-        modules =[speed_limit_variable, maximum_iter_variable, frames_per_car_variable, left_prob_variable, right_prob_variable, light_cycle_time]
+        load_ratio = EntryVariable(9,19,"Roads load ratio: ","1")
+        modules =[speed_limit_variable, maximum_iter_variable, frames_per_car_variable, left_prob_variable, right_prob_variable, light_cycle_time, load_ratio]
         return modules
     
     #Generates drop menu allowing mode changing
@@ -315,7 +316,7 @@ def run_gui():
     global mode, speed_limit, root
     # Create object 
     customtkinter.set_default_color_theme("blue")
-    customtkinter.set_appearance_mode("Dark")
+    customtkinter.set_appearance_mode("dark")
     root = customtkinter.CTk()
     Width =180
     # Adjust size
@@ -332,11 +333,11 @@ def run_gui():
     if gui.values!=None:
         values = gui.values[:4] + [float(value) for value in gui.values[4:]]
         mode = gui.drop_menu.current_value
-        speed_limit, simulation_length, frames_per_car, left_prob , right_prob, light_cycle_time, number_of_iterations, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part = values[4:]
+        speed_limit, simulation_length, frames_per_car, left_prob , right_prob, light_cycle_time, load_ratio, number_of_iterations, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part = values[4:]
         light_cycles = [values[i]for i in range(4)]
         speed_limit_optimization-=1
         traffic_light_optimization-=1
-        return light_cycles, kilometers_per_hour_to_pixels(speed_limit) , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
+        return light_cycles, kilometers_per_hour_to_pixels(speed_limit), left_prob, right_prob, light_cycle_time, load_ratio, simulation_length, frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
     return None
     
 if __name__=="__main__":

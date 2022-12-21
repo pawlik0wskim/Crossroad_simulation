@@ -11,17 +11,18 @@ import sys
 from tkinter.ttk import Progressbar
 
 class Application:   
-    def __init__(self, max_iter, frames_per_car, light_cycle_time, right_prob, left_prob):
+    def __init__(self, max_iter, frames_per_car, light_cycle_time, right_prob, left_prob, load_ratio):
         
-        self.map = generate_crossroad(WIDTH, HEIGHT)
+        self.map = generate_crossroad(WIDTH, HEIGHT, load_ratio)
         self.max_iter = max_iter 
         self.frames_per_car = frames_per_car
         self.light_cycle_time = light_cycle_time
         self.right_prob, self.left_prob = right_prob, left_prob
+        self.load_ratio = load_ratio
     
     #Method clears the intersection    
     def reset_map(self):
-        self.map = generate_crossroad(WIDTH, HEIGHT)
+        self.map = generate_crossroad(WIDTH, HEIGHT, self.load_ratio)
     
     #Method sets traffic lights with accordance to provided light cycles    
     def set_traffic_lights(self, light_cycles):
@@ -142,9 +143,9 @@ def run_progress_gui(oa, app, init_params=None):
         
 if __name__=='__main__':
     
-    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization = run_gui()
+    light_cycles, speed_limit, left_prob, right_prob, light_cycle_time, load_ratio, simulation_length, frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization = run_gui()
     
-    app = Application(simulation_length, frames_per_car, light_cycle_time, right_prob, left_prob)
+    app = Application(simulation_length, frames_per_car, light_cycle_time, right_prob, left_prob, load_ratio)
 
     if mode == "visualisation":
         Flow, Collisions, stopped, iteration, elapsed_time= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)

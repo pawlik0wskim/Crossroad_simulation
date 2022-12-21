@@ -9,7 +9,7 @@ from utilities import *
 # Flow = 0
 
 class Controller:
-    def __init__(self, roads, starting_nodes, img=None, rect=None):
+    def __init__(self, roads, starting_nodes, load_ratio, img=None, rect=None):
         self.roads=roads
         self.starting_nodes = starting_nodes
         self.roads_with_lights = []
@@ -18,6 +18,8 @@ class Controller:
         for road in roads:
             if road.light:
                 self.roads_with_lights.append(road)
+        self.roads_distribution = np.array([1.0, 1.0, load_ratio, load_ratio])
+        self.roads_distribution /= np.sum(self.roads_distribution)
         
 
     
@@ -43,17 +45,16 @@ class Controller:
     
     # Adds car on random spawning position        
     def spawn_car(self, speed_limit):
-        rand = np.random.randint(0, len(self.starting_nodes))
-        rand1 = rand+1
-        node = self.starting_nodes[rand]
+        count = 0
+        node = self.sample_road()
         if len(node.exiting_roads[0].cars)>0:
             previous_car = node.exiting_roads[0].cars[-1].rect # we don't want cars to spawn inside one another
-            while np.abs(previous_car.center[0]-node.pos[0]+previous_car.center[1]-node.pos[1])<np.max([previous_car.width*(1+speed_limit/10), previous_car.height*(1+speed_limit/10)]) and rand1!=rand:
-                rand1 = rand1+1 if rand1 < len(self.starting_nodes)-1 else 0
-                node = self.starting_nodes[np.random.randint(0, len(self.starting_nodes))]
+            while np.abs(previous_car.center[0]-node.pos[0]+previous_car.center[1]-node.pos[1])<np.max([previous_car.width*(1+speed_limit/10), previous_car.height*(1+speed_limit/10)]) and count <= 3:
+                node = self.sample_road()
                 if len(node.exiting_roads[0].cars)>0:
                     previous_car = node.exiting_roads[0].cars[-1].rect
-            if rand1==rand:
+                count += 1
+            if count == 4:
                 return None
         if node.pos[1]==0:
             angle = 180
@@ -134,13 +135,18 @@ class Controller:
                 if i%light_cycle_time==np.round(cycle*light_cycle_time):
                     road.light_color = road.light_color + 1 if road.light_color<3 else 0
     
+    # returns reference to one of the starting roads(used for cars generation)
+    def sample_road(self):
+        idx = np.random.choice(range(len(self.starting_nodes)), 1, p=self.roads_distribution)[0]
+        return self.starting_nodes[idx]
+    
    
         
 
 
 
 #Method generates main crossroad map
-def generate_crossroad(WIDTH, HEIGHT):
+def generate_crossroad(WIDTH, HEIGHT, load_ratio):
     light_cycle = [0.25, 0.4, 0.85, 0.9]
     #nodes
     node1 = Node((11/24*WIDTH, 0))
@@ -189,7 +195,7 @@ def generate_crossroad(WIDTH, HEIGHT):
     roads.append(Segment(node9,node4, type = "arc", curve = "right"))
     roads.append(Segment(node9,node5, type = "arc", curve = "left"))
     roads.append(Segment(node9,node11, "straight"))
-    return Controller(roads, [ node1, node8, node13, node16]) 
+    return Controller(roads, [ node1, node8, node13, node16], load_ratio) 
 
 
 #Method generates map used for testing
