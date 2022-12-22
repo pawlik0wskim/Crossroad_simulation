@@ -145,6 +145,12 @@ if __name__=='__main__':
     
     light_cycles, speed_limit, left_prob, right_prob, light_cycle_time, load_ratio, simulation_length, frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization = run_gui()
     
+    # code used for GUI validation
+    values = [light_cycles, speed_limit, left_prob, right_prob, light_cycle_time, load_ratio, simulation_length, frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization]
+    names = ["light_cycles", "speed_limit", "left_prob", "right_prob", "light_cycle_time", "load_ratio", "simulation_length", "frames_per_car", "mode", "number_of_iterations", "initial_temp", "cooling_rate", "elite_part", "mutation_probability", "population_size", "population_number", "migration_part", "speed_limit_optimization", "traffic_light_optimization"]
+    for name, value in zip(names, values):
+        print(f"{name} = {value}")
+
     app = Application(simulation_length, frames_per_car, light_cycle_time, right_prob, left_prob, load_ratio)
 
     if mode == "visualisation":

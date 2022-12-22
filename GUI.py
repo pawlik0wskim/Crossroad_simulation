@@ -205,10 +205,10 @@ class GUI:
     #Generates entry fields for genetic algorithm mode       
     def generate_genetic_modules(self):
         Elite_part_variable  = EntryVariable(18,1,"Elitism: ","0.3", float)
-        mutation_probability_variable  = EntryVariable(16,7,"Mutation probability: ","0.2", float)
-        population_size_variable = EntryVariable(16,1,"Population size: ","100")
-        population_number_variable = EntryVariable(18,7,"Number of populations: ","10")
-        migration_part_variable = EntryVariable(16,13,"Chance of migrations: ","0.2", float)
+        mutation_probability_variable  = EntryVariable(16,7,"Mutation probability: ","0.7", float)
+        population_size_variable = EntryVariable(16,1,"Population size: ","10")
+        population_number_variable = EntryVariable(18,7,"Number of populations: ","1")
+        migration_part_variable = EntryVariable(16,13,"Migration: ","0.2", float)
         genetic_modules = [Elite_part_variable, mutation_probability_variable, population_size_variable, population_number_variable, migration_part_variable]
         return genetic_modules
 
@@ -222,7 +222,7 @@ class GUI:
 
     #Generates entry fields common for all modes  
     def generate_main_modules(self):
-        speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","25")
+        speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","35")
         maximum_iter_variable = EntryVariable(9,7,"Length of simulation: ","10000")
         frames_per_car_variable = EntryVariable(9,13,"Car spawning interval: ","10")
         left_prob_variable = EntryVariable(11,1,"Left turn probability: ","0.1", float)
