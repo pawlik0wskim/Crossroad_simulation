@@ -105,8 +105,8 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                     else: 
                         # if this is the last population, migration happens to the first one
                         outgoing_pop, ingoing_pop = -1, 0
-                    self.populations[ingoing_pop] += self.populations[outgoing_pop][0:self.migration_num]
-                    costs[ingoing_pop] += costs[outgoing_pop][0:self.migration_num]
+                    self.populations[ingoing_pop] += copy.deepcopy(self.populations[outgoing_pop][0:self.migration_num])
+                    costs[ingoing_pop] += costs[outgoing_pop][0:self.migration_num].copy()
                     self.populations[outgoing_pop] = self.populations[outgoing_pop][self.migration_num:len(costs[outgoing_pop])]
                     costs[outgoing_pop] = costs[outgoing_pop][self.migration_num:len(costs[outgoing_pop])]
 
@@ -133,9 +133,10 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
             for u, unit in enumerate(population):
                 Flow, Collisions = 0, 0
+                stopped = False
 
                 for j in range(self.simulation_repetitions):
-                    f, c, stopped, iter, elapsed_time = simulation.simulate(unit["speed_limit"], unit["light_cycles"], 
+                    f, c, s, iter, elapsed_time = simulation.simulate(unit["speed_limit"], unit["light_cycles"], 
                                                               sim=j, sim_max=self.simulation_repetitions, 
                                                               it=iteration, iter_max=self.iterations,
                                                               text=text, loading_bar=sim_progress)
@@ -144,6 +145,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                     Flow += f
                     Collisions += c
                     self.elapsed_time += elapsed_time
+                    stopped = stopped or s
 
                     self.simulations_conducted += 1
                     mean_sim_time = self.elapsed_time/(self.simulations_conducted)
@@ -152,8 +154,12 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
                 Flow /= self.simulation_repetitions
                 Collisions /= self.simulation_repetitions
-                pop_stats.append([Flow, -Collisions])
                 self.append_stats(iteration, p, u, None, Flow, Collisions, unit["speed_limit"], unit["light_cycles"], None, None)
+                
+                if not stopped:
+                    pop_stats.append([Flow, -Collisions])
+                else:
+                    pop_stats.append([0, -np.Inf]) # if crossroad has blocked itself at least one time - give it the worst possible stats 
             
             costs.append(self.get_pareto_scores(pop_stats, p))
         

@@ -41,10 +41,6 @@ def l2_dist(a, b):
 def cross_product(x, y):
     return (x[0]*y[0] + x[1]*y[1])
 
-# returns cross product of two vectors in 2D
-def cross_product(x, y):
-    return (x[0]*y[0] + x[1]*y[1])
-
 def cost_function(flow, collisions):
     return (collisions*np.log(collisions + 1) - flow)
 
