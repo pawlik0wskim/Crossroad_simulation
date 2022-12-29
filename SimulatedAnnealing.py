@@ -1,8 +1,6 @@
 from OptimizationAlgorithm import OptimizationAlgorithm as oa
 from utilities import *
 import numpy as np
-import time
-import json
 
 class SimulatedAnnealing(oa):
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate):
@@ -104,4 +102,5 @@ class SimulatedAnnealing(oa):
         #Save stats and champion
         self.save_stats()
         self.stats = [] 
-        self.save_champions() 
+        self.save_champions()
+        self.champions = [] 
