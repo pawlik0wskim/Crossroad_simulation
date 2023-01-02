@@ -18,13 +18,15 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         for i in range(len(self.populations)):
             for j in range(self.pop_size):
 
+                speed_limit_modified, light_cycles_modified = self.mutate(kwargs["speed_limit"], kwargs["light_cycles"])
+
                 if self.traffic_light_optimization:
-                    self.populations[i][j]["light_cycles"] = np.around(np.random.uniform(0, 1, (4, 4)), 2).tolist()
+                    self.populations[i][j]["light_cycles"] = light_cycles_modified
                 else:
                     self.populations[i][j]["light_cycles"] = copy.deepcopy(np.around(kwargs["traffic_lights"], 2).tolist())
                 
                 if self.speed_limit_optimization:
-                    self.populations[i][j]["speed_limit"] = round(np.random.uniform(0.85, 1.15) * kwargs["speed_limit"])
+                    self.populations[i][j]["speed_limit"] = speed_limit_modified
                 else:
                     self.populations[i][j]["speed_limit"] = round(kwargs["speed_limit"])
 

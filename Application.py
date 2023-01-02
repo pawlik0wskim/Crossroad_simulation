@@ -167,7 +167,8 @@ if __name__=='__main__':
                               elite_part=elite_part, 
                               population_size=population_size, 
                               traffic_lights=light_cycles, 
-                              speed_limit=speed_limit, 
+                              speed_limit=speed_limit,
+                              light_cycles=light_cycles, 
                               mutation_probability=mutation_probability, 
                               population_number=population_number,
                               migration_part=migration_part) 
