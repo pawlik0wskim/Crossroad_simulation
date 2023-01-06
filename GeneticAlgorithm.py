@@ -183,8 +183,17 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             # if unit is not dominated, it may be a potential champion
             # real champions will be distinguished later
             if pop_costs[i] == 1:
-                self.champions.append(copy.deepcopy(self.populations[pop_num][i]))
-                self.champions_stats.append(pop_stats[i].copy())
+                present = False
+                for j in range(len(self.champions)):
+                    present = self.compare_units(self.populations[pop_num][i], self.champions[j])
+                    if present:
+                        new_flow = self.champions_stats[j][0] + pop_stats[i][0]
+                        new_collisions = self.champions_stats[j][1] + pop_stats[i][1]
+                        self.champions_stats[j] = [new_flow/2, new_collisions/2]
+                        break
+                if not present:
+                    self.champions.append(copy.deepcopy(self.populations[pop_num][i]))
+                    self.champions_stats.append(pop_stats[i].copy())
         
         return pop_costs
                 
@@ -294,11 +303,11 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         return [ls[ind[i]] for i in range(len(ls))]
     
     # help function
-    # compares two units
+    # compares two units in terms of their parameters
     def compare_units(self, unit1, unit2):
         if unit1["speed_limit"] != unit2["speed_limit"]:
             return False
-        return unit1["light_cycles"] == unit2["light_cycles"]
+        return np.sum(np.sort(unit1["light_cycles"]) == np.sort(unit2["light_cycles"])) == len(unit1["light_cycles"]) * len(unit1["light_cycles"][0])
     
     # help function
     # appends simulation statistics to self.stats field
