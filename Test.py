@@ -160,7 +160,7 @@ class Test(unittest.TestCase):
     #Test if crossover mechanism works correctly  
     def test_07_crossover(self):
         np.random.seed(123)
-        ga = GeneticAlgorithm(10, 1000, speed_limit_optimization=True, traffic_light_optimization=True, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2, speed_limit=10, crossover_probability=0.2, migration_part=0.1)
+        ga = GeneticAlgorithm(10, 1000, speed_limit_optimization=True, traffic_light_optimization=True, elite_part=0.3, population_size=10, population_number=5, mutation_probability=0.2, speed_limit=10, crossover_probability=0.2, migration_part=0.1, light_cycles=np.zeros((4, 4)))
         parent1 = {'speed_limit': 10, 'light_cycles': [[0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5], [0.2, 0.1, 0.8, 0.5]]}
         parent2 = {'speed_limit': 25, 'light_cycles': [[0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9], [0.0, 0.7, 0.3, 0.9]]}
         child = ga.crossover(parent1, parent2)
@@ -217,7 +217,8 @@ class Test(unittest.TestCase):
                         crossover_probability=0.2, 
                         mutation_probability=0.6, 
                         population_number=2,
-                        migration_part=0.2) 
+                        migration_part=0.2,
+                        light_cycles=np.zeros((4, 4)))  
         
         # Pareto comparison checks relation of two statistic vectors, which have form of [Flow, -Collision]
         # vector1 dominates vector2 iff one statistic from vector1 is > than same statistic of vector2 
@@ -245,7 +246,8 @@ class Test(unittest.TestCase):
                         crossover_probability=0.2, 
                         mutation_probability=0.6, 
                         population_number=2,
-                        migration_part=0.2) 
+                        migration_part=0.2,
+                        light_cycles=np.zeros((4, 4))) 
         
         champions = [{'tl': [[0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4]], # candidate 1
                       's': 20.0},
@@ -315,7 +317,8 @@ class Test(unittest.TestCase):
                         crossover_probability=0.2, 
                         mutation_probability=0.6, 
                         population_number=2,
-                        migration_part=0.2) 
+                        migration_part=0.2,
+                        light_cycles=np.zeros((4, 4)))  
 
         # 4 units to compare
         unit1 = {"light_cycles": [[0.22, 0.30, 0.1, 0.1], 

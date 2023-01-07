@@ -187,9 +187,9 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                 for j in range(len(self.champions)):
                     present = self.compare_units(self.populations[pop_num][i], self.champions[j])
                     if present:
-                        new_flow = self.champions_stats[j][0] + pop_stats[i][0]
-                        new_collisions = self.champions_stats[j][1] + pop_stats[i][1]
-                        self.champions_stats[j] = [new_flow/2, new_collisions/2]
+                        new_flow = (self.champions_stats[j][0] + pop_stats[i][0]) // 2
+                        new_collisions = (self.champions_stats[j][1] + pop_stats[i][1]) // 2
+                        self.champions_stats[j] = [new_flow, new_collisions]
                         break
                 if not present:
                     self.champions.append(copy.deepcopy(self.populations[pop_num][i]))
