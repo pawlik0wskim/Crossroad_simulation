@@ -142,7 +142,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                                                               sim=j, sim_max=self.simulation_repetitions, 
                                                               it=iteration, iter_max=self.iterations,
                                                               text=text, loading_bar=sim_progress)
-                    self.append_stats(iteration, p, u, j, f, c, unit["speed_limit"], unit["light_cycles"], stopped, iter)
+                    self.append_stats(iteration, p, u, j, f, c, unit["speed_limit"], unit["light_cycles"], s, iter)
                     simulation.reset_map()
                     Flow += f
                     Collisions += c
@@ -161,7 +161,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                 if not stopped:
                     pop_stats.append([Flow, -Collisions])
                 else:
-                    pop_stats.append([0, -np.Inf]) # if crossroad has blocked itself at least one time - give it the worst possible stats 
+                    pop_stats.append([-np.Inf, -np.Inf]) # if crossroad has blocked itself at least one time - give it the worst possible stats 
             
             costs.append(self.get_pareto_scores(pop_stats, p))
         
@@ -317,11 +317,3 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             stat += light
         stat += [ Flow, Collisions, stopped, iter_num]
         self.stats.append(stat)
-
-
-
-
-
-
-if __name__ == '__main__':
-    pass
