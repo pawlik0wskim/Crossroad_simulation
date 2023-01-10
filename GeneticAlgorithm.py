@@ -136,8 +136,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
                 for j in range(self.simulation_repetitions):
                     f, c, stopped, iter, elapsed_time = simulation.simulate(unit["speed_limit"], unit["light_cycles"], 
-                                                              sim=j, sim_max=self.simulation_repetitions, 
-                                                              it=iteration, iter_max=self.iterations,
+                                                              
                                                               text=text, loading_bar=sim_progress)
                     self.append_stats(iteration, p, u, j, f, c, unit["speed_limit"], unit["light_cycles"], stopped, iter)
                     simulation.reset_map()

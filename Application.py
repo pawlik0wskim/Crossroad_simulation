@@ -11,17 +11,18 @@ import sys
 from tkinter.ttk import Progressbar
 
 class Application:   
-    def __init__(self, max_iter, frames_per_car, light_cycle_time, right_prob, left_prob):
+    def __init__(self, max_iter, frames_per_car, light_cycle_time, right_prob, left_prob, load_ratio):
         
-        self.map = generate_crossroad(WIDTH, HEIGHT)
+        self.map = generate_crossroad(WIDTH, HEIGHT, load_ratio)
         self.max_iter = max_iter 
         self.frames_per_car = frames_per_car
         self.light_cycle_time = light_cycle_time
         self.right_prob, self.left_prob = right_prob, left_prob
+        self.load_ratio = load_ratio
     
     #Method clears the intersection    
     def reset_map(self):
-        self.map = generate_crossroad(WIDTH, HEIGHT)
+        self.map = generate_crossroad(WIDTH, HEIGHT, self.load_ratio)
     
     #Method sets traffic lights with accordance to provided light cycles    
     def set_traffic_lights(self, light_cycles):
@@ -29,7 +30,7 @@ class Application:
             self.map.roads_with_lights[i].light_cycle = light_cycles[i]
     
     #Main method responsible for simulation        
-    def simulate(self, speed_limit, light_cycles, text=None, loading_bar=None, visualise = False, debug = False, sim=0,sim_max = 0, it=0, iter_max=0): 
+    def simulate(self, speed_limit, light_cycles, text=None, loading_bar=None, visualise = False, debug = False): 
         self.set_traffic_lights( light_cycles)
 
         Collisions = 0
@@ -116,7 +117,7 @@ def run_progress_gui(oa, app, init_params=None):
     sim_progress = Progressbar(root, orient=HORIZONTAL, length=100, mode='determinate')
     opt_progress = Progressbar(root, orient=HORIZONTAL, length=100, mode='determinate')
 
-    text = Text(root, bg='#212325', fg='white')
+    text = Text(root, bg='#ebebeb', fg='black')
     text.configure(state=DISABLED)
 
     scrollbar = Scrollbar(root, orient='vertical', command=text.yview)
@@ -142,9 +143,15 @@ def run_progress_gui(oa, app, init_params=None):
         
 if __name__=='__main__':
     
-    light_cycles, speed_limit , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization = run_gui()
+    light_cycles, speed_limit, left_prob, right_prob, light_cycle_time, load_ratio, simulation_length, frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization = run_gui()
     
-    app = Application(simulation_length, frames_per_car, light_cycle_time, right_prob, left_prob)
+    # code used for GUI validation
+    values = [light_cycles, speed_limit, left_prob, right_prob, light_cycle_time, load_ratio, simulation_length, frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization]
+    names = ["light_cycles", "speed_limit", "left_prob", "right_prob", "light_cycle_time", "load_ratio", "simulation_length", "frames_per_car", "mode", "number_of_iterations", "initial_temp", "cooling_rate", "elite_part", "mutation_probability", "population_size", "population_number", "migration_part", "speed_limit_optimization", "traffic_light_optimization"]
+    for name, value in zip(names, values):
+        print(f"{name} = {value}")
+
+    app = Application(simulation_length, frames_per_car, light_cycle_time, right_prob, left_prob, load_ratio)
 
     if mode == "visualisation":
         Flow, Collisions, stopped, iteration, elapsed_time= app.simulate(speed_limit, light_cycles, visualise = True, debug = False)
