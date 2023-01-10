@@ -59,8 +59,7 @@ class SimulatedAnnealing(oa):
                 estimated_duration = (3*self.iterations - iter_conducted) * self.elapsed_time/iter_conducted
                 self.update_estimated_duration(duration_label, estimated_duration)
                 Flow, Collisions, stopped, iteration, elapsed_time = simulation.simulate(new_speed_limit, new_light_cycles, 
-                                                                           sim = j, sim_max = 3, 
-                                                                           it=i, iter_max = self.iterations,
+                                                                           
                                                                            text=text, loading_bar=sim_progress) 
                 simulation.reset_map()
                 Flow_mean, Collisions_mean = Flow_mean + Flow/3, Collisions_mean + Collisions/3
