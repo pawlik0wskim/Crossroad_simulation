@@ -46,7 +46,9 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
         # number of simulations left till the end of optimisation
         self.simulations_number = self.pop_size * len(self.populations) * self.simulation_repetitions * self.iterations
+        # number of simulations that were already conducted
         self.simulations_conducted = 0
+
         self.stats_file = 'genetic_' + self.stats_file
         self.champions_file = 'genetic_' + self.champions_file
 
@@ -243,7 +245,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         self.champions, self.champions_stats = new_champions, new_champions_stats
 
 
-    # returns list of units, obtained with elitism, mutation and crossover from provided population,
+    # returns list of units, obtained through elitism, mutation and crossover from provided population,
     # order of pop_costs must match the order of units in population
     def generate_new_population(self, population, pop_costs):
         new_population = []

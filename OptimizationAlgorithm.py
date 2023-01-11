@@ -95,7 +95,8 @@ class OptimizationAlgorithm:
             writer_object.writerows(self.stats)
         
             f.close()
-    # updates duration estimate by configuring duration label to display new estimate
+            
+    # updates optimization duration estimate by configuring duration label to display new estimate
     def update_estimated_duration(self, duration_label, estimated_duration):
         dhm = seconds_to_dhm(estimated_duration)
         unit = [[' day ', ' days '], [' hour ', ' hours '], [' minute ', ' minutes ']]

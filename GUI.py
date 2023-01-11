@@ -12,6 +12,7 @@ import numpy as np
 
 BG_COLOR = "#ebebeb" 
 
+# Class used for displaying traffic lights cycles in GUI
 class PlotWidget:
     def __init__(self, row, entries=[0.1, 0.2, 0.6, 0.7], starting_light="Red"):
         self.entries = entries
@@ -40,7 +41,7 @@ class PlotWidget:
         # placing the canvas on the Tkinter window 
         output.get_tk_widget().grid(row = self.row, column = 13, columnspan = 8)
         
-    
+# Class representing set of entries for insertion of traffic lights cycles configuration
 class TrafficLigthsWidget:
     def __init__(self, x, y, width = 180, starting_light = "Red", starting_row = 4):
         self.starting_light = starting_light
@@ -243,7 +244,7 @@ class GUI:
         drop.grid(column = 8, row = 1, columnspan =5, sticky = "n")
         return drop
     
-    #Method controlling GUi during mode change
+    #Method controlling GUI during mode change
     def optionmenu_callback(self, choice):
         if choice=="visualisation":
             self.hide(self.annealing_modules)
@@ -269,6 +270,7 @@ class GUI:
         if all(self.values):
             root.destroy()
     
+    # Method which does not allow user to unselect all checkboxes
     def toggle_checkboxes(self):
         if self.common_optimization_modules[1].entry.get():
             self.common_optimization_modules[2].entry.configure(state=NORMAL)
