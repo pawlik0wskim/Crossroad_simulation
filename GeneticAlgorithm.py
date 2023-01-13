@@ -1,8 +1,8 @@
 from OptimizationAlgorithm import OptimizationAlgorithm
 import numpy as np
-from utilities import pixels_to_kmh
+import pandas as pd
+from utilities import pixels_to_kmh, kilometers_per_hour_to_pixels
 import copy
-from tkinter import NORMAL, DISABLED, END
 
 class GeneticAlgorithm(OptimizationAlgorithm):
     def __init__(self, iterations, simulation_length, speed_limit_optimization, traffic_light_optimization, **kwargs):
@@ -71,23 +71,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             self.save_stats()
             self.stats = []
 
-            # update champions
-            self.update_champions()
-            text.configure(state=NORMAL)
-            text.insert(END, '------------------------------------\n')
-            text.insert(END, 'Champions: \n')
-            c = 1
-            for champ, stat in zip(self.champions, self.champions_stats):
-                text.insert(END, f'Champion {c} \n')
-                if self.traffic_light_optimization:
-                    text.insert(END, f'Traffic lights: {champ["light_cycles"]} \n')
-                if self.speed_limit_optimization:
-                    text.insert(END, f'Speed limit: {pixels_to_kmh(champ["speed_limit"])} \n')
-                text.insert(END, f'Stats: {stat} \n')
-                c += 1
-            text.insert(END, '------------------------------------\n')
-            text.configure(state=DISABLED)
-
             opt_progress['value'] = int(100*i/self.iterations)
 
             if i == self.iterations:
@@ -121,10 +104,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             self.populations = new_populations
         
         duration_label.configure(text='Finished')
-        
-        self.save_champions()
-        self.champions = []
-        self.champions_stats = []
     
     # calculates costs for all units in all populations
     # returns 2d list, which has same dimensions as self.populations,
@@ -165,15 +144,15 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                 else:
                     pop_stats.append([-np.Inf, -np.Inf]) # if crossroad has blocked itself at least one time - give it the worst possible stats 
             
-            costs.append(self.get_pareto_scores(pop_stats, p))
+            costs.append(self.get_pareto_scores(pop_stats))
         
         return costs
     
     # returns list of Pareto scores - number of units, which dominate concrete unit + 1
     # units, which are not dominated, receive Pareto score equal to 1
     # pop_stats - list of unit statistics, which are Flow and Collisions
-    # pop_num - population number, used to save not dominated unit for futher processing as potential champions
-    def get_pareto_scores(self, pop_stats, pop_num):
+    # pop_num - population number, used to save not dominated unit for further processing as potential champions
+    def get_pareto_scores(self, pop_stats):
         pop_costs = [1] * self.pop_size
 
         for i in range(len(pop_stats)):
@@ -181,21 +160,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
                 domination = self.pareto_compare(pop_stats[i], pop_stats[j])
                 pop_costs[j] += int(domination == 1)
                 pop_costs[i] += int(domination == 2)
-            
-            # if unit is not dominated, it may be a potential champion
-            # real champions will be distinguished later
-            if pop_costs[i] == 1:
-                present = False
-                for j in range(len(self.champions)):
-                    present = self.compare_units(self.populations[pop_num][i], self.champions[j])
-                    if present:
-                        new_flow = (self.champions_stats[j][0] + pop_stats[i][0]) // 2
-                        new_collisions = (self.champions_stats[j][1] + pop_stats[i][1]) // 2
-                        self.champions_stats[j] = [new_flow, new_collisions]
-                        break
-                if not present:
-                    self.champions.append(copy.deepcopy(self.populations[pop_num][i]))
-                    self.champions_stats.append(pop_stats[i].copy())
         
         return pop_costs
                 
@@ -213,36 +177,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         
         # if unit2 dominates return 2
         return 2
-
-    # filters dominated champions out and leaves only not dominated ones and their statistics
-    def update_champions(self):
-        if len(self.champions) == 1:
-            return
-
-        new_champions = []
-        new_champions_stats = []
-        is_dominated = [0] * len(self.champions)
-
-        for i in range(len(self.champions)):
-            # if current unit was dominated by some prior unit, no need to check futher
-            if is_dominated[i] == 1:
-                continue
-
-            for j in range(i+1, len(self.champions)):
-                domination = self.pareto_compare(self.champions_stats[i], self.champions_stats[j])
-                # if current unit dominates, save that information
-                if domination == 1:
-                    is_dominated[j] = 1
-                # if current unit is dominated, no need to check futher
-                if domination == 2:
-                    is_dominated[i] = 1
-                    break
-            # if no dominating units found, current unit is one of true champions
-            if is_dominated[i] == 0:
-                new_champions.append(self.champions[i])
-                new_champions_stats.append(self.champions_stats[i])
-        
-        self.champions, self.champions_stats = new_champions, new_champions_stats
 
 
     # returns list of units, obtained through elitism, mutation and crossover from provided population,
@@ -298,7 +232,64 @@ class GeneticAlgorithm(OptimizationAlgorithm):
             child["light_cycles"] = copy.deepcopy(parent1["light_cycles"])
 
         return child
+
+    # finds non dominated units and stores them in self.champion field
+    def find_champions(self):
+
+        units, stats = self.get_units()
+        dominated = [0] * len(units)
+
+        for i in range(len(units)):
+            # if current unit was dominated by some prior unit, no need to check further
+            if dominated[i] == 1:
+                continue
+
+            for j in range(i+1, len(units)):
+                domination = self.pareto_compare(stats[i], stats[j])
+                # if current unit dominates, save that information
+                if domination == 1:
+                    dominated[j] = 1
+                # if current unit is dominated, no need to check further
+                if domination == 2:
+                    dominated[i] = 1
+                    break
+            # if no dominating units found, current unit is one of true champions
+            if dominated[i] == 0:
+                self.champions.append(units[i])
+                self.champions_stats.append(stats[i])
     
+    # returns list of units that did not get stuck and their stats
+    def get_units(self):
+        
+        df = pd.read_csv(self.log_dir + self.stats_file)
+        # if there were no simulations recorded simply return empty list of units and their stats
+        if df.shape[0] == 0:
+            return [], []
+
+        # find units that have no stuck simulations
+        df1 = df.groupby(['Main index', 'Population', 'Unit']).agg({'Iterations': 'sum'})
+        df1.reset_index(inplace=True)
+        df1 = df1[df1['Iterations'] == self.simulation_repetitions*self.simulation_length]
+
+        # leave summary rows of units which did not get stuck
+        df['tmp'] = list(zip(df['Main index'], df['Population'], df['Unit']))
+        df = df[df['tmp'].isin(list(zip(df1['Main index'], df1['Population'], df1['Unit'])))]
+        df = df[df['Stopped'].isna()]
+
+        data = df.values.tolist()
+
+        stats = []
+        units = []
+
+        for row in data:
+            stats.append([row[21], -row[22]])
+            unit = {'speed_limit': kilometers_per_hour_to_pixels(row[4]), 'light_cycles': []}
+            for i in range(4):
+                unit['light_cycles'].append(row[5+4*i: 5+4*(i+1)])
+            units.append(unit)
+
+        return units, stats
+            
     # help function
     # returns permutation of list ls based on index list ind
     def permute(self, ls, ind):
