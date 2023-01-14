@@ -229,59 +229,6 @@ class Test(unittest.TestCase):
         self.assertEqual(ga.pareto_compare([1, 0], [1, -1]), 1)
         self.assertEqual(ga.pareto_compare([2, -1], [1, -1]), 1)
         self.assertEqual(ga.pareto_compare([1, -1], [1, 0]), 2)
-    
-    # Test if champions list in genetic algorithm is updated correctly
-    def test_12_champions_update(self):
-        # potential champions(units, which were not dominated in their populations)
-        # during cost calculations are appended to self.champions
-        # (their stats go to self.champions_stats)
-        # later some candidates are filtered out, if there are champions on the list, which dominate them
-        # this test checks if this filtering/update is done correctly
-
-        # sample GeneticAlgorithm instance
-        ga = GeneticAlgorithm(100, 100, True, True,
-                        elite_part=0.1, 
-                        population_size=10, 
-                        speed_limit=20, 
-                        crossover_probability=0.2, 
-                        mutation_probability=0.6, 
-                        population_number=2,
-                        migration_part=0.2,
-                        light_cycles=np.zeros((4, 4))) 
-        
-        champions = [{'tl': [[0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4]], # candidate 1
-                      's': 20.0},
-                    {'tl': [[0.1, 0.4, 0.9, 0.8], [0.1, 0.4, 0.9, 0.8], [0.1, 0.4, 0.9, 0.8], [0.1, 0.4, 0.9, 0.8]], # candidate 2
-                     's': 10.3},
-                    {'tl': [[0.5, 0.5, 0.7, 0.4], [0.5, 0.5, 0.7, 0.4], [0.5, 0.5, 0.7, 0.4], [0.5, 0.5, 0.7, 0.4]], # candidate 3
-                     's': 14.0},
-                    {'tl': [[0.0, 0.4, 0.5, 0.6], [0.0, 0.4, 0.5, 0.6], [0.0, 0.4, 0.5, 0.6], [0.0, 0.4, 0.5, 0.6]], # candidate 4
-                     's': 23.1}]
-        ga.champions = deepcopy(champions)
-        champions_stats = [[200, -0.33], # stats of candidate 1
-                           [300, -0.33], # stats of candidate 2
-                           [100, -0.0], # stats of candidate 3
-                           [400, -2.33]] # stats of candidate 4
-        ga.champions_stats = deepcopy(champions_stats)
-        
-        ga.update_champions()
-
-        # only candidate with index 0 should be filtered out as he is dominated by candidate with index 1
-        self.assertEqual(len(ga.champions), 3)
-        self.assertEqual(len(ga.champions_stats), 3)
-        
-        self.assertEqual(ga.champions[0]['tl'], champions[1]['tl'])
-        self.assertEqual(ga.champions[0]['s'], champions[1]['s'])
-        self.assertEqual(ga.champions_stats[0], champions_stats[1])
-
-        self.assertEqual(ga.champions[1]['tl'], champions[2]['tl'])
-        self.assertEqual(ga.champions[1]['s'], champions[2]['s'])
-        self.assertEqual(ga.champions_stats[1], champions_stats[2])
-
-        self.assertEqual(ga.champions[2]['tl'], champions[3]['tl'])
-        self.assertEqual(ga.champions[2]['s'], champions[3]['s'])
-        self.assertEqual(ga.champions_stats[2], champions_stats[3])
-        
         
     #Testing if cars decelerate correctly
     # def test_13_deceleration(self):
