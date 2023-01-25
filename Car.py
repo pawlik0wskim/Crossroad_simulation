@@ -40,7 +40,7 @@ class Car:
         self.minimum_dist = np.max([self.rect.h,self.rect.w])*5/3+np.random.normal()
         self.comfortable_deceleration = self.acceleration
         
-        self.maximum_deceleration = self.acceleration*6
+        self.maximum_deceleration = self.acceleration*4
         
         self.mask = pygame.mask.from_surface(Car.get_img_as_surface(self.rotate_image()))
         self.color = "Red"

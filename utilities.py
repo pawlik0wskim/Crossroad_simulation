@@ -15,12 +15,12 @@ def meters_to_pixels(dist):
 
 #calculates velocity in pixels per frame based on velocity in km/h
 def kilometers_per_hour_to_pixels(dist):
-    return dist/FPS/36*10/3*70*unit
+    return round(dist/FPS/36*10/3*70*unit)
 
 #calculates velocity in km/h based on velocity in pixels per frame
 def pixels_to_kmh(dist):
     meters_per_frame = dist/70*3/unit
-    return meters_per_frame*FPS*3600/1000
+    return round(meters_per_frame*FPS*3600/1000)
 
 #Rotates image by given angle
 def rotate_image(win, image, top_left, angle):

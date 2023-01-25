@@ -2,7 +2,6 @@
 from tkinter import *
 from  utilities import kilometers_per_hour_to_pixels
 import customtkinter
-from RangeSlider import RangeSliderH 
 import tkinter as tk
 import sys
 from tkinter import messagebox
@@ -11,7 +10,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  
 import numpy as np
 
-BG_COLOR = "#212325" 
+BG_COLOR = "#ebebeb" 
 
 class PlotWidget:
     def __init__(self, row, entries=[0.1, 0.2, 0.6, 0.7], starting_light="Red"):
@@ -42,7 +41,7 @@ class PlotWidget:
         output.get_tk_widget().grid(row = self.row, column = 13, columnspan = 8)
         
     
-class TraficLigthsWidget:
+class TrafficLigthsWidget:
     def __init__(self, x, y, width = 180, starting_light = "Red", starting_row = 4):
         self.starting_light = starting_light
         self.x, self.y = x, y
@@ -70,20 +69,6 @@ class TraficLigthsWidget:
         label = customtkinter.CTkLabel(root, text=f'Traffic light {(self.y-30)//150}' )
         label.grid(column=0, row= starting_row + (self.y-30)//150, columnspan = 4)
         self.plot.plot()
-        
-    
-
-        
-    # # Method creates double range sliders representing traffic light cycle   
-    # def generate_lights_sliders(self, values=[0.1,0.2], values2=[0.6,0.7], starting_light = "Red"):
-    #     color1, color2 = ("Red", "Green") if starting_light == "Red" else ("Green", "Red")
-    #     sliders = []
-    #     sliders.append(RangeSliderH(root, [DoubleVar(), DoubleVar()], Width=self.width, Height=24, min_val=0, max_val=1/2, show_value= True, padX=11, bgColor=BG_COLOR, font_size =1, right_color=color1, left_color=color2, values = values))
-    #     sliders.append(RangeSliderH(root, [DoubleVar(), DoubleVar()], Width=self.width, Height=24, min_val=1/2, max_val=1, show_value= True, padX=11, bgColor=BG_COLOR, font_size =1, right_color=color2, left_color=color1, values = values2))
-    #     for i in range(2):
-    #         #sliders[i].place(x=self.x+self.width*(i+1.4),y=self.y)
-    #         sliders[i].grid(row = self.starting_row + (self.y-30)//150, column = 13+i*4, columnspan = 4)
-    #     self.sliders = sliders
     
     #Function validating inputs provided by the user   
     def validate_function(self, val, col):
@@ -116,9 +101,9 @@ class TraficLigthsWidget:
             fl =None
             try:
                 fl = float(self.entries[i].entry.get())
-                if fl>1:
+                if fl>=1:
                     self.entries[i] = self.generate_entry("<1", i+6)
-                elif fl<0:
+                elif fl<=0:
                     self.entries[i] = self.generate_entry(">0", i+6)
                 elif i ==len(self.entries)-1:
                     self.plot.entries=[np.round(float(self.entries[0].entry.get()),2), np.round(float(self.entries[1].entry.get()),2), np.round(float(self.entries[2].entry.get()),2), np.round(float(self.entries[3].entry.get()),2)]
@@ -186,7 +171,7 @@ class EntryVariable:
 #Main class of Graphical User Interface        
 class GUI:
     def __init__(self):
-        self.lights = [TraficLigthsWidget(30,30+150*i, starting_light = "Red") if i>1 else TraficLigthsWidget(30,30+150*i, starting_light = "Green") for i in range(4)]
+        self.lights = [TrafficLigthsWidget(30,30+150*i, starting_light = "Red") if i>1 else TrafficLigthsWidget(30,30+150*i, starting_light = "Green") for i in range(4)]
         self.main_modules =  self.generate_main_modules()     
         self.annealing_modules = self.generate_annealing_modules() 
         self.genetic_modules = self.generate_genetic_modules()
@@ -220,10 +205,10 @@ class GUI:
     #Generates entry fields for genetic algorithm mode       
     def generate_genetic_modules(self):
         Elite_part_variable  = EntryVariable(18,1,"Elitism: ","0.3", float)
-        mutation_probability_variable  = EntryVariable(16,7,"Mutation probability: ","0.2", float)
-        population_size_variable = EntryVariable(16,1,"Population size: ","100")
-        population_number_variable = EntryVariable(18,7,"Number of populations: ","10")
-        migration_part_variable = EntryVariable(16,13,"Chance of migrations: ","0.2", float)
+        mutation_probability_variable  = EntryVariable(16,7,"Mutation probability: ","0.7", float)
+        population_size_variable = EntryVariable(16,1,"Population size: ","10")
+        population_number_variable = EntryVariable(18,7,"Number of populations: ","1")
+        migration_part_variable = EntryVariable(16,13,"Migration: ","0.2", float)
         genetic_modules = [Elite_part_variable, mutation_probability_variable, population_size_variable, population_number_variable, migration_part_variable]
         return genetic_modules
 
@@ -237,13 +222,14 @@ class GUI:
 
     #Generates entry fields common for all modes  
     def generate_main_modules(self):
-        speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","25")
+        speed_limit_variable = EntryVariable(9,1,"Speed limit(km/h): ","35")
         maximum_iter_variable = EntryVariable(9,7,"Length of simulation: ","10000")
-        frames_per_car_variable = EntryVariable(9,13,"Frames per car: ","10")
+        frames_per_car_variable = EntryVariable(9,13,"Car spawning interval: ","10")
         left_prob_variable = EntryVariable(11,1,"Left turn probability: ","0.1", float)
         right_prob_variable = EntryVariable(11,7,"Right turn probability: ","0.2", float)
         light_cycle_time = EntryVariable(11,13,"Length of light cycle: ","300")
-        modules =[speed_limit_variable, maximum_iter_variable, frames_per_car_variable, left_prob_variable, right_prob_variable, light_cycle_time]
+        load_ratio = EntryVariable(9,19,"Roads load ratio: ","1")
+        modules =[speed_limit_variable, maximum_iter_variable, frames_per_car_variable, left_prob_variable, right_prob_variable, light_cycle_time, load_ratio]
         return modules
     
     #Generates drop menu allowing mode changing
@@ -314,8 +300,8 @@ def run_gui():
     global  Width
     global mode, speed_limit, root
     # Create object 
-    customtkinter.set_default_color_theme("blue")
-    customtkinter.set_appearance_mode("Dark")
+    customtkinter.set_default_color_theme("green")
+    customtkinter.set_appearance_mode("light")
     root = customtkinter.CTk()
     Width =180
     # Adjust size
@@ -332,11 +318,11 @@ def run_gui():
     if gui.values!=None:
         values = gui.values[:4] + [float(value) for value in gui.values[4:]]
         mode = gui.drop_menu.current_value
-        speed_limit, simulation_length, frames_per_car, left_prob , right_prob, light_cycle_time, number_of_iterations, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part = values[4:]
+        speed_limit, simulation_length, frames_per_car, left_prob , right_prob, light_cycle_time, load_ratio, number_of_iterations, speed_limit_optimization, traffic_light_optimization, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part = values[4:]
         light_cycles = [values[i]for i in range(4)]
         speed_limit_optimization-=1
         traffic_light_optimization-=1
-        return light_cycles, kilometers_per_hour_to_pixels(speed_limit) , left_prob , right_prob , light_cycle_time , simulation_length , frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
+        return light_cycles, kilometers_per_hour_to_pixels(speed_limit), left_prob, right_prob, light_cycle_time, load_ratio, simulation_length, frames_per_car, mode, number_of_iterations, initial_temp, cooling_rate, elite_part, mutation_probability, population_size, population_number, migration_part, speed_limit_optimization, traffic_light_optimization
     return None
     
 if __name__=="__main__":
