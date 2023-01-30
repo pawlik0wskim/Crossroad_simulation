@@ -284,6 +284,8 @@ class Test(unittest.TestCase):
     #Testing if cars decelerate correctly
     def test_13_deceleration(self):
         n = 500
+        
+        #We calculate results we expect in test 13 in which we want results to be repetable
         x_range = np.array(range(n))
         y_range = [0 for i in range((n))]
         
